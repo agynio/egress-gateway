@@ -73,8 +73,8 @@ args: []
 env:
   - name: GRPC_ADDRESS
     value: ":50051"
-  - name: EGRESS_RULES_ADDRESS
-    value: "egress-rules:50051"
+  - name: EGRESS_ADDRESS
+    value: "egress:50051"
   - name: SECRETS_SERVICE_ADDRESS
     value: "secrets:50051"
   - name: NOTIFICATIONS_ADDRESS

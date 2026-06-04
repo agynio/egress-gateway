@@ -8,7 +8,7 @@ import (
 
 const (
 	defaultGRPCAddress         = ":50051"
-	defaultEgressRulesTarget   = "egress-rules:50051"
+	defaultEgressTarget        = "egress:50051"
 	defaultSecretsTarget       = "secrets:50051"
 	defaultNotificationsTarget = "notifications:50051"
 	defaultMeteringTarget      = "metering:50051"
@@ -21,7 +21,7 @@ const (
 
 type Config struct {
 	GRPCAddress          string
-	EgressRulesAddress   string
+	EgressAddress        string
 	SecretsAddress       string
 	NotificationsAddress string
 	MeteringAddress      string
@@ -36,7 +36,7 @@ type Config struct {
 func Load() (Config, error) {
 	cfg := Config{
 		GRPCAddress:          envOrDefault("GRPC_ADDRESS", defaultGRPCAddress),
-		EgressRulesAddress:   envOrDefault("EGRESS_RULES_ADDRESS", defaultEgressRulesTarget),
+		EgressAddress:        envOrDefault("EGRESS_ADDRESS", defaultEgressTarget),
 		SecretsAddress:       envOrDefault("SECRETS_SERVICE_ADDRESS", defaultSecretsTarget),
 		NotificationsAddress: envOrDefault("NOTIFICATIONS_ADDRESS", defaultNotificationsTarget),
 		MeteringAddress:      envOrDefault("METERING_ADDRESS", defaultMeteringTarget),

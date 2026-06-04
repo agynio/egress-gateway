@@ -18,11 +18,8 @@ jobs:
         with:
           go-version: '1.25'
 
-      - name: Go vet
-        run: go vet ./...
+      - name: Install native build dependencies
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gcc
 
-      - name: Go test
-        run: go test ./...
-
-      - name: Go build
-        run: go build ./...
+      - name: Generate, lint, test, and build
+        run: make ci

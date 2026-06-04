@@ -23,7 +23,7 @@ go run ./cmd/egress-gateway
 | Environment variable | Required | Default | Description |
 | --- | --- | --- | --- |
 | `GRPC_ADDRESS` | No | `:50051` | gRPC health/control listen address. |
-| `EGRESS_RULES_ADDRESS` | No | `egress-rules:50051` | Internal Egress Rules gRPC target. |
+| `EGRESS_ADDRESS` | No | `egress:50051` | Internal Egress gRPC target. |
 | `SECRETS_SERVICE_ADDRESS` | No | `secrets:50051` | Secrets gRPC target. |
 | `NOTIFICATIONS_ADDRESS` | No | `notifications:50051` | Notifications gRPC target. |
 | `METERING_ADDRESS` | No | `metering:50051` | Metering gRPC target. |

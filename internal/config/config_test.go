@@ -11,6 +11,9 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.GRPCAddress != defaultGRPCAddress {
 		t.Fatalf("grpc address = %q", cfg.GRPCAddress)
 	}
+	if cfg.EgressAddress != defaultEgressTarget {
+		t.Fatalf("egress address = %q", cfg.EgressAddress)
+	}
 	if cfg.RuleCacheTTL != defaultCacheTTL {
 		t.Fatalf("rule cache ttl = %s", cfg.RuleCacheTTL)
 	}
