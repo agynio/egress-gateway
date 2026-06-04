@@ -98,19 +98,21 @@ extraEnvVars: []
 extraEnvVarsCM: ""
 extraEnvVarsSecret: ""
 
-configMounts:
+configMounts: []
+extraVolumeMounts:
   - name: ziti-identity
-    sourceName: egress-gateway-ziti-identity
-    type: secret
     mountPath: /var/lib/ziti
     readOnly: true
   - name: egress-ca
-    sourceName: egress-ca
-    type: secret
     mountPath: /var/lib/egress-ca
     readOnly: true
-extraVolumeMounts: []
-extraVolumes: []
+extraVolumes:
+  - name: ziti-identity
+    secret:
+      secretName: egress-gateway-ziti-identity
+  - name: egress-ca
+    secret:
+      secretName: egress-ca
 
 initContainers: []
 extraContainers: []

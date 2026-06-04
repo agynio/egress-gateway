@@ -2,3 +2,5 @@
 .DS_Store
 .gen/
 bin/
+
+charts/*/charts/

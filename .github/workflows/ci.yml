@@ -21,5 +21,16 @@ jobs:
       - name: Install native build dependencies
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gcc
 
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.4
+
       - name: Generate, lint, test, and build
         run: make ci
+
+      - name: Validate Helm chart
+        run: |
+          helm dependency update charts/egress-gateway
+          helm lint charts/egress-gateway
+          helm template egress-gateway charts/egress-gateway
