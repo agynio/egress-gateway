@@ -1,0 +1,18 @@
+version: v2
+
+modules:
+  - path: proto
+    name: buf.build/agynio/api
+
+deps:
+  - buf.build/opentelemetry/opentelemetry
+
+lint:
+  use:
+    - STANDARD
+  except:
+    - RPC_REQUEST_RESPONSE_UNIQUE
+    - SERVICE_SUFFIX
+breaking:
+  use:
+    - FILE

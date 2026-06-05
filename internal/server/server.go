@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net"
+	"net/http"
 	"sync"
 
 	"github.com/agynio/egress-gateway/internal/config"
@@ -13,12 +14,17 @@ import (
 type Server struct {
 	cfg      config.Config
 	listener net.Listener
+	server   *http.Server
 	mu       sync.Mutex
 	closed   bool
 }
 
 func New(cfg config.Config) *Server {
-	return &Server{cfg: cfg}
+	mux := http.NewServeMux()
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	return &Server{cfg: cfg, server: &http.Server{Handler: mux}}
 }
 
 func (s *Server) Run(ctx context.Context) error {
@@ -29,25 +35,18 @@ func (s *Server) Run(ctx context.Context) error {
 	s.mu.Lock()
 	s.listener = listener
 	s.mu.Unlock()
-	log.Printf("egress-gateway listening on %s", s.cfg.GRPCAddress)
+	log.Printf("egress-gateway admin listening on %s", s.cfg.GRPCAddress)
 
 	go func() {
 		<-ctx.Done()
 		s.Close()
 	}()
 
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			if s.isClosed() {
-				return nil
-			}
-			return err
-		}
-		if err := conn.Close(); err != nil {
-			log.Printf("close placeholder connection: %v", err)
-		}
+	err = s.server.Serve(listener)
+	if err != nil && !errors.Is(err, http.ErrServerClosed) && !s.isClosed() {
+		return err
 	}
+	return nil
 }
 
 func (s *Server) Close() {
@@ -57,6 +56,11 @@ func (s *Server) Close() {
 		return
 	}
 	s.closed = true
+	if s.server != nil {
+		if err := s.server.Close(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Printf("close admin server: %v", err)
+		}
+	}
 	if s.listener != nil {
 		if err := s.listener.Close(); err != nil && !errors.Is(err, net.ErrClosed) {
 			log.Printf("close listener: %v", err)

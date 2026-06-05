@@ -1,0 +1,169 @@
+syntax = "proto3";
+
+package agynio.api.tracing.v1;
+
+import "opentelemetry/proto/trace/v1/trace.proto";
+
+option go_package = "github.com/agynio/api/gen/agynio/api/tracing/v1;tracingv1";
+
+// TracingService provides query access to span data ingested via the standard
+// OTLP TraceService/Export endpoint. It supports paginated listing with
+// filters, single-span lookup, and full-trace retrieval.
+//
+// All query responses use the standard OTel envelope hierarchy
+// (ResourceSpans -> ScopeSpans -> Span) to preserve Resource and
+// InstrumentationScope context alongside each span. This follows the same
+// pattern used by Jaeger v3 QueryService.
+service TracingService {
+  // List spans matching the provided filters with pagination.
+  // Each result span is wrapped in its ResourceSpans -> ScopeSpans envelope
+  // so that Resource and InstrumentationScope context is preserved.
+  rpc ListSpans(ListSpansRequest) returns (ListSpansResponse);
+
+  // Get a single span by trace_id and span_id, with its Resource and
+  // InstrumentationScope context.
+  rpc GetSpan(GetSpanRequest) returns (GetSpanResponse);
+
+  // Get all spans belonging to a trace, grouped by Resource and
+  // InstrumentationScope.
+  rpc GetTrace(GetTraceRequest) returns (GetTraceResponse);
+
+  // Get trace-level summary statistics.
+  rpc GetTraceSummary(GetTraceSummaryRequest) returns (GetTraceSummaryResponse);
+
+  // Get span totals for a trace with optional filtering.
+  rpc GetTraceSpanTotals(GetTraceSpanTotalsRequest) returns (GetTraceSpanTotalsResponse);
+}
+
+// ===========================================================================
+// Enums
+// ===========================================================================
+
+// Ordering for ListSpans results.
+enum ListSpansOrderBy {
+  LIST_SPANS_ORDER_BY_UNSPECIFIED = 0;
+  LIST_SPANS_ORDER_BY_START_TIME_DESC = 1;
+  LIST_SPANS_ORDER_BY_START_TIME_ASC = 2;
+}
+
+// Derived status for a span, computed from OTel status_code + end_time.
+enum SpanStatus {
+  SPAN_STATUS_UNSPECIFIED = 0;
+  SPAN_STATUS_RUNNING = 1; // end_time = 0, status_code != ERROR
+  SPAN_STATUS_OK = 2; // end_time > 0, status_code != ERROR
+  SPAN_STATUS_ERROR = 3; // status_code = ERROR (regardless of end_time)
+}
+
+// Trace-level status derived from constituent span statuses.
+enum TraceStatus {
+  TRACE_STATUS_UNSPECIFIED = 0;
+  TRACE_STATUS_RUNNING = 1; // At least one span is RUNNING
+  TRACE_STATUS_COMPLETED = 2; // All spans ended, none with ERROR
+  TRACE_STATUS_ERROR = 3; // All spans ended, at least one ERROR
+}
+
+// ===========================================================================
+// ListSpans
+// ===========================================================================
+
+// Filter criteria for ListSpans. All fields are optional and AND-combined.
+message SpanFilter {
+  bytes trace_id = 1; // filter by trace (16 bytes)
+  bytes parent_span_id = 2; // filter by parent span (8 bytes)
+  string name = 3; // filter by operation name (exact match)
+  opentelemetry.proto.trace.v1.Span.SpanKind kind = 4; // filter by span kind
+  fixed64 start_time_min = 5; // start time lower bound (inclusive, nanos)
+  fixed64 start_time_max = 6; // start time upper bound (inclusive, nanos)
+  optional bool in_progress = 7; // true = only in-progress, false = only completed, unset = both
+  repeated string names = 8; // multiple span names, OR-combined (takes precedence over name)
+  repeated SpanStatus statuses = 9; // derived statuses, OR-combined (takes precedence over in_progress)
+  string message_id = 10; // filter by message id (UUID, maps to resource attribute agyn.thread.message.id)
+}
+
+message ListSpansRequest {
+  SpanFilter filter = 1;
+  int32 page_size = 2;
+  string page_token = 3;
+  ListSpansOrderBy order_by = 4; // default: START_TIME_DESC
+  string organization_id = 5; // required organization id (UUID)
+}
+
+message ListSpansResponse {
+  // Matching spans in the standard OTel envelope hierarchy.
+  // Spans sharing a Resource and InstrumentationScope are grouped under the
+  // same ResourceSpans/ScopeSpans entry. The page_size limit applies to the
+  // total number of Span messages across all ResourceSpans/ScopeSpans.
+  repeated opentelemetry.proto.trace.v1.ResourceSpans resource_spans = 1;
+  string next_page_token = 2;
+}
+
+// ===========================================================================
+// GetSpan
+// ===========================================================================
+
+message GetSpanRequest {
+  bytes trace_id = 1; // 16 bytes
+  bytes span_id = 2; // 8 bytes
+}
+
+message GetSpanResponse {
+  // The span wrapped in its ResourceSpans -> ScopeSpans envelope.
+  // Contains exactly one ResourceSpans with one ScopeSpans with one Span.
+  repeated opentelemetry.proto.trace.v1.ResourceSpans resource_spans = 1;
+}
+
+// ===========================================================================
+// GetTrace
+// ===========================================================================
+
+message GetTraceRequest {
+  bytes trace_id = 1; // 16 bytes
+}
+
+message GetTraceResponse {
+  // All spans in the trace, grouped by Resource and InstrumentationScope.
+  // A trace spanning multiple services will have multiple ResourceSpans entries.
+  repeated opentelemetry.proto.trace.v1.ResourceSpans resource_spans = 1;
+}
+
+// ===========================================================================
+// GetTraceSummary
+// ===========================================================================
+
+message GetTraceSummaryRequest {
+  bytes trace_id = 1; // 16 bytes
+}
+
+message GetTraceSummaryResponse {
+  bytes trace_id = 1;
+  TraceStatus status = 2;
+  fixed64 first_span_start_time = 3; // earliest start_time_unix_nano
+  fixed64 last_span_start_time = 4; // latest start_time_unix_nano
+  fixed64 last_span_end_time = 5; // latest end_time_unix_nano (0 if none completed)
+  map<string, int64> counts_by_name = 6; // key = span name, value = count
+  map<string, int64> counts_by_status = 7; // key = SpanStatus enum name, value = count
+  int64 total_spans = 8;
+}
+
+// ===========================================================================
+// GetTraceSpanTotals
+// ===========================================================================
+
+message GetTraceSpanTotalsRequest {
+  bytes trace_id = 1; // 16 bytes
+  repeated string names = 2; // span names to include (empty = all)
+  repeated SpanStatus statuses = 3; // derived statuses to include (empty = all)
+}
+
+message GetTraceSpanTotalsResponse {
+  int64 span_count = 1;
+  TokenUsageTotals token_usage = 2;
+}
+
+message TokenUsageTotals {
+  int64 input_tokens = 1;
+  int64 output_tokens = 2;
+  int64 cache_read_input_tokens = 3;
+  int64 reasoning_tokens = 4;
+  int64 total_tokens = 5; // server-computed: input + output
+}

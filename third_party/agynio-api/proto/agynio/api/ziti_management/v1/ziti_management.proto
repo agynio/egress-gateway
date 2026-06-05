@@ -1,0 +1,415 @@
+syntax = "proto3";
+
+package agynio.api.ziti_management.v1;
+
+import "agynio/api/identity/v1/identity.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/agynio/api/gen/agynio/api/ziti_management/v1;zitimanagementv1";
+
+service ZitiManagementService {
+  // Orchestrator -> create OpenZiti identity for an agent, return enrollment JWT.
+  rpc CreateAgentIdentity(CreateAgentIdentityRequest) returns (CreateAgentIdentityResponse);
+
+  // Apps Service -> create and enroll an OpenZiti identity for an app. If a previous
+  // identity exists, deletes it first. Returns enrolled credentials.
+  rpc CreateAppIdentity(CreateAppIdentityRequest) returns (CreateAppIdentityResponse);
+
+  // Runners Service, Apps Service -> create a per-runner or per-app OpenZiti service.
+  rpc CreateService(CreateServiceRequest) returns (CreateServiceResponse);
+
+  // Infrastructure services -> fetch one OpenZiti service by ID or exact name.
+  rpc GetService(GetServiceRequest) returns (GetServiceResponse);
+
+  // Infrastructure services -> list OpenZiti services using safe structured filters.
+  rpc ListServices(ListServicesRequest) returns (ListServicesResponse);
+
+  // Infrastructure services -> update service metadata and upsert attached configs.
+  rpc UpdateService(UpdateServiceRequest) returns (UpdateServiceResponse);
+
+  // Orchestrator -> delete OpenZiti identity and its platform mapping.
+  rpc DeleteIdentity(DeleteIdentityRequest) returns (DeleteIdentityResponse);
+
+  // Apps Service -> delete an app's OpenZiti identity and its associated service.
+  // Looked up by platform identity_id.
+  rpc DeleteAppIdentity(DeleteAppIdentityRequest) returns (DeleteAppIdentityResponse);
+
+  // Runners Service -> create and enroll an OpenZiti identity for a runner. If a previous
+  // identity exists, deletes it first. Returns enrolled credentials.
+  rpc CreateRunnerIdentity(CreateRunnerIdentityRequest) returns (CreateRunnerIdentityResponse);
+  // Runners Service -> delete a runner's OpenZiti identity and its associated service.
+  // Looked up by platform identity_id.
+  rpc DeleteRunnerIdentity(DeleteRunnerIdentityRequest) returns (DeleteRunnerIdentityResponse);
+
+  // Orchestrator -> list all platform-managed identities (orphan reconciliation).
+  rpc ListManagedIdentities(ListManagedIdentitiesRequest) returns (ListManagedIdentitiesResponse);
+
+  // Gateway -> map OpenZiti identity ID to platform identity (hot path).
+  rpc ResolveIdentity(ResolveIdentityRequest) returns (ResolveIdentityResponse);
+
+  // Infrastructure services (Gateway, Orchestrator, Runner) -> request an enrolled
+  // OpenZiti identity for the calling service. Ziti Management creates the identity
+  // on the Controller, enrolls it (generates key pair, submits CSR, receives cert),
+  // and returns the enrolled identity to the caller.
+  rpc RequestServiceIdentity(RequestServiceIdentityRequest) returns (RequestServiceIdentityResponse);
+
+  // Infrastructure services -> extend the lease on a service identity.
+  // Called periodically by the service to prevent GC from deleting the identity.
+  rpc ExtendIdentityLease(ExtendIdentityLeaseRequest) returns (ExtendIdentityLeaseResponse);
+
+  // Expose Service -> create a single OpenZiti service policy (Bind or Dial).
+  // Returns the policy ID.
+  rpc CreateServicePolicy(CreateServicePolicyRequest) returns (CreateServicePolicyResponse);
+
+  // Infrastructure services -> fetch one OpenZiti service policy by ID or exact name.
+  rpc GetServicePolicy(GetServicePolicyRequest) returns (GetServicePolicyResponse);
+
+  // Infrastructure services -> list OpenZiti service policies using safe structured filters.
+  rpc ListServicePolicies(ListServicePoliciesRequest) returns (ListServicePoliciesResponse);
+
+  // Expose Service -> delete an OpenZiti service policy by ID.
+  rpc DeleteServicePolicy(DeleteServicePolicyRequest) returns (DeleteServicePolicyResponse);
+
+  // Expose Service -> delete an OpenZiti service by ID.
+  // Also deletes attached config objects.
+  rpc DeleteService(DeleteServiceRequest) returns (DeleteServiceResponse);
+
+  // Users Service -> create an OpenZiti identity for a user device with
+  // roleAttributes: ["devices"] and enrollment.ott: true.
+  // Returns the identity ID and enrollment JWT.
+  rpc CreateDeviceIdentity(CreateDeviceIdentityRequest) returns (CreateDeviceIdentityResponse);
+
+  // Users Service -> delete a device's OpenZiti identity.
+  rpc DeleteDeviceIdentity(DeleteDeviceIdentityRequest) returns (DeleteDeviceIdentityResponse);
+}
+
+enum ServiceType {
+  SERVICE_TYPE_UNSPECIFIED = 0;
+  SERVICE_TYPE_GATEWAY = 1;
+  SERVICE_TYPE_ORCHESTRATOR = 2;
+  SERVICE_TYPE_LLM_PROXY = 4;
+  SERVICE_TYPE_TRACING = 5;
+  SERVICE_TYPE_RUNNERS = 6;
+  SERVICE_TYPE_EGRESS_GATEWAY = 7;
+  reserved 3;
+  reserved "SERVICE_TYPE_RUNNER";
+}
+
+// The type of OpenZiti service policy.
+enum ServicePolicyType {
+  SERVICE_POLICY_TYPE_UNSPECIFIED = 0;
+  SERVICE_POLICY_TYPE_BIND = 1;
+  SERVICE_POLICY_TYPE_DIAL = 2;
+}
+
+message ManagedIdentity {
+  string ziti_identity_id = 1;
+  string identity_id = 2;
+  agynio.api.identity.v1.IdentityType identity_type = 3;
+  string ziti_service_id = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+message CreateAgentIdentityRequest {
+  string agent_id = 1;
+  string workload_id = 2;
+}
+
+message CreateAgentIdentityResponse {
+  string ziti_identity_id = 1;
+  string enrollment_jwt = 2;
+}
+
+// Request to create and enroll an OpenZiti identity for an app.
+message CreateAppIdentityRequest {
+  string identity_id = 1;
+  string slug = 2;
+}
+
+// Response with enrolled OpenZiti credentials for an app identity.
+message CreateAppIdentityResponse {
+  string ziti_identity_id = 1;
+  bytes identity_json = 2;
+  reserved 3;
+  reserved "ziti_service_id";
+}
+
+// OpenZiti host.v1 config — tells the hosting sidecar where to forward traffic.
+message HostV1Config {
+  string protocol = 1;
+  string address = 2;
+  int32 port = 3;
+  bool forward_protocol = 4;
+  bool forward_address = 5;
+  bool forward_port = 6;
+  repeated string allowed_protocols = 7;
+  repeated string allowed_addresses = 8;
+  repeated PortRange allowed_port_ranges = 9;
+}
+
+// OpenZiti intercept.v1 config — tells dialing tunnelers which address to intercept.
+message InterceptV1Config {
+  repeated string protocols = 1;
+  repeated string addresses = 2;
+  repeated PortRange port_ranges = 3;
+}
+
+// A port range for intercept.v1 config.
+message PortRange {
+  int32 low = 1;
+  int32 high = 2;
+}
+
+message CreateServiceRequest {
+  // e.g. "runner-{runnerId}", "app-{slug}", or "exposed-{id}"
+  string name = 1;
+  // e.g. ["runner-services"], ["app-services"], or ["exposed-services"]
+  repeated string role_attributes = 2;
+  // Optional host.v1 config to create and attach to the service.
+  // Used by Expose Service for port exposure.
+  optional HostV1Config host_v1_config = 3;
+  // Optional intercept.v1 config to create and attach to the service.
+  // Used by Expose Service for port exposure.
+  optional InterceptV1Config intercept_v1_config = 4;
+  // If true, duplicate-name creates return the existing service without mutation.
+  bool return_existing = 5;
+}
+
+message CreateServiceResponse {
+  // The OpenZiti service ID
+  string ziti_service_id = 1;
+  // The service name (echoed back)
+  string ziti_service_name = 2;
+}
+
+message Service {
+  string ziti_service_id = 1;
+  string name = 2;
+  repeated string role_attributes = 3;
+  optional HostV1Config host_v1_config = 4;
+  optional InterceptV1Config intercept_v1_config = 5;
+}
+
+message GetServiceRequest {
+  oneof lookup {
+    string ziti_service_id = 1;
+    string name = 2;
+  }
+}
+
+message GetServiceResponse {
+  Service service = 1;
+}
+
+message ListServicesRequest {
+  optional string name = 1;
+  optional string name_prefix = 2;
+  repeated string role_attributes = 3;
+  int32 page_size = 4;
+  string page_token = 5;
+}
+
+message ListServicesResponse {
+  repeated Service services = 1;
+  string next_page_token = 2;
+}
+
+message UpdateServiceRequest {
+  string ziti_service_id = 1;
+  optional string name = 2;
+  repeated string role_attributes = 3;
+  optional HostV1Config host_v1_config = 4;
+  optional InterceptV1Config intercept_v1_config = 5;
+}
+
+message UpdateServiceResponse {
+  Service service = 1;
+}
+
+// Request to delete an app's OpenZiti identity and service by platform identity_id.
+message DeleteAppIdentityRequest {
+  // Platform app identity UUID - for looking up managed identity
+  string identity_id = 1;
+  // OpenZiti service ID - for deleting the OpenZiti service
+  string ziti_service_id = 2;
+}
+
+// Response after deleting an app's OpenZiti identity.
+message DeleteAppIdentityResponse {}
+
+message CreateRunnerIdentityRequest {
+  string runner_id = 1;
+  repeated string role_attributes = 2;
+}
+
+message CreateRunnerIdentityResponse {
+  string ziti_identity_id = 1;
+  bytes identity_json = 2;
+  reserved 3;
+  reserved 4;
+  reserved "ziti_service_id";
+  reserved "ziti_service_name";
+}
+
+message DeleteRunnerIdentityRequest {
+  // Platform runner UUID - for looking up managed identity
+  string identity_id = 1;
+  // OpenZiti service ID - for deleting the OpenZiti service
+  string ziti_service_id = 2;
+}
+
+message DeleteRunnerIdentityResponse {}
+
+message DeleteIdentityRequest {
+  string ziti_identity_id = 1;
+}
+
+message DeleteIdentityResponse {}
+
+message ListManagedIdentitiesRequest {
+  agynio.api.identity.v1.IdentityType identity_type = 1;
+  int32 page_size = 3;
+  string page_token = 4;
+}
+
+message ListManagedIdentitiesResponse {
+  repeated ManagedIdentity identities = 1;
+  string next_page_token = 2;
+}
+
+message ResolveIdentityRequest {
+  string ziti_identity_id = 1;
+}
+
+message ResolveIdentityResponse {
+  string identity_id = 1;
+  agynio.api.identity.v1.IdentityType identity_type = 2;
+  optional string workload_id = 3;
+}
+
+message RequestServiceIdentityRequest {
+  // Which infrastructure service is requesting the identity.
+  ServiceType service_type = 1;
+}
+
+message RequestServiceIdentityResponse {
+  // The OpenZiti identity ID (for lease extension and cleanup).
+  string ziti_identity_id = 1;
+  // The full enrolled identity JSON (contains cert, key, CA, controller URL).
+  // The caller writes this to ephemeral disk and loads it via the OpenZiti SDK.
+  bytes identity_json = 2;
+}
+
+message ExtendIdentityLeaseRequest {
+  // The OpenZiti identity ID whose lease should be extended.
+  string ziti_identity_id = 1;
+}
+
+message ExtendIdentityLeaseResponse {}
+
+// ===========================================================================
+// CreateServicePolicy
+// ===========================================================================
+
+message CreateServicePolicyRequest {
+  // Policy type: Bind or Dial.
+  ServicePolicyType type = 1;
+  // Human-readable policy name (e.g. "exposed-<id>-bind").
+  string name = 2;
+  // Identity roles for the policy (e.g. ["#agent-<agentId>"] or ["#all"]).
+  repeated string identity_roles = 3;
+  // Service roles for the policy (e.g. ["@exposed-<id>"]).
+  repeated string service_roles = 4;
+  // If true, duplicate-name creates return the existing policy without mutation.
+  bool return_existing = 5;
+}
+
+message CreateServicePolicyResponse {
+  // The OpenZiti service policy ID.
+  string ziti_service_policy_id = 1;
+}
+
+message ServicePolicy {
+  string ziti_service_policy_id = 1;
+  string name = 2;
+  ServicePolicyType type = 3;
+  repeated string identity_roles = 4;
+  repeated string service_roles = 5;
+}
+
+message GetServicePolicyRequest {
+  oneof lookup {
+    string ziti_service_policy_id = 1;
+    string name = 2;
+  }
+}
+
+message GetServicePolicyResponse {
+  ServicePolicy service_policy = 1;
+}
+
+message ListServicePoliciesRequest {
+  optional string name = 1;
+  optional string name_prefix = 2;
+  ServicePolicyType type = 3;
+  repeated string identity_roles = 4;
+  repeated string service_roles = 5;
+  int32 page_size = 6;
+  string page_token = 7;
+}
+
+message ListServicePoliciesResponse {
+  repeated ServicePolicy service_policies = 1;
+  string next_page_token = 2;
+}
+
+// ===========================================================================
+// DeleteServicePolicy
+// ===========================================================================
+
+message DeleteServicePolicyRequest {
+  // The OpenZiti service policy ID to delete.
+  string ziti_service_policy_id = 1;
+}
+
+message DeleteServicePolicyResponse {}
+
+// ===========================================================================
+// DeleteService
+// ===========================================================================
+
+message DeleteServiceRequest {
+  // The OpenZiti service ID to delete. Also deletes attached config objects.
+  string ziti_service_id = 1;
+}
+
+message DeleteServiceResponse {}
+
+// ===========================================================================
+// CreateDeviceIdentity
+// ===========================================================================
+
+message CreateDeviceIdentityRequest {
+  // Owning user's platform identity ID.
+  string user_identity_id = 1;
+  // User-provided device name.
+  string name = 2;
+}
+
+message CreateDeviceIdentityResponse {
+  // The OpenZiti identity ID for this device.
+  string ziti_identity_id = 1;
+  // Enrollment JWT. Shown once to the user for their Ziti tunnel client.
+  string enrollment_jwt = 2;
+}
+
+// ===========================================================================
+// DeleteDeviceIdentity
+// ===========================================================================
+
+message DeleteDeviceIdentityRequest {
+  // The OpenZiti identity ID of the device to delete.
+  string ziti_identity_id = 1;
+}
+
+message DeleteDeviceIdentityResponse {}

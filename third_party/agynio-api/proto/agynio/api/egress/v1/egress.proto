@@ -1,0 +1,186 @@
+syntax = "proto3";
+
+package agynio.api.egress.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/agynio/api/gen/agynio/api/egress/v1;egressv1";
+
+// EgressRulesService manages egress rules and agent attachments.
+service EgressRulesService {
+  // --- Egress Rules ---
+  rpc CreateEgressRule(CreateEgressRuleRequest) returns (CreateEgressRuleResponse);
+  rpc GetEgressRule(GetEgressRuleRequest) returns (GetEgressRuleResponse);
+  rpc ListEgressRules(ListEgressRulesRequest) returns (ListEgressRulesResponse);
+  rpc UpdateEgressRule(UpdateEgressRuleRequest) returns (UpdateEgressRuleResponse);
+  rpc DeleteEgressRule(DeleteEgressRuleRequest) returns (DeleteEgressRuleResponse);
+
+  // --- Egress Rule Attachments ---
+  rpc CreateEgressRuleAttachment(CreateEgressRuleAttachmentRequest) returns (CreateEgressRuleAttachmentResponse);
+  rpc DeleteEgressRuleAttachment(DeleteEgressRuleAttachmentRequest) returns (DeleteEgressRuleAttachmentResponse);
+  rpc ListEgressRuleAttachments(ListEgressRuleAttachmentsRequest) returns (ListEgressRuleAttachmentsResponse);
+
+  // --- Internal ---
+  rpc ListEgressRulesByAgent(ListEgressRulesByAgentRequest) returns (ListEgressRulesByAgentResponse);
+  rpc CountRulesReferencingSecret(CountRulesReferencingSecretRequest) returns (CountRulesReferencingSecretResponse);
+}
+
+// Metadata shared by egress resources.
+message EntityMeta {
+  string id = 1;
+  google.protobuf.Timestamp created_at = 2;
+  google.protobuf.Timestamp updated_at = 3;
+}
+
+// Effect to apply to a request matching an egress rule.
+enum EgressRuleAction {
+  EGRESS_RULE_ACTION_UNSPECIFIED = 0;
+  EGRESS_RULE_ACTION_ALLOW = 1;
+  EGRESS_RULE_ACTION_DENY = 2;
+}
+
+// Authentication scheme used when emitting an injected header.
+enum HeaderAuthScheme {
+  HEADER_AUTH_SCHEME_UNSPECIFIED = 0;
+  HEADER_AUTH_SCHEME_BEARER = 1;
+  HEADER_AUTH_SCHEME_BASIC = 2;
+}
+
+// Request attributes matched by an egress rule.
+message EgressRuleMatcher {
+  // Hostname pattern. Examples: "api.github.com", "*.github.com".
+  string domain_pattern = 1;
+  // Destination ports to intercept. Empty means service default ports.
+  repeated int32 ports = 2;
+  // HTTP methods the rule applies to. Empty means any method.
+  repeated string methods = 3;
+  // Glob over the request path. Empty means any path.
+  string path_pattern = 4;
+}
+
+// Header credential injected by the egress gateway.
+message EgressRuleHeader {
+  string name = 1;
+  HeaderAuthScheme scheme = 2;
+  oneof credential {
+    string value = 3;
+    string secret_id = 4;
+  }
+}
+
+// Behavior to apply to requests matching an egress rule.
+message EgressRuleEffect {
+  optional EgressRuleAction action = 1;
+  repeated EgressRuleHeader inject = 2;
+}
+
+// Rule mediating outbound HTTP/HTTPS traffic from agent workloads.
+message EgressRule {
+  EntityMeta meta = 1;
+  string organization_id = 2;
+  string name = 3;
+  string description = 4;
+  EgressRuleMatcher matcher = 5;
+  EgressRuleEffect effect = 6;
+}
+
+// Attachment binding an egress rule to an agent.
+message EgressRuleAttachment {
+  EntityMeta meta = 1;
+  string rule_id = 2;
+  string agent_id = 3;
+}
+
+message CreateEgressRuleRequest {
+  string organization_id = 1;
+  string name = 2;
+  string description = 3;
+  EgressRuleMatcher matcher = 4;
+  EgressRuleEffect effect = 5;
+}
+
+message CreateEgressRuleResponse {
+  EgressRule egress_rule = 1;
+}
+
+message GetEgressRuleRequest {
+  string id = 1;
+}
+
+message GetEgressRuleResponse {
+  EgressRule egress_rule = 1;
+}
+
+message ListEgressRulesRequest {
+  string organization_id = 1;
+  int32 page_size = 2;
+  string page_token = 3;
+}
+
+message ListEgressRulesResponse {
+  repeated EgressRule egress_rules = 1;
+  string next_page_token = 2;
+}
+
+message UpdateEgressRuleRequest {
+  string id = 1;
+  optional string name = 2;
+  optional string description = 3;
+  optional EgressRuleMatcher matcher = 4;
+  optional EgressRuleEffect effect = 5;
+}
+
+message UpdateEgressRuleResponse {
+  EgressRule egress_rule = 1;
+}
+
+message DeleteEgressRuleRequest {
+  string id = 1;
+}
+
+message DeleteEgressRuleResponse {}
+
+message CreateEgressRuleAttachmentRequest {
+  string rule_id = 1;
+  string agent_id = 2;
+}
+
+message CreateEgressRuleAttachmentResponse {
+  EgressRuleAttachment egress_rule_attachment = 1;
+}
+
+message DeleteEgressRuleAttachmentRequest {
+  string id = 1;
+}
+
+message DeleteEgressRuleAttachmentResponse {}
+
+message ListEgressRuleAttachmentsRequest {
+  string organization_id = 1;
+  optional string rule_id = 2;
+  optional string agent_id = 3;
+  int32 page_size = 4;
+  string page_token = 5;
+}
+
+message ListEgressRuleAttachmentsResponse {
+  repeated EgressRuleAttachment egress_rule_attachments = 1;
+  string next_page_token = 2;
+}
+
+message ListEgressRulesByAgentRequest {
+  string agent_id = 1;
+}
+
+message ListEgressRulesByAgentResponse {
+  repeated EgressRule egress_rules = 1;
+}
+
+message CountRulesReferencingSecretRequest {
+  string secret_id = 1;
+}
+
+message CountRulesReferencingSecretResponse {
+  int32 count = 1;
+  repeated string egress_rule_ids = 2;
+}
