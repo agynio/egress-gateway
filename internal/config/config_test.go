@@ -14,8 +14,14 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.EgressAddress != defaultEgressTarget {
 		t.Fatalf("egress address = %q", cfg.EgressAddress)
 	}
-	if cfg.RuleCacheTTL != defaultCacheTTL {
+	if cfg.RuleCacheTTL != defaultRuleCacheTTL {
 		t.Fatalf("rule cache ttl = %s", cfg.RuleCacheTTL)
+	}
+	if cfg.SecretCacheTTL != defaultSecretCacheTTL {
+		t.Fatalf("secret cache ttl = %s", cfg.SecretCacheTTL)
+	}
+	if cfg.LeafCertCacheSize != defaultLeafCertCacheSize {
+		t.Fatalf("leaf cert cache size = %d", cfg.LeafCertCacheSize)
 	}
 }
 
@@ -24,5 +30,13 @@ func TestLoadRejectsInvalidDuration(t *testing.T) {
 	_, err := Load()
 	if err == nil {
 		t.Fatal("expected invalid duration to fail")
+	}
+}
+
+func TestLoadRejectsInvalidLeafCertCacheSize(t *testing.T) {
+	t.Setenv("LEAF_CERT_CACHE_SIZE", "0")
+	_, err := Load()
+	if err == nil {
+		t.Fatal("expected invalid cache size to fail")
 	}
 }

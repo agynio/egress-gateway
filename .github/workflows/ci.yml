@@ -21,6 +21,17 @@ jobs:
       - name: Install native build dependencies
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gcc
 
+      - name: Set up Buf
+        uses: bufbuild/buf-setup-action@v1
+        with:
+          version: '1.67.0'
+
+      - name: Install protobuf generators
+        run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.11
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.6.0
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
       - name: Set up Helm
         uses: azure/setup-helm@v4
         with:

@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package agynio.api.metering.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/agynio/api/gen/agynio/api/metering/v1;meteringv1";
+
+service MeteringService {
+  rpc Record(RecordRequest) returns (RecordResponse);
+  rpc QueryUsage(QueryUsageRequest) returns (QueryUsageResponse);
+}
+
+enum Unit {
+  UNIT_UNSPECIFIED = 0;
+  UNIT_TOKENS = 1;
+  UNIT_CORE_SECONDS = 2;
+  UNIT_GB_SECONDS = 3;
+  UNIT_COUNT = 4;
+}
+
+message UsageRecord {
+  string org_id = 1;
+  string idempotency_key = 2;
+  string producer = 3;
+  google.protobuf.Timestamp timestamp = 4;
+  map<string, string> labels = 5;
+  Unit unit = 6;
+  int64 value = 7;
+}
+
+message RecordRequest {
+  repeated UsageRecord records = 1;
+}
+
+message RecordResponse {}
+
+message QueryUsageRequest {
+  string org_id = 1;
+  google.protobuf.Timestamp start = 2;
+  google.protobuf.Timestamp end = 3;
+  Unit unit = 4;
+  map<string, string> label_filters = 5;
+  string group_by = 6;
+  Granularity granularity = 7;
+  // IANA time zone ID. Empty defaults to UTC. Applies to bucket alignment for
+  // non-total granularities.
+  string time_zone = 8;
+}
+
+enum Granularity {
+  GRANULARITY_UNSPECIFIED = 0;
+  GRANULARITY_TOTAL = 1;
+  GRANULARITY_DAY = 2;
+  GRANULARITY_FIVE_MINUTES = 3;
+  GRANULARITY_HOUR = 4;
+  GRANULARITY_SIX_HOURS = 5;
+}
+
+message UsageBucket {
+  google.protobuf.Timestamp timestamp = 1;
+  string group_value = 2;
+  int64 value = 3;
+}
+
+message QueryUsageResponse {
+  repeated UsageBucket buckets = 1;
+}

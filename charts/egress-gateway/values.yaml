@@ -83,6 +83,10 @@ env:
     value: "metering:50051"
   - name: TRACING_ADDRESS
     value: "tracing:50051"
+  - name: AGENTS_SERVICE_ADDRESS
+    value: "agents:50051"
+  - name: ZITI_MANAGEMENT_ADDRESS
+    value: "ziti-management:50051"
   - name: ZITI_IDENTITY_FILE
     value: "/var/lib/ziti/identity.json"
   - name: EGRESS_CA_CERT_FILE
@@ -92,7 +96,13 @@ env:
   - name: RULE_CACHE_TTL
     value: "15s"
   - name: SECRET_CACHE_TTL
-    value: "15s"
+    value: "60s"
+  - name: LEAF_CERT_TTL
+    value: "10m"
+  - name: LEAF_CERT_CACHE_SIZE
+    value: "4096"
+  - name: FORWARD_TIMEOUT
+    value: "30s"
 envFrom: []
 extraEnvVars: []
 extraEnvVarsCM: ""

@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package agynio.api.notifications.v1;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+// NotificationsService v1 (minimal)
+// - Publish: producers send events to rooms
+// - Subscribe: gateway receives a live stream of envelopes
+service NotificationsService {
+  rpc Publish(PublishRequest) returns (PublishResponse);
+  rpc Subscribe(SubscribeRequest) returns (stream SubscribeResponse);
+}
+
+// Envelope emitted to subscribers and used as the canonical notification.
+message NotificationEnvelope {
+  string id = 1; // server-generated UUID v4
+  google.protobuf.Timestamp ts = 2; // server-generated acceptance time
+  string source = 3; // origin (e.g., "platform-server")
+  string event = 4; // stable event name
+  repeated string rooms = 5; // target rooms (non-empty)
+  google.protobuf.Struct payload = 6; // JSON payload (event-specific schema)
+}
+
+message PublishRequest {
+  string event = 1;
+  repeated string rooms = 2;
+  google.protobuf.Struct payload = 3;
+  string source = 4;
+}
+
+message PublishResponse {
+  string id = 1;
+  google.protobuf.Timestamp ts = 2;
+}
+
+message SubscribeRequest {
+  repeated string rooms = 1;
+}
+
+message SubscribeResponse {
+  NotificationEnvelope envelope = 1;
+}

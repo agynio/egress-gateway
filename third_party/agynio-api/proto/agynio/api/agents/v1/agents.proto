@@ -1,0 +1,754 @@
+syntax = "proto3";
+
+package agynio.api.agents.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/agynio/api/gen/agynio/api/agents/v1;agentsv1";
+
+// AgentsService manages agent resources: agents, volumes, volume attachments,
+// MCP servers, skills, hooks, environment variables, and init scripts.
+//
+// This is a control-plane service. It stores desired state;
+// other services reconcile toward it.
+service AgentsService {
+  // --- Agents ---
+  rpc CreateAgent(CreateAgentRequest) returns (CreateAgentResponse);
+  rpc GetAgent(GetAgentRequest) returns (GetAgentResponse);
+  // Resolve an agent and organization by identity ID.
+  rpc ResolveAgentIdentity(ResolveAgentIdentityRequest) returns (ResolveAgentIdentityResponse);
+  rpc UpdateAgent(UpdateAgentRequest) returns (UpdateAgentResponse);
+  rpc DeleteAgent(DeleteAgentRequest) returns (DeleteAgentResponse);
+  rpc ListAgents(ListAgentsRequest) returns (ListAgentsResponse);
+  rpc SetAgentRole(SetAgentRoleRequest) returns (SetAgentRoleResponse);
+  rpc RemoveAgentRole(RemoveAgentRoleRequest) returns (RemoveAgentRoleResponse);
+  rpc ListAgentRoles(ListAgentRolesRequest) returns (ListAgentRolesResponse);
+  rpc ListMyAgentRoles(ListMyAgentRolesRequest) returns (ListMyAgentRolesResponse);
+
+  // --- Volumes ---
+  rpc CreateVolume(CreateVolumeRequest) returns (CreateVolumeResponse);
+  rpc GetVolume(GetVolumeRequest) returns (GetVolumeResponse);
+  rpc UpdateVolume(UpdateVolumeRequest) returns (UpdateVolumeResponse);
+  rpc DeleteVolume(DeleteVolumeRequest) returns (DeleteVolumeResponse);
+  rpc ListVolumes(ListVolumesRequest) returns (ListVolumesResponse);
+
+  // --- Volume Attachments (no Update) ---
+  rpc CreateVolumeAttachment(CreateVolumeAttachmentRequest) returns (CreateVolumeAttachmentResponse);
+  rpc GetVolumeAttachment(GetVolumeAttachmentRequest) returns (GetVolumeAttachmentResponse);
+  rpc DeleteVolumeAttachment(DeleteVolumeAttachmentRequest) returns (DeleteVolumeAttachmentResponse);
+  rpc ListVolumeAttachments(ListVolumeAttachmentsRequest) returns (ListVolumeAttachmentsResponse);
+
+  // --- MCPs ---
+  rpc CreateMcp(CreateMcpRequest) returns (CreateMcpResponse);
+  rpc GetMcp(GetMcpRequest) returns (GetMcpResponse);
+  rpc UpdateMcp(UpdateMcpRequest) returns (UpdateMcpResponse);
+  rpc DeleteMcp(DeleteMcpRequest) returns (DeleteMcpResponse);
+  rpc ListMcps(ListMcpsRequest) returns (ListMcpsResponse);
+
+  // --- Skills ---
+  rpc CreateSkill(CreateSkillRequest) returns (CreateSkillResponse);
+  rpc GetSkill(GetSkillRequest) returns (GetSkillResponse);
+  rpc UpdateSkill(UpdateSkillRequest) returns (UpdateSkillResponse);
+  rpc DeleteSkill(DeleteSkillRequest) returns (DeleteSkillResponse);
+  rpc ListSkills(ListSkillsRequest) returns (ListSkillsResponse);
+
+  // --- Hooks ---
+  rpc CreateHook(CreateHookRequest) returns (CreateHookResponse);
+  rpc GetHook(GetHookRequest) returns (GetHookResponse);
+  rpc UpdateHook(UpdateHookRequest) returns (UpdateHookResponse);
+  rpc DeleteHook(DeleteHookRequest) returns (DeleteHookResponse);
+  rpc ListHooks(ListHooksRequest) returns (ListHooksResponse);
+
+  // --- Envs ---
+  rpc CreateEnv(CreateEnvRequest) returns (CreateEnvResponse);
+  rpc GetEnv(GetEnvRequest) returns (GetEnvResponse);
+  rpc UpdateEnv(UpdateEnvRequest) returns (UpdateEnvResponse);
+  rpc DeleteEnv(DeleteEnvRequest) returns (DeleteEnvResponse);
+  rpc ListEnvs(ListEnvsRequest) returns (ListEnvsResponse);
+
+  // --- Init Scripts ---
+  rpc CreateInitScript(CreateInitScriptRequest) returns (CreateInitScriptResponse);
+  rpc GetInitScript(GetInitScriptRequest) returns (GetInitScriptResponse);
+  rpc UpdateInitScript(UpdateInitScriptRequest) returns (UpdateInitScriptResponse);
+  rpc DeleteInitScript(DeleteInitScriptRequest) returns (DeleteInitScriptResponse);
+  rpc ListInitScripts(ListInitScriptsRequest) returns (ListInitScriptsResponse);
+
+  // --- Image Pull Secret Attachments (no Update - immutable) ---
+  rpc CreateImagePullSecretAttachment(CreateImagePullSecretAttachmentRequest) returns (CreateImagePullSecretAttachmentResponse);
+  rpc GetImagePullSecretAttachment(GetImagePullSecretAttachmentRequest) returns (GetImagePullSecretAttachmentResponse);
+  rpc DeleteImagePullSecretAttachment(DeleteImagePullSecretAttachmentRequest) returns (DeleteImagePullSecretAttachmentResponse);
+  rpc ListImagePullSecretAttachments(ListImagePullSecretAttachmentsRequest) returns (ListImagePullSecretAttachmentsResponse);
+}
+
+// ===========================================================================
+// Common
+// ===========================================================================
+
+// Metadata shared by every agent resource.
+message EntityMeta {
+  string id = 1; // UUID
+  google.protobuf.Timestamp created_at = 2;
+  google.protobuf.Timestamp updated_at = 3;
+}
+
+// Kubernetes-style container resource requests and limits.
+message ComputeResources {
+  string requests_cpu = 1;
+  string requests_memory = 2;
+  string limits_cpu = 3;
+  string limits_memory = 4;
+}
+
+enum AgentAvailability {
+  AGENT_AVAILABILITY_UNSPECIFIED = 0;
+  AGENT_AVAILABILITY_INTERNAL = 1;
+  AGENT_AVAILABILITY_PRIVATE = 2;
+}
+
+enum AgentRole {
+  AGENT_ROLE_UNSPECIFIED = 0;
+  AGENT_ROLE_OWNER = 1;
+  AGENT_ROLE_MAINTAINER = 2;
+  AGENT_ROLE_PARTICIPANT = 3;
+}
+
+// ===========================================================================
+// Agent
+// ===========================================================================
+
+message Agent {
+  EntityMeta meta = 1;
+  string name = 2;
+  string role = 3;
+  string model = 4; // UUID
+  string description = 5;
+  string configuration = 6;
+  string image = 7;
+  ComputeResources resources = 8;
+  string init_image = 9;
+  string organization_id = 10;
+  string nickname = 11;
+  optional string idle_timeout = 12; // Go duration string (e.g., "30s", "5m", "1h").
+  // Capabilities supported by this agent. Free-form strings (e.g., "privileged", "dind").
+  repeated string capabilities = 13;
+  AgentAvailability availability = 14;
+}
+
+message CreateAgentRequest {
+  string name = 1;
+  string role = 2;
+  string model = 3; // UUID
+  string description = 4;
+  string configuration = 5;
+  string image = 6;
+  ComputeResources resources = 7;
+  string organization_id = 8;
+  string init_image = 9;
+  string nickname = 10;
+  optional string idle_timeout = 11; // Go duration string (e.g., "30s", "5m", "1h").
+  // Capabilities supported by this agent. Free-form strings (e.g., "privileged", "dind").
+  repeated string capabilities = 12;
+  AgentAvailability availability = 13;
+}
+
+message CreateAgentResponse {
+  Agent agent = 1;
+}
+
+message GetAgentRequest {
+  string id = 1; // UUID
+}
+
+message GetAgentResponse {
+  Agent agent = 1;
+}
+
+message ResolveAgentIdentityRequest {
+  string identity_id = 1;
+}
+
+message ResolveAgentIdentityResponse {
+  string agent_id = 1;
+  string organization_id = 2;
+}
+
+message UpdateAgentRequest {
+  string id = 1; // UUID
+  optional string name = 2;
+  optional string role = 3;
+  optional string model = 4;
+  optional string description = 5;
+  optional string configuration = 6;
+  optional string image = 7;
+  optional ComputeResources resources = 8;
+  optional string init_image = 9;
+  optional string nickname = 10;
+  optional string idle_timeout = 11; // Go duration string (e.g., "30s", "5m", "1h").
+  // Capabilities replace the existing list; an empty list clears all capabilities.
+  repeated string capabilities = 12;
+  optional AgentAvailability availability = 13;
+}
+
+message UpdateAgentResponse {
+  Agent agent = 1;
+}
+
+message DeleteAgentRequest {
+  string id = 1; // UUID
+}
+
+message DeleteAgentResponse {}
+
+message ListAgentsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string organization_id = 3;
+}
+
+message ListAgentsResponse {
+  repeated Agent agents = 1;
+  string next_page_token = 2;
+}
+
+message AgentRoleAssignment {
+  string agent_id = 1; // UUID
+  string identity_id = 2; // UUID
+  AgentRole role = 3;
+}
+
+message SetAgentRoleRequest {
+  string agent_id = 1; // UUID
+  string identity_id = 2; // UUID
+  AgentRole role = 3;
+}
+
+message SetAgentRoleResponse {
+  AgentRoleAssignment assignment = 1;
+}
+
+message RemoveAgentRoleRequest {
+  string agent_id = 1; // UUID
+  string identity_id = 2; // UUID
+}
+
+message RemoveAgentRoleResponse {}
+
+message ListAgentRolesRequest {
+  string agent_id = 1; // UUID
+}
+
+message ListAgentRolesResponse {
+  repeated AgentRoleAssignment assignments = 1;
+}
+
+message ListMyAgentRolesRequest {
+  string organization_id = 1; // UUID
+}
+
+message ListMyAgentRolesResponse {
+  repeated AgentRoleAssignment assignments = 1;
+}
+
+// ===========================================================================
+// Volume
+// ===========================================================================
+
+message Volume {
+  EntityMeta meta = 1;
+  bool persistent = 2;
+  string mount_path = 3;
+  string size = 4;
+  string description = 5;
+  optional string ttl = 6;
+}
+
+message CreateVolumeRequest {
+  bool persistent = 1;
+  string mount_path = 2;
+  string size = 3;
+  string description = 4;
+  string organization_id = 5;
+  optional string ttl = 6;
+}
+
+message CreateVolumeResponse {
+  Volume volume = 1;
+}
+
+message GetVolumeRequest {
+  string id = 1; // UUID
+}
+
+message GetVolumeResponse {
+  Volume volume = 1;
+}
+
+message UpdateVolumeRequest {
+  string id = 1; // UUID
+  optional bool persistent = 2;
+  optional string mount_path = 3;
+  optional string size = 4;
+  optional string description = 5;
+  optional string ttl = 6;
+}
+
+message UpdateVolumeResponse {
+  Volume volume = 1;
+}
+
+message DeleteVolumeRequest {
+  string id = 1; // UUID
+}
+
+message DeleteVolumeResponse {}
+
+message ListVolumesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string organization_id = 3;
+}
+
+message ListVolumesResponse {
+  repeated Volume volumes = 1;
+  string next_page_token = 2;
+}
+
+// ===========================================================================
+// Volume Attachment
+// ===========================================================================
+
+message VolumeAttachment {
+  EntityMeta meta = 1;
+  string volume_id = 2; // UUID
+  oneof target {
+    string agent_id = 3;
+    string mcp_id = 4;
+    string hook_id = 5;
+  }
+}
+
+message CreateVolumeAttachmentRequest {
+  string volume_id = 1; // UUID
+  oneof target {
+    string agent_id = 2;
+    string mcp_id = 3;
+    string hook_id = 4;
+  }
+}
+
+message CreateVolumeAttachmentResponse {
+  VolumeAttachment volume_attachment = 1;
+}
+
+message GetVolumeAttachmentRequest {
+  string id = 1; // UUID
+}
+
+message GetVolumeAttachmentResponse {
+  VolumeAttachment volume_attachment = 1;
+}
+
+message DeleteVolumeAttachmentRequest {
+  string id = 1; // UUID
+}
+
+message DeleteVolumeAttachmentResponse {}
+
+message ListVolumeAttachmentsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string volume_id = 3;
+  string agent_id = 4;
+  string mcp_id = 5;
+  string hook_id = 6;
+}
+
+message ListVolumeAttachmentsResponse {
+  repeated VolumeAttachment volume_attachments = 1;
+  string next_page_token = 2;
+}
+
+// ===========================================================================
+// Image Pull Secret Attachment
+// ===========================================================================
+
+message ImagePullSecretAttachment {
+  EntityMeta meta = 1;
+  string image_pull_secret_id = 2; // UUID
+  oneof target {
+    string agent_id = 3;
+    string mcp_id = 4;
+    string hook_id = 5;
+  }
+}
+
+message CreateImagePullSecretAttachmentRequest {
+  string image_pull_secret_id = 1; // UUID
+  oneof target {
+    string agent_id = 2;
+    string mcp_id = 3;
+    string hook_id = 4;
+  }
+}
+
+message CreateImagePullSecretAttachmentResponse {
+  ImagePullSecretAttachment image_pull_secret_attachment = 1;
+}
+
+message GetImagePullSecretAttachmentRequest {
+  string id = 1; // UUID
+}
+
+message GetImagePullSecretAttachmentResponse {
+  ImagePullSecretAttachment image_pull_secret_attachment = 1;
+}
+
+message DeleteImagePullSecretAttachmentRequest {
+  string id = 1; // UUID
+}
+
+message DeleteImagePullSecretAttachmentResponse {}
+
+message ListImagePullSecretAttachmentsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string image_pull_secret_id = 3;
+  string agent_id = 4;
+  string mcp_id = 5;
+  string hook_id = 6;
+}
+
+message ListImagePullSecretAttachmentsResponse {
+  repeated ImagePullSecretAttachment image_pull_secret_attachments = 1;
+  string next_page_token = 2;
+}
+
+// ===========================================================================
+// MCP
+// ===========================================================================
+
+message Mcp {
+  EntityMeta meta = 1;
+  string agent_id = 2; // UUID
+  string image = 3;
+  string command = 4;
+  ComputeResources resources = 5;
+  string description = 6;
+  string name = 7; // MCP server name, unique within agent
+}
+
+message CreateMcpRequest {
+  string agent_id = 1; // UUID
+  string image = 2;
+  string command = 3;
+  ComputeResources resources = 4;
+  string description = 5;
+  string name = 6; // MCP server name
+}
+
+message CreateMcpResponse {
+  Mcp mcp = 1;
+}
+
+message GetMcpRequest {
+  string id = 1; // UUID
+}
+
+message GetMcpResponse {
+  Mcp mcp = 1;
+}
+
+message UpdateMcpRequest {
+  string id = 1; // UUID
+  optional string image = 2;
+  optional string command = 3;
+  optional ComputeResources resources = 4;
+  optional string description = 5;
+}
+
+message UpdateMcpResponse {
+  Mcp mcp = 1;
+}
+
+message DeleteMcpRequest {
+  string id = 1; // UUID
+}
+
+message DeleteMcpResponse {}
+
+message ListMcpsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string agent_id = 3;
+}
+
+message ListMcpsResponse {
+  repeated Mcp mcps = 1;
+  string next_page_token = 2;
+}
+
+// ===========================================================================
+// Skill
+// ===========================================================================
+
+message Skill {
+  EntityMeta meta = 1;
+  string agent_id = 2; // UUID
+  string name = 3;
+  string body = 4;
+  string description = 5;
+}
+
+message CreateSkillRequest {
+  string agent_id = 1; // UUID
+  string name = 2;
+  string body = 3;
+  string description = 4;
+}
+
+message CreateSkillResponse {
+  Skill skill = 1;
+}
+
+message GetSkillRequest {
+  string id = 1; // UUID
+}
+
+message GetSkillResponse {
+  Skill skill = 1;
+}
+
+message UpdateSkillRequest {
+  string id = 1; // UUID
+  optional string name = 2;
+  optional string body = 3;
+  optional string description = 4;
+}
+
+message UpdateSkillResponse {
+  Skill skill = 1;
+}
+
+message DeleteSkillRequest {
+  string id = 1; // UUID
+}
+
+message DeleteSkillResponse {}
+
+message ListSkillsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string agent_id = 3;
+}
+
+message ListSkillsResponse {
+  repeated Skill skills = 1;
+  string next_page_token = 2;
+}
+
+// ===========================================================================
+// Hook
+// ===========================================================================
+
+message Hook {
+  EntityMeta meta = 1;
+  string agent_id = 2; // UUID
+  string event = 3;
+  string function = 4;
+  string image = 5;
+  ComputeResources resources = 6;
+  string description = 7;
+}
+
+message CreateHookRequest {
+  string agent_id = 1; // UUID
+  string event = 2;
+  string function = 3;
+  string image = 4;
+  ComputeResources resources = 5;
+  string description = 6;
+}
+
+message CreateHookResponse {
+  Hook hook = 1;
+}
+
+message GetHookRequest {
+  string id = 1; // UUID
+}
+
+message GetHookResponse {
+  Hook hook = 1;
+}
+
+message UpdateHookRequest {
+  string id = 1; // UUID
+  optional string event = 2;
+  optional string function = 3;
+  optional string image = 4;
+  optional ComputeResources resources = 5;
+  optional string description = 6;
+}
+
+message UpdateHookResponse {
+  Hook hook = 1;
+}
+
+message DeleteHookRequest {
+  string id = 1; // UUID
+}
+
+message DeleteHookResponse {}
+
+message ListHooksRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string agent_id = 3;
+}
+
+message ListHooksResponse {
+  repeated Hook hooks = 1;
+  string next_page_token = 2;
+}
+
+// ===========================================================================
+// Env
+// ===========================================================================
+
+message Env {
+  EntityMeta meta = 1;
+  string name = 2;
+  string description = 3;
+  oneof target {
+    string agent_id = 4;
+    string mcp_id = 5;
+    string hook_id = 6;
+  }
+  oneof source {
+    string value = 7;
+    string secret_id = 8; // UUID
+  }
+}
+
+message CreateEnvRequest {
+  string name = 1;
+  string description = 2;
+  oneof target {
+    string agent_id = 3;
+    string mcp_id = 4;
+    string hook_id = 5;
+  }
+  oneof source {
+    string value = 6;
+    string secret_id = 7; // UUID
+  }
+}
+
+message CreateEnvResponse {
+  Env env = 1;
+}
+
+message GetEnvRequest {
+  string id = 1; // UUID
+}
+
+message GetEnvResponse {
+  Env env = 1;
+}
+
+message UpdateEnvRequest {
+  string id = 1; // UUID
+  optional string name = 2;
+  optional string description = 3;
+  optional string value = 4;
+  optional string secret_id = 5;
+}
+
+message UpdateEnvResponse {
+  Env env = 1;
+}
+
+message DeleteEnvRequest {
+  string id = 1; // UUID
+}
+
+message DeleteEnvResponse {}
+
+message ListEnvsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string agent_id = 3;
+  string mcp_id = 4;
+  string hook_id = 5;
+}
+
+message ListEnvsResponse {
+  repeated Env envs = 1;
+  string next_page_token = 2;
+}
+
+// ===========================================================================
+// Init Script
+// ===========================================================================
+
+message InitScript {
+  EntityMeta meta = 1;
+  string script = 2;
+  string description = 3;
+  oneof target {
+    string agent_id = 4;
+    string mcp_id = 5;
+    string hook_id = 6;
+  }
+}
+
+message CreateInitScriptRequest {
+  string script = 1;
+  string description = 2;
+  oneof target {
+    string agent_id = 3;
+    string mcp_id = 4;
+    string hook_id = 5;
+  }
+}
+
+message CreateInitScriptResponse {
+  InitScript init_script = 1;
+}
+
+message GetInitScriptRequest {
+  string id = 1; // UUID
+}
+
+message GetInitScriptResponse {
+  InitScript init_script = 1;
+}
+
+message UpdateInitScriptRequest {
+  string id = 1; // UUID
+  optional string script = 2;
+  optional string description = 3;
+}
+
+message UpdateInitScriptResponse {
+  InitScript init_script = 1;
+}
+
+message DeleteInitScriptRequest {
+  string id = 1; // UUID
+}
+
+message DeleteInitScriptResponse {}
+
+message ListInitScriptsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string agent_id = 3;
+  string mcp_id = 4;
+  string hook_id = 5;
+}
+
+message ListInitScriptsResponse {
+  repeated InitScript init_scripts = 1;
+  string next_page_token = 2;
+}
