@@ -30,7 +30,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 
 FROM alpine:3.21 AS runtime
 WORKDIR /app
-RUN addgroup -S app && adduser -S -G app app
+RUN addgroup -S -g 10001 app && adduser -S -D -H -u 10001 -G app app
 COPY --from=build /out/egress-gateway /app/egress-gateway
-USER app:app
+USER 10001:10001
 ENTRYPOINT ["/app/egress-gateway"]
