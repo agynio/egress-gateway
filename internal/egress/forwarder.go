@@ -153,13 +153,14 @@ func cloneHeader(header http.Header) http.Header {
 }
 
 func removeHopByHopHeaders(header http.Header) {
-	for name := range hopByHopHeaders {
-		header.Del(name)
-	}
-	for _, connectionHeader := range header.Values("Connection") {
+	connectionHeaders := header.Values("Connection")
+	for _, connectionHeader := range connectionHeaders {
 		for _, name := range strings.Split(connectionHeader, ",") {
 			header.Del(strings.TrimSpace(name))
 		}
+	}
+	for name := range hopByHopHeaders {
+		header.Del(name)
 	}
 }
 

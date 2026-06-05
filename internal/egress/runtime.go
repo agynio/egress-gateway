@@ -2,6 +2,7 @@ package egress
 
 import (
 	"context"
+	"log"
 	"net/http"
 )
 
@@ -30,7 +31,7 @@ func (r *Runtime) ServeRequest(ctx context.Context, w http.ResponseWriter, req *
 	if err != nil {
 		http.Error(w, "egress gateway could not load rules", http.StatusBadGateway)
 		if r.observed != nil {
-			r.observed.Emit(ctx, RequestMetrics{Context: requestContext, Outcome: OutcomeUpstreamError, UpstreamStatus: http.StatusBadGateway})
+			r.emitObservability(ctx, RequestMetrics{Context: requestContext, Outcome: OutcomeUpstreamError, UpstreamStatus: http.StatusBadGateway})
 		}
 		return err
 	}
@@ -38,13 +39,19 @@ func (r *Runtime) ServeRequest(ctx context.Context, w http.ResponseWriter, req *
 	if err != nil {
 		http.Error(w, "egress gateway could not apply rule effects", http.StatusBadGateway)
 		if r.observed != nil {
-			r.observed.Emit(ctx, RequestMetrics{Context: requestContext, Outcome: OutcomeUpstreamError, MatchedRuleIDs: matchedRuleIDs(evaluation.MatchedRules), UpstreamStatus: http.StatusBadGateway})
+			r.emitObservability(ctx, RequestMetrics{Context: requestContext, Outcome: OutcomeUpstreamError, MatchedRuleIDs: matchedRuleIDs(evaluation.MatchedRules), UpstreamStatus: http.StatusBadGateway})
 		}
 		return err
 	}
 	metrics := r.forwarder.ServeHTTP(w, req, requestContext, evaluation)
 	if r.observed != nil {
-		r.observed.Emit(ctx, metrics)
+		r.emitObservability(ctx, metrics)
 	}
 	return nil
+}
+
+func (r *Runtime) emitObservability(ctx context.Context, metrics RequestMetrics) {
+	if err := r.observed.Emit(ctx, metrics); err != nil {
+		log.Printf("emit egress observability: %v", err)
+	}
 }

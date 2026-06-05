@@ -27,11 +27,13 @@ type SecretClient interface {
 }
 
 type RuleCache struct {
-	client RuleClient
-	clock  Clock
-	ttl    time.Duration
-	mu     sync.Mutex
-	items  map[string]ruleCacheEntry
+	client         RuleClient
+	clock          Clock
+	ttl            time.Duration
+	staleIfError   time.Duration
+	failureHandler func(string, error)
+	mu             sync.Mutex
+	items          map[string]ruleCacheEntry
 }
 
 type ruleCacheEntry struct {
@@ -40,13 +42,20 @@ type ruleCacheEntry struct {
 }
 
 func NewRuleCache(client RuleClient, ttl time.Duration, clock Clock) *RuleCache {
+	return NewRuleCacheWithStaleIfError(client, ttl, ttl, clock, nil)
+}
+
+func NewRuleCacheWithStaleIfError(client RuleClient, ttl time.Duration, staleIfError time.Duration, clock Clock, failureHandler func(string, error)) *RuleCache {
 	if ttl <= 0 {
 		panic("rule cache ttl must be positive")
+	}
+	if staleIfError < 0 {
+		panic("rule cache stale-if-error must not be negative")
 	}
 	if clock == nil {
 		panic("clock is required")
 	}
-	return &RuleCache{client: client, ttl: ttl, clock: clock, items: map[string]ruleCacheEntry{}}
+	return &RuleCache{client: client, ttl: ttl, staleIfError: staleIfError, clock: clock, failureHandler: failureHandler, items: map[string]ruleCacheEntry{}}
 }
 
 func (c *RuleCache) Rules(ctx context.Context, agentID string) ([]*egressv1.EgressRule, error) {
@@ -62,11 +71,17 @@ func (c *RuleCache) Rules(ctx context.Context, agentID string) ([]*egressv1.Egre
 
 	resp, err := c.client.ListEgressRulesByAgent(ctx, &egressv1.ListEgressRulesByAgentRequest{AgentId: agentID})
 	if err != nil {
+		if ok && !now.After(entry.expiresAt.Add(c.staleIfError)) {
+			if c.failureHandler != nil {
+				c.failureHandler(agentID, err)
+			}
+			return cloneRules(entry.rules), nil
+		}
 		return nil, err
 	}
 	rules := cloneRules(resp.GetEgressRules())
 	c.mu.Lock()
-	c.items[agentID] = ruleCacheEntry{rules: cloneRules(rules), expiresAt: now.Add(c.ttl)}
+	c.items[agentID] = ruleCacheEntry{rules: cloneRules(rules), expiresAt: c.clock.Now().Add(c.ttl)}
 	c.mu.Unlock()
 	return rules, nil
 }

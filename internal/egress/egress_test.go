@@ -9,6 +9,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"errors"
 	"io"
 	"math/big"
 	"net/http"
@@ -50,6 +51,46 @@ func TestRuleCacheUsesTTL(t *testing.T) {
 	}
 }
 
+func TestRuleCacheServesStaleRulesOnRefreshErrorWithinWindow(t *testing.T) {
+	clock := &fakeClock{now: time.Unix(10, 0)}
+	refreshErr := errors.New("egress unavailable")
+	var surfaced []string
+	client := &fakeRuleClient{rules: [][]*egressv1.EgressRule{{rule("a", "api.example.com", allowEffect())}}, errors: []error{nil, refreshErr}}
+	cache := NewRuleCacheWithStaleIfError(client, time.Minute, time.Minute, clock, func(agentID string, err error) {
+		surfaced = append(surfaced, agentID+":"+err.Error())
+	})
+	first, err := cache.Rules(context.Background(), "agent-1")
+	if err != nil {
+		t.Fatalf("Rules first: %v", err)
+	}
+	clock.now = clock.now.Add(time.Minute)
+	second, err := cache.Rules(context.Background(), "agent-1")
+	if err != nil {
+		t.Fatalf("Rules second: %v", err)
+	}
+	if first[0].GetMeta().GetId() != "a" || second[0].GetMeta().GetId() != "a" {
+		t.Fatalf("stale rules first=%s second=%s", first[0].GetMeta().GetId(), second[0].GetMeta().GetId())
+	}
+	if len(surfaced) != 1 || !strings.Contains(surfaced[0], "egress unavailable") {
+		t.Fatalf("surfaced errors = %v", surfaced)
+	}
+}
+
+func TestRuleCacheReturnsErrorAfterStaleWindowExpires(t *testing.T) {
+	clock := &fakeClock{now: time.Unix(10, 0)}
+	refreshErr := errors.New("egress unavailable")
+	client := &fakeRuleClient{rules: [][]*egressv1.EgressRule{{rule("a", "api.example.com", allowEffect())}}, errors: []error{nil, refreshErr}}
+	cache := NewRuleCacheWithStaleIfError(client, time.Minute, time.Minute, clock, nil)
+	if _, err := cache.Rules(context.Background(), "agent-1"); err != nil {
+		t.Fatalf("Rules first: %v", err)
+	}
+	clock.now = clock.now.Add(2*time.Minute + time.Nanosecond)
+	_, err := cache.Rules(context.Background(), "agent-1")
+	if !errors.Is(err, refreshErr) {
+		t.Fatalf("err = %v", err)
+	}
+}
+
 func TestEvaluateMatcherAndDenyWins(t *testing.T) {
 	evaluator := NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()}))
 	request := RequestContext{Method: http.MethodGet, Host: "api.example.com", Port: 443, Path: "/v1/repos"}
@@ -66,6 +107,17 @@ func TestEvaluateMatcherAndDenyWins(t *testing.T) {
 	}
 	if len(evaluation.MatchedRules) != 2 {
 		t.Fatalf("matched rules = %d", len(evaluation.MatchedRules))
+	}
+}
+
+func TestEvaluateInvalidPathPatternReturnsError(t *testing.T) {
+	evaluator := NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()}))
+	request := RequestContext{Method: http.MethodGet, Host: "api.example.com", Port: 443, Path: "/v1/repos"}
+	_, err := evaluator.Evaluate(context.Background(), request, []*egressv1.EgressRule{
+		rule("1", "api.example.com", denyEffect(), withPath("[")),
+	})
+	if err == nil {
+		t.Fatal("expected invalid path pattern to fail")
 	}
 }
 
@@ -124,6 +176,21 @@ func TestForwarderForwardsInjectsAndRejectsWebSocket(t *testing.T) {
 		t.Fatalf("metrics = %+v", metrics)
 	}
 
+	var customHopHeader string
+	transport = roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		customHopHeader = r.Header.Get("X-Secret-Hop")
+		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(strings.NewReader("ok"))}, nil
+	})
+	forwarder = NewForwarderWithTransport(time.Second, transport)
+	req = httptest.NewRequest(http.MethodGet, "http://placeholder.local/resource", nil)
+	req.Header.Set("Connection", "X-Secret-Hop")
+	req.Header.Set("X-Secret-Hop", "must-not-forward")
+	w = httptest.NewRecorder()
+	forwarder.ServeHTTP(w, req, RequestContext{Scheme: "https", Host: "api.example.com", Port: 443}, Evaluation{Outcome: OutcomeAllow})
+	if customHopHeader != "" {
+		t.Fatalf("custom hop-by-hop header reached upstream: %q", customHopHeader)
+	}
+
 	upgrade := httptest.NewRequest(http.MethodGet, "http://placeholder.local/socket", nil)
 	upgrade.Header.Set("Connection", "upgrade")
 	upgrade.Header.Set("Upgrade", "websocket")
@@ -174,7 +241,9 @@ func TestObservabilityOmitsSensitiveValues(t *testing.T) {
 		Context: RequestContext{Agent: AgentContext{AgentID: "agent-1", WorkloadID: "workload-1", OrganizationID: "org-1"}, Method: http.MethodGet, Host: "api.example.com", Port: 443, Path: "/v1", RequestID: "request-1"},
 		Outcome: OutcomeAllow, MatchedRuleIDs: []string{"rule-1"}, UpstreamStatus: 200, BytesIn: 10, BytesOut: 20,
 	}
-	obs.Emit(context.Background(), metrics)
+	if err := obs.Emit(context.Background(), metrics); err != nil {
+		t.Fatalf("Emit: %v", err)
+	}
 	if len(spans.spans) != 1 || len(metering.requests) != 1 {
 		t.Fatalf("spans=%d metering=%d", len(spans.spans), len(metering.requests))
 	}
@@ -187,6 +256,23 @@ func TestObservabilityOmitsSensitiveValues(t *testing.T) {
 	record := metering.requests[0].GetRecords()[0]
 	if record.GetLabels()["resource"] != "egress" || record.GetLabels()["host"] != "api.example.com" || record.GetUnit() != meteringv1.Unit_UNIT_COUNT {
 		t.Fatalf("record = %+v", record)
+	}
+}
+
+func TestObservabilityReturnsEmissionErrors(t *testing.T) {
+	spans := &fakeSpanEmitter{err: errors.New("trace down")}
+	metering := &fakeMeteringClient{err: errors.New("metering down")}
+	obs := NewObservability(spans, metering, &fakeClock{now: time.Unix(300, 0)})
+	metrics := RequestMetrics{
+		Context: RequestContext{Agent: AgentContext{AgentID: "agent-1", WorkloadID: "workload-1", OrganizationID: "org-1"}, Method: http.MethodGet, Host: "api.example.com", Port: 443, Path: "/v1", RequestID: "request-1"},
+		Outcome: OutcomeAllow, MatchedRuleIDs: []string{"rule-1"}, UpstreamStatus: 200, BytesIn: 10, BytesOut: 20,
+	}
+	err := obs.Emit(context.Background(), metrics)
+	if err == nil {
+		t.Fatal("expected observability errors")
+	}
+	if !strings.Contains(err.Error(), "trace down") || !strings.Contains(err.Error(), "metering down") {
+		t.Fatalf("err = %v", err)
 	}
 }
 
@@ -205,13 +291,17 @@ type fakeClock struct{ now time.Time }
 func (f *fakeClock) Now() time.Time { return f.now }
 
 type fakeRuleClient struct {
-	rules [][]*egressv1.EgressRule
-	calls int
+	rules  [][]*egressv1.EgressRule
+	errors []error
+	calls  int
 }
 
 func (f *fakeRuleClient) ListEgressRulesByAgent(context.Context, *egressv1.ListEgressRulesByAgentRequest, ...grpc.CallOption) (*egressv1.ListEgressRulesByAgentResponse, error) {
 	index := f.calls
 	f.calls++
+	if index < len(f.errors) && f.errors[index] != nil {
+		return nil, f.errors[index]
+	}
 	return &egressv1.ListEgressRulesByAgentResponse{EgressRules: f.rules[index]}, nil
 }
 
@@ -233,16 +323,28 @@ type roundTripFunc func(*http.Request) (*http.Response, error)
 
 func (f roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
 
-type fakeSpanEmitter struct{ spans []Span }
+type fakeSpanEmitter struct {
+	spans []Span
+	err   error
+}
 
 func (f *fakeSpanEmitter) EmitSpan(_ context.Context, span Span) error {
+	if f.err != nil {
+		return f.err
+	}
 	f.spans = append(f.spans, span)
 	return nil
 }
 
-type fakeMeteringClient struct{ requests []*meteringv1.RecordRequest }
+type fakeMeteringClient struct {
+	requests []*meteringv1.RecordRequest
+	err      error
+}
 
 func (f *fakeMeteringClient) Record(_ context.Context, req *meteringv1.RecordRequest, _ ...grpc.CallOption) (*meteringv1.RecordResponse, error) {
+	if f.err != nil {
+		return nil, f.err
+	}
 	f.requests = append(f.requests, req)
 	return &meteringv1.RecordResponse{}, nil
 }

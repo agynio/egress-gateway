@@ -89,10 +89,10 @@ env:
     value: "ziti-management:50051"
   - name: ZITI_IDENTITY_FILE
     value: "/var/lib/ziti/identity.json"
-  - name: EGRESS_CA_CERT_FILE
-    value: "/var/lib/egress-ca/tls.crt"
-  - name: EGRESS_CA_KEY_FILE
-    value: "/var/lib/egress-ca/tls.key"
+  - name: EGRESS_CA_CERT_PATH
+    value: "/var/run/agyn/egress-ca/tls.crt"
+  - name: EGRESS_CA_KEY_PATH
+    value: "/var/run/agyn/egress-ca/tls.key"
   - name: RULE_CACHE_TTL
     value: "15s"
   - name: SECRET_CACHE_TTL
@@ -114,7 +114,7 @@ extraVolumeMounts:
     mountPath: /var/lib/ziti
     readOnly: true
   - name: egress-ca
-    mountPath: /var/lib/egress-ca
+    mountPath: /var/run/agyn/egress-ca
     readOnly: true
 extraVolumes:
   - name: ziti-identity

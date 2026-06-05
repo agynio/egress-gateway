@@ -20,7 +20,10 @@ func NewEvaluator(secrets *SecretCache) *Evaluator {
 }
 
 func (e *Evaluator) Evaluate(ctx context.Context, req RequestContext, rules []*egressv1.EgressRule) (Evaluation, error) {
-	matched := matchingRules(req, rules)
+	matched, err := matchingRules(req, rules)
+	if err != nil {
+		return Evaluation{}, err
+	}
 	if hasDeny(matched) {
 		return Evaluation{Outcome: OutcomeDeny, MatchedRules: matched, InjectedHeader: http.Header{}}, nil
 	}
@@ -31,25 +34,33 @@ func (e *Evaluator) Evaluate(ctx context.Context, req RequestContext, rules []*e
 	return Evaluation{Outcome: OutcomeAllow, MatchedRules: matched, InjectedHeader: headers}, nil
 }
 
-func matchingRules(req RequestContext, rules []*egressv1.EgressRule) []*egressv1.EgressRule {
+func matchingRules(req RequestContext, rules []*egressv1.EgressRule) ([]*egressv1.EgressRule, error) {
 	matched := make([]*egressv1.EgressRule, 0, len(rules))
 	for _, rule := range rules {
-		if ruleMatches(req, rule) {
+		matches, err := ruleMatches(req, rule)
+		if err != nil {
+			return nil, err
+		}
+		if matches {
 			matched = append(matched, rule)
 		}
 	}
 	sort.Slice(matched, func(i, j int) bool {
 		return matched[i].GetMeta().GetId() < matched[j].GetMeta().GetId()
 	})
-	return matched
+	return matched, nil
 }
 
-func ruleMatches(req RequestContext, rule *egressv1.EgressRule) bool {
+func ruleMatches(req RequestContext, rule *egressv1.EgressRule) (bool, error) {
 	matcher := rule.GetMatcher()
+	pathMatched, err := pathMatches(req.Path, matcher.GetPathPattern())
+	if err != nil {
+		return false, fmt.Errorf("invalid path pattern for rule %s: %w", rule.GetMeta().GetId(), err)
+	}
 	return domainMatches(req.Host, matcher.GetDomainPattern()) &&
 		portMatches(req.Port, matcher.GetPorts()) &&
 		methodMatches(req.Method, matcher.GetMethods()) &&
-		pathMatches(req.Path, matcher.GetPathPattern())
+		pathMatched, nil
 }
 
 func domainMatches(host string, pattern string) bool {
@@ -86,15 +97,15 @@ func methodMatches(method string, methods []string) bool {
 	return false
 }
 
-func pathMatches(requestPath string, pattern string) bool {
+func pathMatches(requestPath string, pattern string) (bool, error) {
 	if pattern == "" {
-		return true
+		return true, nil
 	}
 	matched, err := path.Match(pattern, requestPath)
 	if err != nil {
-		return false
+		return false, err
 	}
-	return matched
+	return matched, nil
 }
 
 func hasDeny(rules []*egressv1.EgressRule) bool {

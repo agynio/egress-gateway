@@ -2,10 +2,12 @@ package egress
 
 import (
 	"context"
-	egressv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/egress/v1"
+	"errors"
+	"fmt"
 	"strings"
 	"time"
 
+	egressv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/egress/v1"
 	meteringv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/metering/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -39,13 +41,20 @@ func NewObservability(spans SpanEmitter, metering MeteringClient, clock Clock) *
 	return &Observability{spans: spans, metering: metering, clock: clock}
 }
 
-func (o *Observability) Emit(ctx context.Context, metrics RequestMetrics) {
+func (o *Observability) Emit(ctx context.Context, metrics RequestMetrics) error {
+	var errs []error
 	if o.spans != nil {
-		_ = o.spans.EmitSpan(ctx, spanFromMetrics(metrics))
+		if err := o.spans.EmitSpan(ctx, spanFromMetrics(metrics)); err != nil {
+			errs = append(errs, fmt.Errorf("emit egress trace span: %w", err))
+		}
 	}
 	if o.metering != nil {
-		_, _ = o.metering.Record(ctx, &meteringv1.RecordRequest{Records: []*meteringv1.UsageRecord{meteringRecordFromMetrics(metrics, o.clock.Now())}})
+		_, err := o.metering.Record(ctx, &meteringv1.RecordRequest{Records: []*meteringv1.UsageRecord{meteringRecordFromMetrics(metrics, o.clock.Now())}})
+		if err != nil {
+			errs = append(errs, fmt.Errorf("emit egress metering record: %w", err))
+		}
 	}
+	return errors.Join(errs...)
 }
 
 func spanFromMetrics(metrics RequestMetrics) Span {
