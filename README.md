@@ -28,6 +28,7 @@ go build ./...
 
 ```sh
 export GRPC_ADDRESS=':50051'
+export ZITI_SERVICE_NAME='egress-rule-<rule-id>' # optional; auto-discovers #egress-services when empty
 go run ./cmd/egress-gateway
 ```
 
@@ -44,6 +45,7 @@ go run ./cmd/egress-gateway
 | `AGENTS_SERVICE_ADDRESS` | No | `agents:50051` | Agents gRPC target. |
 | `ZITI_MANAGEMENT_ADDRESS` | No | `ziti-management:50051` | Ziti Management gRPC target. |
 | `ZITI_IDENTITY_FILE` | No | `/var/lib/ziti/identity.json` | Enrolled OpenZiti identity path. |
+| `ZITI_SERVICE_NAME` | No | empty | Explicit OpenZiti egress service name to bind; when empty, the gateway binds the first accessible service with the `egress-services` role attribute. |
 | `EGRESS_CA_CERT_PATH` | No | `/var/run/agyn/egress-ca/tls.crt` | Platform Egress CA certificate path. |
 | `EGRESS_CA_KEY_PATH` | No | `/var/run/agyn/egress-ca/tls.key` | Platform Egress CA key path. |
 | `RULE_CACHE_TTL` | No | `15s` | Rule cache TTL fallback. |

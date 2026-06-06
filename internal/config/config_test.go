@@ -20,6 +20,9 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.SecretCacheTTL != defaultSecretCacheTTL {
 		t.Fatalf("secret cache ttl = %s", cfg.SecretCacheTTL)
 	}
+	if cfg.ZitiServiceName != defaultZitiServiceName {
+		t.Fatalf("ziti service name = %q", cfg.ZitiServiceName)
+	}
 	if cfg.LeafCertCacheSize != defaultLeafCertCacheSize {
 		t.Fatalf("leaf cert cache size = %d", cfg.LeafCertCacheSize)
 	}

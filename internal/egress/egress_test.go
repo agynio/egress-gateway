@@ -1,17 +1,21 @@
 package egress
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"io"
 	"math/big"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -19,9 +23,12 @@ import (
 	"testing"
 	"time"
 
+	agentsv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/agents/v1"
 	egressv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/egress/v1"
+	identityv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/identity/v1"
 	meteringv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/metering/v1"
 	secretsv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/secrets/v1"
+	zitimanagementv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/ziti_management/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -286,6 +293,83 @@ func TestOriginalDestinationFromHostPort(t *testing.T) {
 	}
 }
 
+func TestDestinationFromAppData(t *testing.T) {
+	appData, err := json.Marshal(map[string]string{"dst_protocol": "tcp", "dst_hostname": "api.example.com", "dst_port": "443"})
+	if err != nil {
+		t.Fatalf("marshal app data: %v", err)
+	}
+	destination, err := DestinationFromAppData(appData)
+	if err != nil {
+		t.Fatalf("DestinationFromAppData: %v", err)
+	}
+	if destination.Host != "api.example.com" || destination.Port != 443 || destination.Scheme != "https" {
+		t.Fatalf("destination = %+v", destination)
+	}
+}
+
+func TestDataPlaneHTTPPathInjectsSecretHeader(t *testing.T) {
+	var upstreamHeader string
+	transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		upstreamHeader = r.Header.Get("Authorization")
+		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(strings.NewReader("ok"))}, nil
+	})
+	rules := NewRuleCache(&fakeRuleClient{rules: [][]*egressv1.EgressRule{{rule("rule-1", "api.example.com", injectEffect(headerSecret("Authorization", "secret-1", egressv1.HeaderAuthScheme_HEADER_AUTH_SCHEME_BEARER)))}}}, time.Minute, &fakeClock{now: time.Now()})
+	secrets := NewSecretCache(&fakeSecretClient{values: []string{"token"}}, time.Minute, &fakeClock{now: time.Now()})
+	runtime := NewRuntime(rules, NewEvaluator(secrets), NewForwarderWithTransport(time.Second, transport), nil)
+	identity := NewIdentityResolver(&fakeZitiIdentityClient{}, &fakeAgentIdentityClient{})
+	serverConn, clientConn := net.Pipe()
+	listener := &fakeDataPlaneListener{conn: &fakeDataPlaneConn{Conn: serverConn, dialerIdentityID: "ziti-agent-1", appData: []byte(`{"dst_protocol":"tcp","dst_hostname":"api.example.com","dst_port":"80"}`)}}
+	server := NewDataPlaneServer(listener, runtime, identity, NewLeafCertificateCache(testCA(t), time.Minute, 2, &fakeClock{now: time.Now()}))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() { _ = server.Serve(ctx) }()
+
+	if _, err := clientConn.Write([]byte("GET /v1 HTTP/1.1\r\nHost: api.example.com\r\nAuthorization: caller\r\nConnection: close\r\n\r\n")); err != nil {
+		t.Fatalf("write request: %v", err)
+	}
+	response, err := http.ReadResponse(bufioReader(clientConn), nil)
+	if err != nil {
+		t.Fatalf("read response: %v", err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK || upstreamHeader != "Bearer token" {
+		t.Fatalf("status=%d upstream authorization=%q", response.StatusCode, upstreamHeader)
+	}
+}
+
+func TestDataPlaneHTTPSUsesGeneratedLeafCertificate(t *testing.T) {
+	var upstreamHost string
+	transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		upstreamHost = r.URL.Host
+		return &http.Response{StatusCode: http.StatusAccepted, Body: io.NopCloser(strings.NewReader("accepted"))}, nil
+	})
+	rules := NewRuleCache(&fakeRuleClient{rules: [][]*egressv1.EgressRule{{rule("rule-1", "api.example.com", allowEffect())}}}, time.Minute, &fakeClock{now: time.Now()})
+	runtime := NewRuntime(rules, NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()})), NewForwarderWithTransport(time.Second, transport), nil)
+	identity := NewIdentityResolver(&fakeZitiIdentityClient{}, &fakeAgentIdentityClient{})
+	serverConn, clientConn := net.Pipe()
+	ca := testCA(t)
+	listener := &fakeDataPlaneListener{conn: &fakeDataPlaneConn{Conn: serverConn, dialerIdentityID: "ziti-agent-1", appData: []byte(`{"dst_protocol":"tcp","dst_hostname":"api.example.com","dst_port":"443"}`)}}
+	server := NewDataPlaneServer(listener, runtime, identity, NewLeafCertificateCache(ca, time.Minute, 2, &fakeClock{now: time.Now()}))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() { _ = server.Serve(ctx) }()
+
+	root := x509.NewCertPool()
+	root.AddCert(ca.cert)
+	tlsClient := tls.Client(clientConn, &tls.Config{ServerName: "api.example.com", RootCAs: root})
+	if _, err := tlsClient.Write([]byte("GET /secure HTTP/1.1\r\nHost: api.example.com\r\nConnection: close\r\n\r\n")); err != nil {
+		t.Fatalf("write tls request: %v", err)
+	}
+	response, err := http.ReadResponse(bufioReader(tlsClient), nil)
+	if err != nil {
+		t.Fatalf("read tls response: %v", err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusAccepted || upstreamHost != "api.example.com:443" {
+		t.Fatalf("status=%d upstream host=%q", response.StatusCode, upstreamHost)
+	}
+}
+
 type fakeClock struct{ now time.Time }
 
 func (f *fakeClock) Now() time.Time { return f.now }
@@ -433,5 +517,61 @@ func tempPEM(t *testing.T, blockType string, der []byte) string {
 	}
 	return file.Name()
 }
+
+type fakeZitiIdentityClient struct{}
+
+func (f *fakeZitiIdentityClient) ResolveIdentity(context.Context, *zitimanagementv1.ResolveIdentityRequest, ...grpc.CallOption) (*zitimanagementv1.ResolveIdentityResponse, error) {
+	return &zitimanagementv1.ResolveIdentityResponse{IdentityId: "identity-1", IdentityType: identityv1.IdentityType_IDENTITY_TYPE_AGENT, WorkloadId: stringPtr("workload-1")}, nil
+}
+
+type fakeAgentIdentityClient struct{}
+
+func (f *fakeAgentIdentityClient) ResolveAgentIdentity(context.Context, *agentsv1.ResolveAgentIdentityRequest, ...grpc.CallOption) (*agentsv1.ResolveAgentIdentityResponse, error) {
+	return &agentsv1.ResolveAgentIdentityResponse{AgentId: "agent-1", OrganizationId: "org-1"}, nil
+}
+
+type fakeDataPlaneListener struct {
+	conn   DataPlaneConn
+	closed chan struct{}
+	taken  bool
+}
+
+func (f *fakeDataPlaneListener) Accept() (DataPlaneConn, error) {
+	if f.closed == nil {
+		f.closed = make(chan struct{})
+	}
+	if !f.taken {
+		f.taken = true
+		return f.conn, nil
+	}
+	<-f.closed
+	return nil, net.ErrClosed
+}
+
+func (f *fakeDataPlaneListener) Close() error {
+	if f.closed == nil {
+		f.closed = make(chan struct{})
+	}
+	select {
+	case <-f.closed:
+	default:
+		close(f.closed)
+	}
+	return nil
+}
+
+type fakeDataPlaneConn struct {
+	net.Conn
+	dialerIdentityID string
+	appData          []byte
+}
+
+func (f *fakeDataPlaneConn) DialerIdentityID() string { return f.dialerIdentityID }
+
+func (f *fakeDataPlaneConn) AppData() []byte { return f.appData }
+
+func stringPtr(value string) *string { return &value }
+
+func bufioReader(conn net.Conn) *bufio.Reader { return bufio.NewReader(conn) }
 
 var _ = timestamppb.Now
