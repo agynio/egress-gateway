@@ -20,6 +20,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -29,6 +30,9 @@ import (
 	meteringv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/metering/v1"
 	secretsv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/secrets/v1"
 	zitimanagementv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/ziti_management/v1"
+	"github.com/openziti/edge-api/rest_model"
+	"github.com/openziti/sdk-golang/ziti"
+	"github.com/openziti/sdk-golang/ziti/edge"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -418,6 +422,37 @@ func TestDataPlaneRuntimeErrorDoesNotWriteDefaultSuccess(t *testing.T) {
 	}
 }
 
+func TestDefaultZitiBindingDiscoversRoleServices(t *testing.T) {
+	services := []rest_model.ServiceDetail{
+		serviceDetail("egress-rule-1", "egress-services"),
+		serviceDetail("ordinary-service", "not-egress"),
+	}
+	zitiCtx := &fakeZitiContext{services: services, listeners: map[string]*fakeEdgeListener{}}
+	listener, err := ListenForEgressServices(zitiCtx, "")
+	if err != nil {
+		t.Fatalf("ListenForEgressServices: %v", err)
+	}
+	defer listener.Close()
+	waitForListen(t, zitiCtx, "egress-rule-1")
+	if zitiCtx.listened("#egress-services") {
+		t.Fatal("default binding passed literal role selector to SDK")
+	}
+	if zitiCtx.listened("ordinary-service") {
+		t.Fatal("default binding listened to service without egress role")
+	}
+}
+
+func TestServiceRoleListenerReconcilesAddedServices(t *testing.T) {
+	zitiCtx := &fakeZitiContext{listeners: map[string]*fakeEdgeListener{}}
+	listener := NewServiceRoleListenerWithInterval(zitiCtx, "egress-services", time.Millisecond)
+	defer listener.Close()
+	if zitiCtx.listened("#egress-services") {
+		t.Fatal("role reconciler passed literal selector to SDK")
+	}
+	zitiCtx.setServices([]rest_model.ServiceDetail{serviceDetail("egress-rule-2", "egress-services")})
+	waitForListen(t, zitiCtx, "egress-rule-2")
+}
+
 func TestDataPlaneHTTPSUsesGeneratedLeafCertificate(t *testing.T) {
 	var upstreamHost string
 	transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
@@ -611,6 +646,95 @@ func (f *fakeAgentIdentityClient) ResolveAgentIdentity(context.Context, *agentsv
 	return &agentsv1.ResolveAgentIdentityResponse{AgentId: "agent-1", OrganizationId: "org-1"}, nil
 }
 
+type fakeZitiContext struct {
+	mu        sync.Mutex
+	services  []rest_model.ServiceDetail
+	listeners map[string]*fakeEdgeListener
+}
+
+func (f *fakeZitiContext) Authenticate() error { return nil }
+
+func (f *fakeZitiContext) RefreshServices() error { return nil }
+
+func (f *fakeZitiContext) GetServices() ([]rest_model.ServiceDetail, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	services := make([]rest_model.ServiceDetail, len(f.services))
+	copy(services, f.services)
+	return services, nil
+}
+
+func (f *fakeZitiContext) ListenWithOptions(serviceName string, _ *ziti.ListenOptions) (edge.Listener, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.listeners == nil {
+		f.listeners = map[string]*fakeEdgeListener{}
+	}
+	listener := &fakeEdgeListener{serviceName: serviceName, closed: make(chan struct{})}
+	f.listeners[serviceName] = listener
+	return listener, nil
+}
+
+func (f *fakeZitiContext) Close() {}
+
+func (f *fakeZitiContext) setServices(services []rest_model.ServiceDetail) {
+	f.mu.Lock()
+	f.services = services
+	f.mu.Unlock()
+}
+
+func (f *fakeZitiContext) listened(serviceName string) bool {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	_, ok := f.listeners[serviceName]
+	return ok
+}
+
+type fakeEdgeListener struct {
+	serviceName string
+	closed      chan struct{}
+}
+
+func (f *fakeEdgeListener) Accept() (net.Conn, error) {
+	<-f.closed
+	return nil, net.ErrClosed
+}
+
+func (f *fakeEdgeListener) AcceptEdge() (edge.Conn, error) {
+	<-f.closed
+	return nil, net.ErrClosed
+}
+
+func (f *fakeEdgeListener) Close() error {
+	select {
+	case <-f.closed:
+	default:
+		close(f.closed)
+	}
+	return nil
+}
+
+func (f *fakeEdgeListener) Addr() net.Addr { return &net.TCPAddr{} }
+
+func (f *fakeEdgeListener) Id() uint32 { return 0 }
+
+func (f *fakeEdgeListener) IsClosed() bool {
+	select {
+	case <-f.closed:
+		return true
+	default:
+		return false
+	}
+}
+
+func (f *fakeEdgeListener) UpdateCost(uint16) error { return nil }
+
+func (f *fakeEdgeListener) UpdatePrecedence(edge.Precedence) error { return nil }
+
+func (f *fakeEdgeListener) UpdateCostAndPrecedence(uint16, edge.Precedence) error { return nil }
+
+func (f *fakeEdgeListener) SendHealthEvent(bool) error { return nil }
+
 type fakeDataPlaneListener struct {
 	conn   DataPlaneConn
 	closed chan struct{}
@@ -654,6 +778,23 @@ func (f *fakeDataPlaneConn) AppData() []byte { return f.appData }
 func stringPtr(value string) *string { return &value }
 
 func bufioReader(conn net.Conn) *bufio.Reader { return bufio.NewReader(conn) }
+
+func serviceDetail(name string, roles ...string) rest_model.ServiceDetail {
+	attributes := rest_model.Attributes(roles)
+	return rest_model.ServiceDetail{Name: &name, RoleAttributes: &attributes}
+}
+
+func waitForListen(t *testing.T, zitiCtx *fakeZitiContext, serviceName string) {
+	t.Helper()
+	deadline := time.Now().Add(time.Second)
+	for time.Now().Before(deadline) {
+		if zitiCtx.listened(serviceName) {
+			return
+		}
+		time.Sleep(time.Millisecond)
+	}
+	t.Fatalf("service %q was not listened", serviceName)
+}
 
 type blockingBody struct {
 	started chan struct{}
