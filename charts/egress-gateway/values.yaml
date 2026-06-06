@@ -105,6 +105,8 @@ env:
     value: "4096"
   - name: FORWARD_TIMEOUT
     value: "30s"
+  - name: DATA_PLANE_RETRY_INTERVAL
+    value: "5s"
 envFrom: []
 extraEnvVars: []
 extraEnvVarsCM: ""

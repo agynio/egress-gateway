@@ -2,7 +2,6 @@ package egress
 
 import (
 	"bufio"
-	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
@@ -72,6 +71,10 @@ func (s *DataPlaneServer) Serve(ctx context.Context) error {
 	}
 }
 
+func (s *DataPlaneServer) Close() error {
+	return s.listener.Close()
+}
+
 func (s *DataPlaneServer) handleConn(ctx context.Context, conn DataPlaneConn) {
 	defer conn.Close()
 
@@ -121,7 +124,15 @@ func (s *DataPlaneServer) serveHTTP(ctx context.Context, conn net.Conn, agent Ag
 		req.RequestURI = ""
 		requestContext := RequestContextFromHTTP(agent, destination.Scheme, destination.Host, destination.Port, req, uuid.NewString())
 		response := newConnResponseWriter(conn)
-		_ = s.runtime.ServeRequest(ctx, response, req, requestContext)
+		runtimeErr := s.runtime.ServeRequest(ctx, response, req, requestContext)
+		if runtimeErr != nil {
+			if !response.sentHeader {
+				if err := response.finish(); err != nil {
+					return fmt.Errorf("write response: %w", err)
+				}
+			}
+			return fmt.Errorf("serve egress request: %w", runtimeErr)
+		}
 		if err := response.finish(); err != nil {
 			return fmt.Errorf("write response: %w", err)
 		}
@@ -192,9 +203,9 @@ func schemeFromProtocolAndPort(protocol string, port int) string {
 type connResponseWriter struct {
 	conn        net.Conn
 	header      http.Header
-	body        bytes.Buffer
 	statusCode  int
 	wroteHeader bool
+	sentHeader  bool
 }
 
 func newConnResponseWriter(conn net.Conn) *connResponseWriter {
@@ -217,7 +228,10 @@ func (w *connResponseWriter) Write(body []byte) (int, error) {
 	if !w.wroteHeader {
 		w.WriteHeader(http.StatusOK)
 	}
-	return w.body.Write(body)
+	if err := w.writeHeader(); err != nil {
+		return 0, err
+	}
+	return w.conn.Write(body)
 }
 
 func (w *connResponseWriter) finish() error {
@@ -228,6 +242,9 @@ func (w *connResponseWriter) finish() error {
 }
 
 func (w *connResponseWriter) writeHeader() error {
+	if w.sentHeader {
+		return nil
+	}
 	if !w.wroteHeader {
 		panic("response status is required")
 	}
@@ -242,8 +259,9 @@ func (w *connResponseWriter) writeHeader() error {
 		ProtoMajor:    1,
 		ProtoMinor:    1,
 		Header:        w.header,
-		Body:          io.NopCloser(bytes.NewReader(w.body.Bytes())),
-		ContentLength: int64(w.body.Len()),
+		Body:          http.NoBody,
+		ContentLength: -1,
 	}
+	w.sentHeader = true
 	return response.Write(w.conn)
 }

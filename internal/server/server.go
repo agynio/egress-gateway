@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"sync"
+	"time"
 
 	agentsv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/agents/v1"
 	egressv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/egress/v1"
@@ -21,29 +22,36 @@ import (
 )
 
 type Server struct {
-	cfg      config.Config
-	listener net.Listener
-	server   *http.Server
-	mu       sync.Mutex
-	closed   bool
+	cfg          config.Config
+	listener     net.Listener
+	server       *http.Server
+	dataPlane    *egress.DataPlaneServer
+	zitiCtx      egress.ZitiContext
+	clientConns  []*grpc.ClientConn
+	dataPlaneErr error
+	dataPlaneOK  bool
+	mu           sync.Mutex
+	closed       bool
 }
 
 func New(cfg config.Config) *Server {
+	s := &Server{cfg: cfg}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
-	return &Server{cfg: cfg, server: &http.Server{Handler: mux}}
+	mux.HandleFunc("/readyz", func(w http.ResponseWriter, _ *http.Request) {
+		if !s.isDataPlaneReady() {
+			http.Error(w, "egress gateway data plane is not ready", http.StatusServiceUnavailable)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	})
+	s.server = &http.Server{Handler: mux}
+	return s
 }
 
 func (s *Server) Run(ctx context.Context) error {
-	dataPlane, zitiCtx, grpcConns, err := s.buildDataPlane()
-	if err != nil {
-		return err
-	}
-	defer closeGRPCConns(grpcConns)
-	defer zitiCtx.Close()
-
 	listener, err := net.Listen("tcp", s.cfg.GRPCAddress)
 	if err != nil {
 		return err
@@ -52,40 +60,43 @@ func (s *Server) Run(ctx context.Context) error {
 	s.listener = listener
 	s.mu.Unlock()
 	log.Printf("egress-gateway admin listening on %s", s.cfg.GRPCAddress)
-	log.Printf("egress-gateway ziti data-plane listening")
 
 	go func() {
 		<-ctx.Done()
 		s.Close()
 	}()
+	go s.runDataPlane(ctx)
 
-	dataPlaneErr := make(chan error, 1)
-	go func() {
-		dataPlaneErr <- dataPlane.Serve(ctx)
-	}()
+	err = s.server.Serve(listener)
+	if err != nil && !errors.Is(err, http.ErrServerClosed) && !s.isClosed() {
+		return err
+	}
+	return nil
+}
 
-	adminErr := make(chan error, 1)
-	go func() {
-		err := s.server.Serve(listener)
-		if err != nil && !errors.Is(err, http.ErrServerClosed) && !s.isClosed() {
-			adminErr <- err
+func (s *Server) runDataPlane(ctx context.Context) {
+	for ctx.Err() == nil && !s.isClosed() {
+		dataPlane, zitiCtx, grpcConns, err := s.buildDataPlane()
+		if err != nil {
+			s.setDataPlaneState(false, err)
+			log.Printf("start ziti data plane: %v", err)
+			if !sleepWithContext(ctx, s.dataPlaneRetryInterval()) {
+				return
+			}
+			continue
+		}
+		s.setDataPlane(dataPlane, zitiCtx, grpcConns)
+		log.Printf("egress-gateway ziti data-plane listening")
+		err = dataPlane.Serve(ctx)
+		s.clearDataPlane()
+		if ctx.Err() != nil || s.isClosed() {
 			return
 		}
-		adminErr <- nil
-	}()
-
-	select {
-	case err := <-dataPlaneErr:
-		if err != nil && ctx.Err() == nil {
-			s.Close()
-			return err
+		s.setDataPlaneState(false, err)
+		log.Printf("ziti data-plane stopped: %v", err)
+		if !sleepWithContext(ctx, s.dataPlaneRetryInterval()) {
+			return
 		}
-		return <-adminErr
-	case err := <-adminErr:
-		if err != nil {
-			return err
-		}
-		return <-dataPlaneErr
 	}
 }
 
@@ -105,7 +116,7 @@ func (s *Server) buildDataPlane() (*egress.DataPlaneServer, egress.ZitiContext, 
 		zitiCtx.Close()
 		return nil, nil, nil, err
 	}
-	grpcConns, err := s.grpcConns()
+	grpcConns, err := s.newGRPCConns()
 	if err != nil {
 		listener.Close()
 		zitiCtx.Close()
@@ -128,7 +139,7 @@ func (s *Server) buildDataPlane() (*egress.DataPlaneServer, egress.ZitiContext, 
 	return egress.NewDataPlaneServer(listener, runtime, identity, certs), zitiCtx, grpcConns, nil
 }
 
-func (s *Server) grpcConns() ([]*grpc.ClientConn, error) {
+func (s *Server) newGRPCConns() ([]*grpc.ClientConn, error) {
 	targets := []string{s.cfg.EgressAddress, s.cfg.SecretsAddress, s.cfg.ZitiManagementAddress, s.cfg.AgentsAddress, s.cfg.MeteringAddress}
 	conns := make([]*grpc.ClientConn, 0, len(targets))
 	for _, target := range targets {
@@ -150,23 +161,97 @@ func closeGRPCConns(conns []*grpc.ClientConn) {
 	}
 }
 
+func sleepWithContext(ctx context.Context, duration time.Duration) bool {
+	timer := time.NewTimer(duration)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return false
+	case <-timer.C:
+		return true
+	}
+}
+
+func (s *Server) dataPlaneRetryInterval() time.Duration {
+	if s.cfg.DataPlaneRetryInterval > 0 {
+		return s.cfg.DataPlaneRetryInterval
+	}
+	return 5 * time.Second
+}
+
 func (s *Server) Close() {
 	s.mu.Lock()
-	defer s.mu.Unlock()
 	if s.closed {
+		s.mu.Unlock()
 		return
 	}
 	s.closed = true
-	if s.server != nil {
-		if err := s.server.Close(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	server := s.server
+	listener := s.listener
+	dataPlane := s.dataPlane
+	zitiCtx := s.zitiCtx
+	grpcConns := s.clientConns
+	s.dataPlane = nil
+	s.zitiCtx = nil
+	s.clientConns = nil
+	s.mu.Unlock()
+	if dataPlane != nil {
+		if err := dataPlane.Close(); err != nil && !errors.Is(err, net.ErrClosed) {
+			log.Printf("close data-plane listener: %v", err)
+		}
+	}
+	if zitiCtx != nil {
+		zitiCtx.Close()
+	}
+	closeGRPCConns(grpcConns)
+	if server != nil {
+		if err := server.Close(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Printf("close admin server: %v", err)
 		}
 	}
-	if s.listener != nil {
-		if err := s.listener.Close(); err != nil && !errors.Is(err, net.ErrClosed) {
+	if listener != nil {
+		if err := listener.Close(); err != nil && !errors.Is(err, net.ErrClosed) {
 			log.Printf("close listener: %v", err)
 		}
 	}
+}
+
+func (s *Server) setDataPlane(dataPlane *egress.DataPlaneServer, zitiCtx egress.ZitiContext, grpcConns []*grpc.ClientConn) {
+	s.mu.Lock()
+	s.dataPlane = dataPlane
+	s.zitiCtx = zitiCtx
+	s.clientConns = grpcConns
+	s.dataPlaneOK = true
+	s.dataPlaneErr = nil
+	s.mu.Unlock()
+}
+
+func (s *Server) clearDataPlane() {
+	s.mu.Lock()
+	zitiCtx := s.zitiCtx
+	grpcConns := s.clientConns
+	s.dataPlane = nil
+	s.zitiCtx = nil
+	s.clientConns = nil
+	s.dataPlaneOK = false
+	s.mu.Unlock()
+	if zitiCtx != nil {
+		zitiCtx.Close()
+	}
+	closeGRPCConns(grpcConns)
+}
+
+func (s *Server) setDataPlaneState(ready bool, err error) {
+	s.mu.Lock()
+	s.dataPlaneOK = ready
+	s.dataPlaneErr = err
+	s.mu.Unlock()
+}
+
+func (s *Server) isDataPlaneReady() bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.dataPlaneOK && s.dataPlaneErr == nil
 }
 
 func (s *Server) isClosed() bool {

@@ -1,22 +1,20 @@
 package egress
 
 import (
-	"errors"
 	"fmt"
 	"net"
-	"strings"
 	"sync"
 
-	"github.com/openziti/edge-api/rest_model"
 	"github.com/openziti/sdk-golang/ziti"
 	"github.com/openziti/sdk-golang/ziti/edge"
 )
 
 const egressServiceRole = "egress-services"
 
+const roleServiceName = "#" + egressServiceRole
+
 type ZitiContext interface {
 	Authenticate() error
-	GetServices() ([]rest_model.ServiceDetail, error)
 	ListenWithOptions(serviceName string, options *ziti.ListenOptions) (edge.Listener, error)
 	Close()
 }
@@ -35,26 +33,9 @@ func LoadZitiContext(identityFile string) (ZitiContext, error) {
 
 func ListenForEgressServices(ctx ZitiContext, configuredServiceName string) (DataPlaneListener, error) {
 	if configuredServiceName == "" {
-		return listenForRoleServices(ctx)
+		return listenForService(ctx, roleServiceName)
 	}
 	return listenForService(ctx, configuredServiceName)
-}
-
-func listenForRoleServices(ctx ZitiContext) (DataPlaneListener, error) {
-	serviceNames, err := resolveEgressServiceNames(ctx)
-	if err != nil {
-		return nil, err
-	}
-	listeners := make([]DataPlaneListener, 0, len(serviceNames))
-	for _, serviceName := range serviceNames {
-		listener, err := listenForService(ctx, serviceName)
-		if err != nil {
-			closeDataPlaneListeners(listeners)
-			return nil, err
-		}
-		listeners = append(listeners, listener)
-	}
-	return NewMultiListener(listeners), nil
 }
 
 func listenForService(ctx ZitiContext, serviceName string) (DataPlaneListener, error) {
@@ -65,105 +46,10 @@ func listenForService(ctx ZitiContext, serviceName string) (DataPlaneListener, e
 	return NewListenerAdapter(listener), nil
 }
 
-func resolveEgressServiceNames(ctx ZitiContext) ([]string, error) {
-	services, err := ctx.GetServices()
-	if err != nil {
-		return nil, fmt.Errorf("list ziti services: %w", err)
-	}
-	var serviceNames []string
-	for _, service := range services {
-		if service.Name == nil {
-			continue
-		}
-		if hasEgressServiceRole(service.RoleAttributes) {
-			serviceNames = append(serviceNames, *service.Name)
-		}
-	}
-	if len(serviceNames) == 0 {
-		return nil, errors.New("no ziti service with egress-services role is bindable")
-	}
-	return serviceNames, nil
-}
-
-func hasEgressServiceRole(attributes *rest_model.Attributes) bool {
-	if attributes == nil {
-		return false
-	}
-	for _, attribute := range *attributes {
-		if strings.EqualFold(attribute, egressServiceRole) {
-			return true
-		}
-	}
-	return false
-}
-
 type ListenerAdapter struct {
 	listener edge.Listener
 	mu       sync.Mutex
 	closed   bool
-}
-
-type MultiListener struct {
-	listeners []DataPlaneListener
-	acceptCh  chan acceptResult
-	closeCh   chan struct{}
-	once      sync.Once
-}
-
-type acceptResult struct {
-	conn DataPlaneConn
-	err  error
-}
-
-func NewMultiListener(listeners []DataPlaneListener) *MultiListener {
-	if len(listeners) == 0 {
-		panic("at least one data-plane listener is required")
-	}
-	m := &MultiListener{listeners: listeners, acceptCh: make(chan acceptResult), closeCh: make(chan struct{})}
-	for _, listener := range listeners {
-		go m.accept(listener)
-	}
-	return m
-}
-
-func (m *MultiListener) Accept() (DataPlaneConn, error) {
-	select {
-	case result := <-m.acceptCh:
-		return result.conn, result.err
-	case <-m.closeCh:
-		return nil, net.ErrClosed
-	}
-}
-
-func (m *MultiListener) Close() error {
-	m.once.Do(func() {
-		close(m.closeCh)
-		closeDataPlaneListeners(m.listeners)
-	})
-	return nil
-}
-
-func (m *MultiListener) accept(listener DataPlaneListener) {
-	for {
-		conn, err := listener.Accept()
-		select {
-		case m.acceptCh <- acceptResult{conn: conn, err: err}:
-		case <-m.closeCh:
-			if conn != nil {
-				conn.Close()
-			}
-			return
-		}
-		if err != nil {
-			return
-		}
-	}
-}
-
-func closeDataPlaneListeners(listeners []DataPlaneListener) {
-	for _, listener := range listeners {
-		_ = listener.Close()
-	}
 }
 
 func NewListenerAdapter(listener edge.Listener) *ListenerAdapter {

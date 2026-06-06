@@ -26,6 +26,9 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.LeafCertCacheSize != defaultLeafCertCacheSize {
 		t.Fatalf("leaf cert cache size = %d", cfg.LeafCertCacheSize)
 	}
+	if cfg.DataPlaneRetryInterval != defaultDataPlaneRetry {
+		t.Fatalf("data-plane retry interval = %s", cfg.DataPlaneRetryInterval)
+	}
 }
 
 func TestLoadRejectsInvalidDuration(t *testing.T) {

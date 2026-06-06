@@ -337,6 +337,87 @@ func TestDataPlaneHTTPPathInjectsSecretHeader(t *testing.T) {
 	}
 }
 
+func TestDataPlaneStreamsResponseBody(t *testing.T) {
+	writeStarted := make(chan struct{})
+	finishResponse := make(chan struct{})
+	transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		return &http.Response{StatusCode: http.StatusOK, Body: &blockingBody{started: writeStarted, release: finishResponse}}, nil
+	})
+	rules := NewRuleCache(&fakeRuleClient{rules: [][]*egressv1.EgressRule{{rule("rule-1", "api.example.com", allowEffect())}}}, time.Minute, &fakeClock{now: time.Now()})
+	runtime := NewRuntime(rules, NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()})), NewForwarderWithTransport(time.Second, transport), nil)
+	identity := NewIdentityResolver(&fakeZitiIdentityClient{}, &fakeAgentIdentityClient{})
+	serverConn, clientConn := net.Pipe()
+	listener := &fakeDataPlaneListener{conn: &fakeDataPlaneConn{Conn: serverConn, dialerIdentityID: "ziti-agent-1", appData: []byte(`{"dst_protocol":"tcp","dst_hostname":"api.example.com","dst_port":"80"}`)}}
+	server := NewDataPlaneServer(listener, runtime, identity, NewLeafCertificateCache(testCA(t), time.Minute, 2, &fakeClock{now: time.Now()}))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() { _ = server.Serve(ctx) }()
+
+	if _, err := clientConn.Write([]byte("GET /stream HTTP/1.1\r\nHost: api.example.com\r\nConnection: close\r\n\r\n")); err != nil {
+		t.Fatalf("write request: %v", err)
+	}
+	reader := bufioReader(clientConn)
+	statusLine, err := reader.ReadString('\n')
+	if err != nil {
+		t.Fatalf("read status line: %v", err)
+	}
+	if !strings.Contains(statusLine, "200 OK") {
+		t.Fatalf("status line = %q", statusLine)
+	}
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			t.Fatalf("read header line: %v", err)
+		}
+		if line == "\r\n" {
+			break
+		}
+	}
+	bodyBytes := make(chan []byte, 1)
+	go func() {
+		buf := make([]byte, len("chunk"))
+		_, _ = io.ReadFull(reader, buf)
+		bodyBytes <- buf
+	}()
+	select {
+	case body := <-bodyBytes:
+		if string(body) != "chunk" {
+			t.Errorf("streamed body = %q", string(body))
+		}
+	case <-time.After(time.Second):
+		t.Fatal("response body was not streamed before upstream completion")
+	}
+	<-writeStarted
+	close(finishResponse)
+}
+
+func TestDataPlaneRuntimeErrorDoesNotWriteDefaultSuccess(t *testing.T) {
+	rules := NewRuleCache(&fakeRuleClient{errors: []error{errors.New("rules down")}}, time.Minute, &fakeClock{now: time.Now()})
+	runtime := NewRuntime(rules, NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()})), NewForwarderWithTransport(time.Second, roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		t.Fatal("forwarder should not be called when rules fail")
+		return nil, nil
+	})), nil)
+	identity := NewIdentityResolver(&fakeZitiIdentityClient{}, &fakeAgentIdentityClient{})
+	serverConn, clientConn := net.Pipe()
+	listener := &fakeDataPlaneListener{conn: &fakeDataPlaneConn{Conn: serverConn, dialerIdentityID: "ziti-agent-1", appData: []byte(`{"dst_protocol":"tcp","dst_hostname":"api.example.com","dst_port":"80"}`)}}
+	server := NewDataPlaneServer(listener, runtime, identity, NewLeafCertificateCache(testCA(t), time.Minute, 2, &fakeClock{now: time.Now()}))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() { _ = server.Serve(ctx) }()
+
+	if _, err := clientConn.Write([]byte("GET /v1 HTTP/1.1\r\nHost: api.example.com\r\nConnection: close\r\n\r\n")); err != nil {
+		t.Fatalf("write request: %v", err)
+	}
+	response, err := http.ReadResponse(bufioReader(clientConn), nil)
+	if err != nil {
+		t.Fatalf("read response: %v", err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusBadGateway {
+		t.Fatalf("status = %d", response.StatusCode)
+	}
+}
+
 func TestDataPlaneHTTPSUsesGeneratedLeafCertificate(t *testing.T) {
 	var upstreamHost string
 	transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
@@ -573,5 +654,24 @@ func (f *fakeDataPlaneConn) AppData() []byte { return f.appData }
 func stringPtr(value string) *string { return &value }
 
 func bufioReader(conn net.Conn) *bufio.Reader { return bufio.NewReader(conn) }
+
+type blockingBody struct {
+	started chan struct{}
+	release chan struct{}
+	sent    bool
+}
+
+func (b *blockingBody) Read(p []byte) (int, error) {
+	if b.sent {
+		<-b.release
+		return 0, io.EOF
+	}
+	b.sent = true
+	copy(p, "chunk")
+	close(b.started)
+	return len("chunk"), nil
+}
+
+func (b *blockingBody) Close() error { return nil }
 
 var _ = timestamppb.Now
