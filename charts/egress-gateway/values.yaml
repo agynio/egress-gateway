@@ -89,6 +89,8 @@ env:
     value: "ziti-management:50051"
   - name: ZITI_IDENTITY_FILE
     value: "/var/lib/ziti/identity.json"
+  - name: ZITI_SERVICE_NAME
+    value: ""
   - name: EGRESS_CA_CERT_PATH
     value: "/var/run/agyn/egress-ca/tls.crt"
   - name: EGRESS_CA_KEY_PATH
@@ -103,6 +105,8 @@ env:
     value: "4096"
   - name: FORWARD_TIMEOUT
     value: "30s"
+  - name: DATA_PLANE_RETRY_INTERVAL
+    value: "5s"
 envFrom: []
 extraEnvVars: []
 extraEnvVarsCM: ""

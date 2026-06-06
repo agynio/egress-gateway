@@ -19,6 +19,12 @@ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.6.0
 
 Ensure `$(go env GOPATH)/bin` is on `PATH`.
 
+Generated protobuf clients are committed under `.gen/` so normal `go test ./...` and `go build ./...` work from a clean checkout. Install the repository hook to keep generated clients fresh before committing:
+
+```sh
+git config core.hooksPath .githooks
+```
+
 ```sh
 make proto
 go build ./...
@@ -28,6 +34,7 @@ go build ./...
 
 ```sh
 export GRPC_ADDRESS=':50051'
+export ZITI_SERVICE_NAME='' # default discovers and binds services tagged egress-services
 go run ./cmd/egress-gateway
 ```
 
@@ -44,6 +51,7 @@ go run ./cmd/egress-gateway
 | `AGENTS_SERVICE_ADDRESS` | No | `agents:50051` | Agents gRPC target. |
 | `ZITI_MANAGEMENT_ADDRESS` | No | `ziti-management:50051` | Ziti Management gRPC target. |
 | `ZITI_IDENTITY_FILE` | No | `/var/lib/ziti/identity.json` | Enrolled OpenZiti identity path. |
+| `ZITI_SERVICE_NAME` | No | empty | Explicit OpenZiti service name to bind; when empty, the gateway reconciles and binds accessible services tagged with the `egress-services` role attribute. |
 | `EGRESS_CA_CERT_PATH` | No | `/var/run/agyn/egress-ca/tls.crt` | Platform Egress CA certificate path. |
 | `EGRESS_CA_KEY_PATH` | No | `/var/run/agyn/egress-ca/tls.key` | Platform Egress CA key path. |
 | `RULE_CACHE_TTL` | No | `15s` | Rule cache TTL fallback. |
@@ -51,6 +59,7 @@ go run ./cmd/egress-gateway
 | `LEAF_CERT_TTL` | No | `10m` | Generated leaf certificate TTL. |
 | `LEAF_CERT_CACHE_SIZE` | No | `4096` | Maximum cached leaf certificate count. |
 | `FORWARD_TIMEOUT` | No | `30s` | Upstream request timeout. |
+| `DATA_PLANE_RETRY_INTERVAL` | No | `5s` | Delay before retrying Ziti data-plane startup after dependency failures. |
 
 ## Helm validation
 

@@ -50,6 +50,12 @@ func (r *Runtime) ServeRequest(ctx context.Context, w http.ResponseWriter, req *
 	return nil
 }
 
+func (r *Runtime) EmitTLSFailure(ctx context.Context, requestContext RequestContext) {
+	if r.observed != nil {
+		r.emitObservability(ctx, RequestMetrics{Context: requestContext, Outcome: OutcomeTLSError})
+	}
+}
+
 func (r *Runtime) emitObservability(ctx context.Context, metrics RequestMetrics) {
 	if err := r.observed.Emit(ctx, metrics); err != nil {
 		log.Printf("emit egress observability: %v", err)

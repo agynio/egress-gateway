@@ -17,6 +17,7 @@ const (
 	defaultAgentsTarget         = "agents:50051"
 	defaultZitiManagementTarget = "ziti-management:50051"
 	defaultZitiIdentityFile     = "/var/lib/ziti/identity.json"
+	defaultZitiServiceName      = ""
 	defaultEgressCACertPath     = "/var/run/agyn/egress-ca/tls.crt"
 	defaultEgressCAKeyPath      = "/var/run/agyn/egress-ca/tls.key"
 	defaultRuleCacheTTL         = 15 * time.Second
@@ -24,45 +25,50 @@ const (
 	defaultLeafCertTTL          = 10 * time.Minute
 	defaultLeafCertCacheSize    = 4096
 	defaultForwardTimeout       = 30 * time.Second
+	defaultDataPlaneRetry       = 5 * time.Second
 )
 
 type Config struct {
-	GRPCAddress           string
-	EgressAddress         string
-	SecretsAddress        string
-	NotificationsAddress  string
-	MeteringAddress       string
-	TracingAddress        string
-	AgentsAddress         string
-	ZitiManagementAddress string
-	ZitiIdentityFile      string
-	EgressCACertPath      string
-	EgressCAKeyPath       string
-	RuleCacheTTL          time.Duration
-	SecretCacheTTL        time.Duration
-	LeafCertTTL           time.Duration
-	LeafCertCacheSize     int
-	ForwardTimeout        time.Duration
+	GRPCAddress            string
+	EgressAddress          string
+	SecretsAddress         string
+	NotificationsAddress   string
+	MeteringAddress        string
+	TracingAddress         string
+	AgentsAddress          string
+	ZitiManagementAddress  string
+	ZitiIdentityFile       string
+	ZitiServiceName        string
+	EgressCACertPath       string
+	EgressCAKeyPath        string
+	RuleCacheTTL           time.Duration
+	SecretCacheTTL         time.Duration
+	LeafCertTTL            time.Duration
+	LeafCertCacheSize      int
+	ForwardTimeout         time.Duration
+	DataPlaneRetryInterval time.Duration
 }
 
 func Load() (Config, error) {
 	cfg := Config{
-		GRPCAddress:           envOrDefault("GRPC_ADDRESS", defaultGRPCAddress),
-		EgressAddress:         envOrDefault("EGRESS_ADDRESS", defaultEgressTarget),
-		SecretsAddress:        envOrDefault("SECRETS_SERVICE_ADDRESS", defaultSecretsTarget),
-		NotificationsAddress:  envOrDefault("NOTIFICATIONS_ADDRESS", defaultNotificationsTarget),
-		MeteringAddress:       envOrDefault("METERING_ADDRESS", defaultMeteringTarget),
-		TracingAddress:        envOrDefault("TRACING_ADDRESS", defaultTracingTarget),
-		AgentsAddress:         envOrDefault("AGENTS_SERVICE_ADDRESS", defaultAgentsTarget),
-		ZitiManagementAddress: envOrDefault("ZITI_MANAGEMENT_ADDRESS", defaultZitiManagementTarget),
-		ZitiIdentityFile:      envOrDefault("ZITI_IDENTITY_FILE", defaultZitiIdentityFile),
-		EgressCACertPath:      envOrDefault("EGRESS_CA_CERT_PATH", defaultEgressCACertPath),
-		EgressCAKeyPath:       envOrDefault("EGRESS_CA_KEY_PATH", defaultEgressCAKeyPath),
-		RuleCacheTTL:          defaultRuleCacheTTL,
-		SecretCacheTTL:        defaultSecretCacheTTL,
-		LeafCertTTL:           defaultLeafCertTTL,
-		LeafCertCacheSize:     defaultLeafCertCacheSize,
-		ForwardTimeout:        defaultForwardTimeout,
+		GRPCAddress:            envOrDefault("GRPC_ADDRESS", defaultGRPCAddress),
+		EgressAddress:          envOrDefault("EGRESS_ADDRESS", defaultEgressTarget),
+		SecretsAddress:         envOrDefault("SECRETS_SERVICE_ADDRESS", defaultSecretsTarget),
+		NotificationsAddress:   envOrDefault("NOTIFICATIONS_ADDRESS", defaultNotificationsTarget),
+		MeteringAddress:        envOrDefault("METERING_ADDRESS", defaultMeteringTarget),
+		TracingAddress:         envOrDefault("TRACING_ADDRESS", defaultTracingTarget),
+		AgentsAddress:          envOrDefault("AGENTS_SERVICE_ADDRESS", defaultAgentsTarget),
+		ZitiManagementAddress:  envOrDefault("ZITI_MANAGEMENT_ADDRESS", defaultZitiManagementTarget),
+		ZitiIdentityFile:       envOrDefault("ZITI_IDENTITY_FILE", defaultZitiIdentityFile),
+		ZitiServiceName:        envOrDefault("ZITI_SERVICE_NAME", defaultZitiServiceName),
+		EgressCACertPath:       envOrDefault("EGRESS_CA_CERT_PATH", defaultEgressCACertPath),
+		EgressCAKeyPath:        envOrDefault("EGRESS_CA_KEY_PATH", defaultEgressCAKeyPath),
+		RuleCacheTTL:           defaultRuleCacheTTL,
+		SecretCacheTTL:         defaultSecretCacheTTL,
+		LeafCertTTL:            defaultLeafCertTTL,
+		LeafCertCacheSize:      defaultLeafCertCacheSize,
+		ForwardTimeout:         defaultForwardTimeout,
+		DataPlaneRetryInterval: defaultDataPlaneRetry,
 	}
 	var err error
 	cfg.RuleCacheTTL, err = durationEnvOrDefault("RULE_CACHE_TTL", cfg.RuleCacheTTL)
@@ -78,6 +84,10 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 	cfg.ForwardTimeout, err = durationEnvOrDefault("FORWARD_TIMEOUT", cfg.ForwardTimeout)
+	if err != nil {
+		return Config{}, err
+	}
+	cfg.DataPlaneRetryInterval, err = durationEnvOrDefault("DATA_PLANE_RETRY_INTERVAL", cfg.DataPlaneRetryInterval)
 	if err != nil {
 		return Config{}, err
 	}

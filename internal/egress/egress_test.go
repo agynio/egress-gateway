@@ -1,27 +1,38 @@
 package egress
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"io"
 	"math/big"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
+	agentsv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/agents/v1"
 	egressv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/egress/v1"
+	identityv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/identity/v1"
 	meteringv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/metering/v1"
 	secretsv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/secrets/v1"
+	zitimanagementv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/ziti_management/v1"
+	"github.com/openziti/edge-api/rest_model"
+	"github.com/openziti/sdk-golang/ziti"
+	"github.com/openziti/sdk-golang/ziti/edge"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -286,6 +297,195 @@ func TestOriginalDestinationFromHostPort(t *testing.T) {
 	}
 }
 
+func TestDestinationFromAppData(t *testing.T) {
+	appData, err := json.Marshal(map[string]string{"dst_protocol": "tcp", "dst_hostname": "api.example.com", "dst_port": "443"})
+	if err != nil {
+		t.Fatalf("marshal app data: %v", err)
+	}
+	destination, err := DestinationFromAppData(appData)
+	if err != nil {
+		t.Fatalf("DestinationFromAppData: %v", err)
+	}
+	if destination.Host != "api.example.com" || destination.Port != 443 || destination.Scheme != "https" {
+		t.Fatalf("destination = %+v", destination)
+	}
+}
+
+func TestDataPlaneHTTPPathInjectsSecretHeader(t *testing.T) {
+	var upstreamHeader string
+	transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		upstreamHeader = r.Header.Get("Authorization")
+		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(strings.NewReader("ok"))}, nil
+	})
+	rules := NewRuleCache(&fakeRuleClient{rules: [][]*egressv1.EgressRule{{rule("rule-1", "api.example.com", injectEffect(headerSecret("Authorization", "secret-1", egressv1.HeaderAuthScheme_HEADER_AUTH_SCHEME_BEARER)))}}}, time.Minute, &fakeClock{now: time.Now()})
+	secrets := NewSecretCache(&fakeSecretClient{values: []string{"token"}}, time.Minute, &fakeClock{now: time.Now()})
+	runtime := NewRuntime(rules, NewEvaluator(secrets), NewForwarderWithTransport(time.Second, transport), nil)
+	identity := NewIdentityResolver(&fakeZitiIdentityClient{}, &fakeAgentIdentityClient{})
+	serverConn, clientConn := net.Pipe()
+	listener := &fakeDataPlaneListener{conn: &fakeDataPlaneConn{Conn: serverConn, dialerIdentityID: "ziti-agent-1", appData: []byte(`{"dst_protocol":"tcp","dst_hostname":"api.example.com","dst_port":"80"}`)}}
+	server := NewDataPlaneServer(listener, runtime, identity, NewLeafCertificateCache(testCA(t), time.Minute, 2, &fakeClock{now: time.Now()}))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() { _ = server.Serve(ctx) }()
+
+	if _, err := clientConn.Write([]byte("GET /v1 HTTP/1.1\r\nHost: api.example.com\r\nAuthorization: caller\r\nConnection: close\r\n\r\n")); err != nil {
+		t.Fatalf("write request: %v", err)
+	}
+	response, err := http.ReadResponse(bufioReader(clientConn), nil)
+	if err != nil {
+		t.Fatalf("read response: %v", err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK || upstreamHeader != "Bearer token" {
+		t.Fatalf("status=%d upstream authorization=%q", response.StatusCode, upstreamHeader)
+	}
+}
+
+func TestDataPlaneStreamsResponseBody(t *testing.T) {
+	writeStarted := make(chan struct{})
+	finishResponse := make(chan struct{})
+	transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		return &http.Response{StatusCode: http.StatusOK, Body: &blockingBody{started: writeStarted, release: finishResponse}}, nil
+	})
+	rules := NewRuleCache(&fakeRuleClient{rules: [][]*egressv1.EgressRule{{rule("rule-1", "api.example.com", allowEffect())}}}, time.Minute, &fakeClock{now: time.Now()})
+	runtime := NewRuntime(rules, NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()})), NewForwarderWithTransport(time.Second, transport), nil)
+	identity := NewIdentityResolver(&fakeZitiIdentityClient{}, &fakeAgentIdentityClient{})
+	serverConn, clientConn := net.Pipe()
+	listener := &fakeDataPlaneListener{conn: &fakeDataPlaneConn{Conn: serverConn, dialerIdentityID: "ziti-agent-1", appData: []byte(`{"dst_protocol":"tcp","dst_hostname":"api.example.com","dst_port":"80"}`)}}
+	server := NewDataPlaneServer(listener, runtime, identity, NewLeafCertificateCache(testCA(t), time.Minute, 2, &fakeClock{now: time.Now()}))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() { _ = server.Serve(ctx) }()
+
+	if _, err := clientConn.Write([]byte("GET /stream HTTP/1.1\r\nHost: api.example.com\r\nConnection: close\r\n\r\n")); err != nil {
+		t.Fatalf("write request: %v", err)
+	}
+	reader := bufioReader(clientConn)
+	statusLine, err := reader.ReadString('\n')
+	if err != nil {
+		t.Fatalf("read status line: %v", err)
+	}
+	if !strings.Contains(statusLine, "200 OK") {
+		t.Fatalf("status line = %q", statusLine)
+	}
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			t.Fatalf("read header line: %v", err)
+		}
+		if line == "\r\n" {
+			break
+		}
+	}
+	bodyBytes := make(chan []byte, 1)
+	go func() {
+		buf := make([]byte, len("chunk"))
+		_, _ = io.ReadFull(reader, buf)
+		bodyBytes <- buf
+	}()
+	select {
+	case body := <-bodyBytes:
+		if string(body) != "chunk" {
+			t.Errorf("streamed body = %q", string(body))
+		}
+	case <-time.After(time.Second):
+		t.Fatal("response body was not streamed before upstream completion")
+	}
+	<-writeStarted
+	close(finishResponse)
+}
+
+func TestDataPlaneRuntimeErrorDoesNotWriteDefaultSuccess(t *testing.T) {
+	rules := NewRuleCache(&fakeRuleClient{errors: []error{errors.New("rules down")}}, time.Minute, &fakeClock{now: time.Now()})
+	runtime := NewRuntime(rules, NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()})), NewForwarderWithTransport(time.Second, roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		t.Fatal("forwarder should not be called when rules fail")
+		return nil, nil
+	})), nil)
+	identity := NewIdentityResolver(&fakeZitiIdentityClient{}, &fakeAgentIdentityClient{})
+	serverConn, clientConn := net.Pipe()
+	listener := &fakeDataPlaneListener{conn: &fakeDataPlaneConn{Conn: serverConn, dialerIdentityID: "ziti-agent-1", appData: []byte(`{"dst_protocol":"tcp","dst_hostname":"api.example.com","dst_port":"80"}`)}}
+	server := NewDataPlaneServer(listener, runtime, identity, NewLeafCertificateCache(testCA(t), time.Minute, 2, &fakeClock{now: time.Now()}))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() { _ = server.Serve(ctx) }()
+
+	if _, err := clientConn.Write([]byte("GET /v1 HTTP/1.1\r\nHost: api.example.com\r\nConnection: close\r\n\r\n")); err != nil {
+		t.Fatalf("write request: %v", err)
+	}
+	response, err := http.ReadResponse(bufioReader(clientConn), nil)
+	if err != nil {
+		t.Fatalf("read response: %v", err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusBadGateway {
+		t.Fatalf("status = %d", response.StatusCode)
+	}
+}
+
+func TestDefaultZitiBindingDiscoversRoleServices(t *testing.T) {
+	services := []rest_model.ServiceDetail{
+		serviceDetail("egress-rule-1", "egress-services"),
+		serviceDetail("ordinary-service", "not-egress"),
+	}
+	zitiCtx := &fakeZitiContext{services: services, listeners: map[string]*fakeEdgeListener{}}
+	listener, err := ListenForEgressServices(zitiCtx, "")
+	if err != nil {
+		t.Fatalf("ListenForEgressServices: %v", err)
+	}
+	defer listener.Close()
+	waitForListen(t, zitiCtx, "egress-rule-1")
+	if zitiCtx.listened("#egress-services") {
+		t.Fatal("default binding passed literal role selector to SDK")
+	}
+	if zitiCtx.listened("ordinary-service") {
+		t.Fatal("default binding listened to service without egress role")
+	}
+}
+
+func TestServiceRoleListenerReconcilesAddedServices(t *testing.T) {
+	zitiCtx := &fakeZitiContext{listeners: map[string]*fakeEdgeListener{}}
+	listener := NewServiceRoleListenerWithInterval(zitiCtx, "egress-services", time.Millisecond)
+	defer listener.Close()
+	if zitiCtx.listened("#egress-services") {
+		t.Fatal("role reconciler passed literal selector to SDK")
+	}
+	zitiCtx.setServices([]rest_model.ServiceDetail{serviceDetail("egress-rule-2", "egress-services")})
+	waitForListen(t, zitiCtx, "egress-rule-2")
+}
+
+func TestDataPlaneHTTPSUsesGeneratedLeafCertificate(t *testing.T) {
+	var upstreamHost string
+	transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		upstreamHost = r.URL.Host
+		return &http.Response{StatusCode: http.StatusAccepted, Body: io.NopCloser(strings.NewReader("accepted"))}, nil
+	})
+	rules := NewRuleCache(&fakeRuleClient{rules: [][]*egressv1.EgressRule{{rule("rule-1", "api.example.com", allowEffect())}}}, time.Minute, &fakeClock{now: time.Now()})
+	runtime := NewRuntime(rules, NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()})), NewForwarderWithTransport(time.Second, transport), nil)
+	identity := NewIdentityResolver(&fakeZitiIdentityClient{}, &fakeAgentIdentityClient{})
+	serverConn, clientConn := net.Pipe()
+	ca := testCA(t)
+	listener := &fakeDataPlaneListener{conn: &fakeDataPlaneConn{Conn: serverConn, dialerIdentityID: "ziti-agent-1", appData: []byte(`{"dst_protocol":"tcp","dst_hostname":"api.example.com","dst_port":"443"}`)}}
+	server := NewDataPlaneServer(listener, runtime, identity, NewLeafCertificateCache(ca, time.Minute, 2, &fakeClock{now: time.Now()}))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() { _ = server.Serve(ctx) }()
+
+	root := x509.NewCertPool()
+	root.AddCert(ca.cert)
+	tlsClient := tls.Client(clientConn, &tls.Config{ServerName: "api.example.com", RootCAs: root})
+	if _, err := tlsClient.Write([]byte("GET /secure HTTP/1.1\r\nHost: api.example.com\r\nConnection: close\r\n\r\n")); err != nil {
+		t.Fatalf("write tls request: %v", err)
+	}
+	response, err := http.ReadResponse(bufioReader(tlsClient), nil)
+	if err != nil {
+		t.Fatalf("read tls response: %v", err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusAccepted || upstreamHost != "api.example.com:443" {
+		t.Fatalf("status=%d upstream host=%q", response.StatusCode, upstreamHost)
+	}
+}
+
 type fakeClock struct{ now time.Time }
 
 func (f *fakeClock) Now() time.Time { return f.now }
@@ -433,5 +633,186 @@ func tempPEM(t *testing.T, blockType string, der []byte) string {
 	}
 	return file.Name()
 }
+
+type fakeZitiIdentityClient struct{}
+
+func (f *fakeZitiIdentityClient) ResolveIdentity(context.Context, *zitimanagementv1.ResolveIdentityRequest, ...grpc.CallOption) (*zitimanagementv1.ResolveIdentityResponse, error) {
+	return &zitimanagementv1.ResolveIdentityResponse{IdentityId: "identity-1", IdentityType: identityv1.IdentityType_IDENTITY_TYPE_AGENT, WorkloadId: stringPtr("workload-1")}, nil
+}
+
+type fakeAgentIdentityClient struct{}
+
+func (f *fakeAgentIdentityClient) ResolveAgentIdentity(context.Context, *agentsv1.ResolveAgentIdentityRequest, ...grpc.CallOption) (*agentsv1.ResolveAgentIdentityResponse, error) {
+	return &agentsv1.ResolveAgentIdentityResponse{AgentId: "agent-1", OrganizationId: "org-1"}, nil
+}
+
+type fakeZitiContext struct {
+	mu        sync.Mutex
+	services  []rest_model.ServiceDetail
+	listeners map[string]*fakeEdgeListener
+}
+
+func (f *fakeZitiContext) Authenticate() error { return nil }
+
+func (f *fakeZitiContext) RefreshServices() error { return nil }
+
+func (f *fakeZitiContext) GetServices() ([]rest_model.ServiceDetail, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	services := make([]rest_model.ServiceDetail, len(f.services))
+	copy(services, f.services)
+	return services, nil
+}
+
+func (f *fakeZitiContext) ListenWithOptions(serviceName string, _ *ziti.ListenOptions) (edge.Listener, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.listeners == nil {
+		f.listeners = map[string]*fakeEdgeListener{}
+	}
+	listener := &fakeEdgeListener{serviceName: serviceName, closed: make(chan struct{})}
+	f.listeners[serviceName] = listener
+	return listener, nil
+}
+
+func (f *fakeZitiContext) Close() {}
+
+func (f *fakeZitiContext) setServices(services []rest_model.ServiceDetail) {
+	f.mu.Lock()
+	f.services = services
+	f.mu.Unlock()
+}
+
+func (f *fakeZitiContext) listened(serviceName string) bool {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	_, ok := f.listeners[serviceName]
+	return ok
+}
+
+type fakeEdgeListener struct {
+	serviceName string
+	closed      chan struct{}
+}
+
+func (f *fakeEdgeListener) Accept() (net.Conn, error) {
+	<-f.closed
+	return nil, net.ErrClosed
+}
+
+func (f *fakeEdgeListener) AcceptEdge() (edge.Conn, error) {
+	<-f.closed
+	return nil, net.ErrClosed
+}
+
+func (f *fakeEdgeListener) Close() error {
+	select {
+	case <-f.closed:
+	default:
+		close(f.closed)
+	}
+	return nil
+}
+
+func (f *fakeEdgeListener) Addr() net.Addr { return &net.TCPAddr{} }
+
+func (f *fakeEdgeListener) Id() uint32 { return 0 }
+
+func (f *fakeEdgeListener) IsClosed() bool {
+	select {
+	case <-f.closed:
+		return true
+	default:
+		return false
+	}
+}
+
+func (f *fakeEdgeListener) UpdateCost(uint16) error { return nil }
+
+func (f *fakeEdgeListener) UpdatePrecedence(edge.Precedence) error { return nil }
+
+func (f *fakeEdgeListener) UpdateCostAndPrecedence(uint16, edge.Precedence) error { return nil }
+
+func (f *fakeEdgeListener) SendHealthEvent(bool) error { return nil }
+
+type fakeDataPlaneListener struct {
+	conn   DataPlaneConn
+	closed chan struct{}
+	taken  bool
+}
+
+func (f *fakeDataPlaneListener) Accept() (DataPlaneConn, error) {
+	if f.closed == nil {
+		f.closed = make(chan struct{})
+	}
+	if !f.taken {
+		f.taken = true
+		return f.conn, nil
+	}
+	<-f.closed
+	return nil, net.ErrClosed
+}
+
+func (f *fakeDataPlaneListener) Close() error {
+	if f.closed == nil {
+		f.closed = make(chan struct{})
+	}
+	select {
+	case <-f.closed:
+	default:
+		close(f.closed)
+	}
+	return nil
+}
+
+type fakeDataPlaneConn struct {
+	net.Conn
+	dialerIdentityID string
+	appData          []byte
+}
+
+func (f *fakeDataPlaneConn) DialerIdentityID() string { return f.dialerIdentityID }
+
+func (f *fakeDataPlaneConn) AppData() []byte { return f.appData }
+
+func stringPtr(value string) *string { return &value }
+
+func bufioReader(conn net.Conn) *bufio.Reader { return bufio.NewReader(conn) }
+
+func serviceDetail(name string, roles ...string) rest_model.ServiceDetail {
+	attributes := rest_model.Attributes(roles)
+	return rest_model.ServiceDetail{Name: &name, RoleAttributes: &attributes}
+}
+
+func waitForListen(t *testing.T, zitiCtx *fakeZitiContext, serviceName string) {
+	t.Helper()
+	deadline := time.Now().Add(time.Second)
+	for time.Now().Before(deadline) {
+		if zitiCtx.listened(serviceName) {
+			return
+		}
+		time.Sleep(time.Millisecond)
+	}
+	t.Fatalf("service %q was not listened", serviceName)
+}
+
+type blockingBody struct {
+	started chan struct{}
+	release chan struct{}
+	sent    bool
+}
+
+func (b *blockingBody) Read(p []byte) (int, error) {
+	if b.sent {
+		<-b.release
+		return 0, io.EOF
+	}
+	b.sent = true
+	copy(p, "chunk")
+	close(b.started)
+	return len("chunk"), nil
+}
+
+func (b *blockingBody) Close() error { return nil }
 
 var _ = timestamppb.Now
