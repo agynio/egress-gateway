@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"golang.org/x/net/http2"
 	"io"
 	"log"
 	"net"
@@ -100,14 +101,28 @@ func (s *DataPlaneServer) handleConn(ctx context.Context, conn DataPlaneConn) {
 }
 
 func (s *DataPlaneServer) serveHTTPS(ctx context.Context, conn net.Conn, agent AgentContext, destination Destination) error {
-	tlsConn := tls.Server(conn, &tls.Config{GetCertificate: s.certificateForClientHello})
+	tlsConn := tls.Server(conn, &tls.Config{GetCertificate: s.certificateForClientHello, NextProtos: []string{"h2", "http/1.1"}})
 	if err := tlsConn.Handshake(); err != nil {
 		requestContext := RequestContext{Agent: agent, Scheme: destination.Scheme, Host: destination.Host, Port: destination.Port, RequestID: uuid.NewString()}
 		s.runtime.EmitTLSFailure(ctx, requestContext)
 		return fmt.Errorf("tls handshake: %w", err)
 	}
 	defer tlsConn.Close()
+	if tlsConn.ConnectionState().NegotiatedProtocol == "h2" {
+		return s.serveHTTP2(ctx, tlsConn, agent, destination)
+	}
 	return s.serveHTTP(ctx, tlsConn, agent, destination)
+}
+
+func (s *DataPlaneServer) serveHTTP2(ctx context.Context, conn net.Conn, agent AgentContext, destination Destination) error {
+	server := &http2.Server{}
+	server.ServeConn(conn, &http2.ServeConnOpts{Context: ctx, Handler: http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		requestContext := RequestContextFromHTTP(agent, destination.Scheme, destination.Host, destination.Port, req, uuid.NewString())
+		if err := s.runtime.ServeRequest(ctx, w, req, requestContext); err != nil {
+			log.Printf("serve h2 egress request: %v", err)
+		}
+	})})
+	return nil
 }
 
 func (s *DataPlaneServer) serveHTTP(ctx context.Context, conn net.Conn, agent AgentContext, destination Destination) error {

@@ -92,6 +92,12 @@ func (c *RuleCache) Invalidate(agentID string) {
 	c.mu.Unlock()
 }
 
+func (c *RuleCache) InvalidateAll() {
+	c.mu.Lock()
+	c.items = map[string]ruleCacheEntry{}
+	c.mu.Unlock()
+}
+
 func cloneRules(rules []*egressv1.EgressRule) []*egressv1.EgressRule {
 	cloned := make([]*egressv1.EgressRule, len(rules))
 	copy(cloned, rules)
