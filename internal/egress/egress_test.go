@@ -160,6 +160,24 @@ func TestEvaluateMatcherAndDenyWins(t *testing.T) {
 	}
 }
 
+func TestEvaluateReturnsBypassForUnmatchedDestination(t *testing.T) {
+	evaluator := NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()}))
+	request := RequestContext{Method: http.MethodGet, Host: "unmatched.example.com", Port: 443, Path: "/v1/repos"}
+	rules := []*egressv1.EgressRule{
+		rule("1", "api.example.com", allowEffect(), withPorts(443)),
+	}
+	evaluation, err := evaluator.Evaluate(context.Background(), request, rules)
+	if err != nil {
+		t.Fatalf("Evaluate: %v", err)
+	}
+	if evaluation.Outcome != OutcomeBypass {
+		t.Fatalf("outcome = %s", evaluation.Outcome)
+	}
+	if len(evaluation.MatchedRules) != 0 {
+		t.Fatalf("matched rules = %d", len(evaluation.MatchedRules))
+	}
+}
+
 func TestEvaluateInvalidPathPatternReturnsError(t *testing.T) {
 	evaluator := NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()}))
 	request := RequestContext{Method: http.MethodGet, Host: "api.example.com", Port: 443, Path: "/v1/repos"}
@@ -248,6 +266,28 @@ func TestForwarderForwardsInjectsAndRejectsWebSocket(t *testing.T) {
 	metrics = forwarder.ServeHTTP(w, upgrade, RequestContext{}, Evaluation{Outcome: OutcomeAllow})
 	if w.Code != http.StatusUpgradeRequired || metrics.UpstreamStatus != http.StatusUpgradeRequired {
 		t.Fatalf("upgrade code=%d metrics=%+v", w.Code, metrics)
+	}
+}
+
+func TestRuntimeBypassDoesNotProxyOrEmitObservability(t *testing.T) {
+	spans := &fakeSpanEmitter{}
+	metering := &fakeMeteringClient{}
+	rules := NewRuleCache(&fakeRuleClient{rules: [][]*egressv1.EgressRule{{rule("rule-1", "api.example.com", allowEffect())}}}, time.Minute, &fakeClock{now: time.Now()})
+	runtime := NewRuntime(rules, NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()})), NewForwarderWithTransport(time.Second, roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		t.Fatal("forwarder should not be called for unmatched destinations")
+		return nil, nil
+	})), NewObservability(spans, metering, &fakeClock{now: time.Now()}))
+	req := httptest.NewRequest(http.MethodGet, "http://placeholder.local/v1", nil)
+	w := httptest.NewRecorder()
+	err := runtime.ServeRequest(context.Background(), w, req, RequestContext{Method: http.MethodGet, Scheme: "https", Host: "unmatched.example.com", Port: 443, Path: "/v1"})
+	if err != nil {
+		t.Fatalf("ServeRequest: %v", err)
+	}
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("status = %d", w.Code)
+	}
+	if len(spans.spans) != 0 || len(metering.requests) != 0 {
+		t.Fatalf("observability emitted spans=%d metering=%d", len(spans.spans), len(metering.requests))
 	}
 }
 

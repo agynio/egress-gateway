@@ -29,6 +29,7 @@ type Outcome string
 const (
 	OutcomeAllow         Outcome = "allow"
 	OutcomeDeny          Outcome = "deny"
+	OutcomeBypass        Outcome = "bypass"
 	OutcomeUpstreamError Outcome = "upstream_error"
 	OutcomeTLSError      Outcome = "tls_error"
 )
