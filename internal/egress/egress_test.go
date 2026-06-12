@@ -28,12 +28,17 @@ import (
 	egressv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/egress/v1"
 	identityv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/identity/v1"
 	meteringv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/metering/v1"
+	notificationsv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/notifications/v1"
 	secretsv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/secrets/v1"
 	zitimanagementv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/ziti_management/v1"
 	"github.com/openziti/edge-api/rest_model"
 	"github.com/openziti/sdk-golang/ziti"
 	"github.com/openziti/sdk-golang/ziti/edge"
+	collectortracev1 "go.opentelemetry.io/proto/otlp/collector/trace/v1"
+	tracev1 "go.opentelemetry.io/proto/otlp/trace/v1"
+	"golang.org/x/net/http2"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -102,6 +107,40 @@ func TestRuleCacheReturnsErrorAfterStaleWindowExpires(t *testing.T) {
 	}
 }
 
+func TestRuleInvalidationSubscriberInvalidatesFromNotifications(t *testing.T) {
+	clock := &fakeClock{now: time.Unix(10, 0)}
+	client := &fakeRuleClient{rules: [][]*egressv1.EgressRule{
+		{rule("a", "api.example.com", allowEffect())},
+		{rule("b", "api.example.com", allowEffect())},
+		{rule("c", "api.example.com", allowEffect())},
+	}}
+	cache := NewRuleCache(client, time.Minute, clock)
+	if _, err := cache.Rules(context.Background(), "agent-1"); err != nil {
+		t.Fatalf("Rules first: %v", err)
+	}
+	attachmentPayload, err := structpb.NewStruct(map[string]any{"agent_id": "agent-1"})
+	if err != nil {
+		t.Fatalf("payload: %v", err)
+	}
+	subscriber := NewRuleInvalidationSubscriber(&fakeNotificationsClient{}, cache, nil)
+	subscriber.handleEnvelope(&notificationsv1.NotificationEnvelope{Event: egressRuleAttachmentUpdatedEvent, Payload: attachmentPayload})
+	second, err := cache.Rules(context.Background(), "agent-1")
+	if err != nil {
+		t.Fatalf("Rules second: %v", err)
+	}
+	if second[0].GetMeta().GetId() != "b" {
+		t.Fatalf("attachment invalidated rule id = %s", second[0].GetMeta().GetId())
+	}
+	subscriber.handleEnvelope(&notificationsv1.NotificationEnvelope{Event: egressRuleUpdatedEvent})
+	third, err := cache.Rules(context.Background(), "agent-1")
+	if err != nil {
+		t.Fatalf("Rules third: %v", err)
+	}
+	if third[0].GetMeta().GetId() != "c" {
+		t.Fatalf("rule update invalidated rule id = %s", third[0].GetMeta().GetId())
+	}
+}
+
 func TestEvaluateMatcherAndDenyWins(t *testing.T) {
 	evaluator := NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()}))
 	request := RequestContext{Method: http.MethodGet, Host: "api.example.com", Port: 443, Path: "/v1/repos"}
@@ -117,6 +156,24 @@ func TestEvaluateMatcherAndDenyWins(t *testing.T) {
 		t.Fatalf("outcome = %s", evaluation.Outcome)
 	}
 	if len(evaluation.MatchedRules) != 2 {
+		t.Fatalf("matched rules = %d", len(evaluation.MatchedRules))
+	}
+}
+
+func TestEvaluateReturnsBypassForUnmatchedDestination(t *testing.T) {
+	evaluator := NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()}))
+	request := RequestContext{Method: http.MethodGet, Host: "unmatched.example.com", Port: 443, Path: "/v1/repos"}
+	rules := []*egressv1.EgressRule{
+		rule("1", "api.example.com", allowEffect(), withPorts(443)),
+	}
+	evaluation, err := evaluator.Evaluate(context.Background(), request, rules)
+	if err != nil {
+		t.Fatalf("Evaluate: %v", err)
+	}
+	if evaluation.Outcome != OutcomeBypass {
+		t.Fatalf("outcome = %s", evaluation.Outcome)
+	}
+	if len(evaluation.MatchedRules) != 0 {
 		t.Fatalf("matched rules = %d", len(evaluation.MatchedRules))
 	}
 }
@@ -212,6 +269,28 @@ func TestForwarderForwardsInjectsAndRejectsWebSocket(t *testing.T) {
 	}
 }
 
+func TestRuntimeBypassDoesNotProxyOrEmitObservability(t *testing.T) {
+	spans := &fakeSpanEmitter{}
+	metering := &fakeMeteringClient{}
+	rules := NewRuleCache(&fakeRuleClient{rules: [][]*egressv1.EgressRule{{rule("rule-1", "api.example.com", allowEffect())}}}, time.Minute, &fakeClock{now: time.Now()})
+	runtime := NewRuntime(rules, NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()})), NewForwarderWithTransport(time.Second, roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		t.Fatal("forwarder should not be called for unmatched destinations")
+		return nil, nil
+	})), NewObservability(spans, metering, &fakeClock{now: time.Now()}))
+	req := httptest.NewRequest(http.MethodGet, "http://placeholder.local/v1", nil)
+	w := httptest.NewRecorder()
+	err := runtime.ServeRequest(context.Background(), w, req, RequestContext{Method: http.MethodGet, Scheme: "https", Host: "unmatched.example.com", Port: 443, Path: "/v1"})
+	if err != nil {
+		t.Fatalf("ServeRequest: %v", err)
+	}
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("status = %d", w.Code)
+	}
+	if len(spans.spans) != 0 || len(metering.requests) != 0 {
+		t.Fatalf("observability emitted spans=%d metering=%d", len(spans.spans), len(metering.requests))
+	}
+}
+
 func TestLeafCertificateCacheGeneratesAndCaches(t *testing.T) {
 	clock := &fakeClock{now: time.Unix(200, 0)}
 	ca := testCA(t)
@@ -241,6 +320,33 @@ func TestLeafCertificateCacheGeneratesAndCaches(t *testing.T) {
 	}
 	if third == first {
 		t.Fatal("expected regenerated certificate after ttl")
+	}
+}
+
+func TestOTLPSpanEmitterExportsSpan(t *testing.T) {
+	client := &fakeOTLPTraceClient{}
+	emitter := NewOTLPSpanEmitter(client)
+	span := Span{
+		Name:         "egress.request",
+		Kind:         "CLIENT",
+		StatusCode:   "OK",
+		Organization: "org-1",
+		StartTime:    time.Unix(10, 0),
+		EndTime:      time.Unix(11, 0),
+		Attributes: map[string]any{
+			"egress.host": "api.example.com",
+			"egress.port": 443,
+		},
+	}
+	if err := emitter.EmitSpan(context.Background(), span); err != nil {
+		t.Fatalf("EmitSpan: %v", err)
+	}
+	if len(client.requests) != 1 {
+		t.Fatalf("export requests = %d", len(client.requests))
+	}
+	spans := client.requests[0].GetResourceSpans()[0].GetScopeSpans()[0].GetSpans()
+	if len(spans) != 1 || spans[0].GetName() != "egress.request" || spans[0].GetKind() != tracev1.Span_SPAN_KIND_CLIENT {
+		t.Fatalf("exported spans = %+v", spans)
 	}
 }
 
@@ -486,6 +592,44 @@ func TestDataPlaneHTTPSUsesGeneratedLeafCertificate(t *testing.T) {
 	}
 }
 
+func TestDataPlaneHTTP2PathInjectsSecretHeader(t *testing.T) {
+	var upstreamHeader string
+	transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		upstreamHeader = r.Header.Get("Authorization")
+		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(strings.NewReader("ok"))}, nil
+	})
+	rules := NewRuleCache(&fakeRuleClient{rules: [][]*egressv1.EgressRule{{rule("rule-1", "api.example.com", injectEffect(headerSecret("Authorization", "secret-1", egressv1.HeaderAuthScheme_HEADER_AUTH_SCHEME_BEARER)))}}}, time.Minute, &fakeClock{now: time.Now()})
+	secrets := NewSecretCache(&fakeSecretClient{values: []string{"token"}}, time.Minute, &fakeClock{now: time.Now()})
+	runtime := NewRuntime(rules, NewEvaluator(secrets), NewForwarderWithTransport(time.Second, transport), nil)
+	identity := NewIdentityResolver(&fakeZitiIdentityClient{}, &fakeAgentIdentityClient{})
+	serverConn, clientConn := net.Pipe()
+	ca := testCA(t)
+	listener := &fakeDataPlaneListener{conn: &fakeDataPlaneConn{Conn: serverConn, dialerIdentityID: "ziti-agent-1", appData: []byte(`{"dst_protocol":"tcp","dst_hostname":"api.example.com","dst_port":"443"}`)}}
+	server := NewDataPlaneServer(listener, runtime, identity, NewLeafCertificateCache(ca, time.Minute, 2, &fakeClock{now: time.Now()}))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() { _ = server.Serve(ctx) }()
+
+	root := x509.NewCertPool()
+	root.AddCert(ca.cert)
+	h2Client := &http.Client{Transport: &http2.Transport{DialTLSContext: func(context.Context, string, string, *tls.Config) (net.Conn, error) {
+		return tls.Client(clientConn, &tls.Config{ServerName: "api.example.com", RootCAs: root, NextProtos: []string{"h2"}}), nil
+	}}}
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.example.com/secure", nil)
+	if err != nil {
+		t.Fatalf("new request: %v", err)
+	}
+	request.Header.Set("Authorization", "caller")
+	response, err := h2Client.Do(request)
+	if err != nil {
+		t.Fatalf("h2 request: %v", err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK || upstreamHeader != "Bearer token" {
+		t.Fatalf("status=%d upstream authorization=%q", response.StatusCode, upstreamHeader)
+	}
+}
+
 type fakeClock struct{ now time.Time }
 
 func (f *fakeClock) Now() time.Time { return f.now }
@@ -547,6 +691,21 @@ func (f *fakeMeteringClient) Record(_ context.Context, req *meteringv1.RecordReq
 	}
 	f.requests = append(f.requests, req)
 	return &meteringv1.RecordResponse{}, nil
+}
+
+type fakeOTLPTraceClient struct {
+	requests []*collectortracev1.ExportTraceServiceRequest
+}
+
+func (f *fakeOTLPTraceClient) Export(_ context.Context, req *collectortracev1.ExportTraceServiceRequest, _ ...grpc.CallOption) (*collectortracev1.ExportTraceServiceResponse, error) {
+	f.requests = append(f.requests, req)
+	return &collectortracev1.ExportTraceServiceResponse{}, nil
+}
+
+type fakeNotificationsClient struct{}
+
+func (f *fakeNotificationsClient) Subscribe(context.Context, *notificationsv1.SubscribeRequest, ...grpc.CallOption) (grpc.ServerStreamingClient[notificationsv1.SubscribeResponse], error) {
+	return nil, io.EOF
 }
 
 type ruleOption func(*egressv1.EgressRule)

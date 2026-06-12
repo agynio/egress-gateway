@@ -29,6 +29,7 @@ type Outcome string
 const (
 	OutcomeAllow         Outcome = "allow"
 	OutcomeDeny          Outcome = "deny"
+	OutcomeBypass        Outcome = "bypass"
 	OutcomeUpstreamError Outcome = "upstream_error"
 	OutcomeTLSError      Outcome = "tls_error"
 )
@@ -51,4 +52,6 @@ type RequestMetrics struct {
 	BytesIn        int64
 	BytesOut       int64
 	Latency        time.Duration
+	StartedAt      time.Time
+	CompletedAt    time.Time
 }

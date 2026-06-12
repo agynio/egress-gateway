@@ -27,6 +27,9 @@ func (e *Evaluator) Evaluate(ctx context.Context, req RequestContext, rules []*e
 	if hasDeny(matched) {
 		return Evaluation{Outcome: OutcomeDeny, MatchedRules: matched, InjectedHeader: http.Header{}}, nil
 	}
+	if len(matched) == 0 {
+		return Evaluation{Outcome: OutcomeBypass, MatchedRules: matched, InjectedHeader: http.Header{}}, nil
+	}
 	headers, err := e.injectedHeaders(ctx, matched)
 	if err != nil {
 		return Evaluation{}, err

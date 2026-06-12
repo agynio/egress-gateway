@@ -13,10 +13,12 @@ import (
 	agentsv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/agents/v1"
 	egressv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/egress/v1"
 	meteringv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/metering/v1"
+	notificationsv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/notifications/v1"
 	secretsv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/secrets/v1"
 	zitimanagementv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/ziti_management/v1"
 	"github.com/agynio/egress-gateway/internal/config"
 	"github.com/agynio/egress-gateway/internal/egress"
+	collectortracev1 "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -76,8 +78,10 @@ func (s *Server) Run(ctx context.Context) error {
 
 func (s *Server) runDataPlane(ctx context.Context) {
 	for ctx.Err() == nil && !s.isClosed() {
-		dataPlane, zitiCtx, grpcConns, err := s.buildDataPlane()
+		runCtx, cancel := context.WithCancel(ctx)
+		dataPlane, zitiCtx, grpcConns, err := s.buildDataPlane(runCtx)
 		if err != nil {
+			cancel()
 			s.setDataPlaneState(false, err)
 			log.Printf("start ziti data plane: %v", err)
 			if !sleepWithContext(ctx, s.dataPlaneRetryInterval()) {
@@ -87,7 +91,8 @@ func (s *Server) runDataPlane(ctx context.Context) {
 		}
 		s.setDataPlane(dataPlane, zitiCtx, grpcConns)
 		log.Printf("egress-gateway ziti data-plane listening")
-		err = dataPlane.Serve(ctx)
+		err = dataPlane.Serve(runCtx)
+		cancel()
 		s.clearDataPlane()
 		if ctx.Err() != nil || s.isClosed() {
 			return
@@ -100,7 +105,7 @@ func (s *Server) runDataPlane(ctx context.Context) {
 	}
 }
 
-func (s *Server) buildDataPlane() (*egress.DataPlaneServer, egress.ZitiContext, []*grpc.ClientConn, error) {
+func (s *Server) buildDataPlane(ctx context.Context) (*egress.DataPlaneServer, egress.ZitiContext, []*grpc.ClientConn, error) {
 	zitiCtx, err := egress.LoadZitiContext(s.cfg.ZitiIdentityFile)
 	if err != nil {
 		return nil, nil, nil, err
@@ -127,20 +132,28 @@ func (s *Server) buildDataPlane() (*egress.DataPlaneServer, egress.ZitiContext, 
 	zitiClient := zitimanagementv1.NewZitiManagementServiceClient(grpcConns[2])
 	agentClient := agentsv1.NewAgentsServiceClient(grpcConns[3])
 	meteringClient := meteringv1.NewMeteringServiceClient(grpcConns[4])
+	notificationsClient := notificationsv1.NewNotificationsServiceClient(grpcConns[5])
+	traceClient := collectortracev1.NewTraceServiceClient(grpcConns[6])
 	clock := egress.SystemClock{}
 	rules := egress.NewRuleCache(ruleClient, s.cfg.RuleCacheTTL, clock)
 	secrets := egress.NewSecretCache(secretClient, s.cfg.SecretCacheTTL, clock)
 	evaluator := egress.NewEvaluator(secrets)
 	forwarder := egress.NewForwarder(s.cfg.ForwardTimeout)
-	observed := egress.NewObservability(nil, meteringClient, clock)
+	spans := egress.NewOTLPSpanEmitter(traceClient)
+	observed := egress.NewObservability(spans, meteringClient, clock)
 	runtime := egress.NewRuntime(rules, evaluator, forwarder, observed)
+	go func() {
+		if err := egress.NewRuleInvalidationSubscriber(notificationsClient, rules, []string{egress.EgressRulesRoom}).Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
+			log.Printf("egress rule invalidation subscriber stopped: %v", err)
+		}
+	}()
 	identity := egress.NewIdentityResolver(zitiClient, agentClient)
 	certs := egress.NewLeafCertificateCache(ca, s.cfg.LeafCertTTL, s.cfg.LeafCertCacheSize, clock)
 	return egress.NewDataPlaneServer(listener, runtime, identity, certs), zitiCtx, grpcConns, nil
 }
 
 func (s *Server) newGRPCConns() ([]*grpc.ClientConn, error) {
-	targets := []string{s.cfg.EgressAddress, s.cfg.SecretsAddress, s.cfg.ZitiManagementAddress, s.cfg.AgentsAddress, s.cfg.MeteringAddress}
+	targets := []string{s.cfg.EgressAddress, s.cfg.SecretsAddress, s.cfg.ZitiManagementAddress, s.cfg.AgentsAddress, s.cfg.MeteringAddress, s.cfg.NotificationsAddress, s.cfg.TracingAddress}
 	conns := make([]*grpc.ClientConn, 0, len(targets))
 	for _, target := range targets {
 		conn, err := grpc.NewClient(target, grpc.WithTransportCredentials(insecure.NewCredentials()))

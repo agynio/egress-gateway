@@ -14,10 +14,13 @@ import (
 )
 
 type Span struct {
-	Name       string
-	Kind       string
-	StatusCode string
-	Attributes map[string]any
+	Name         string
+	Kind         string
+	StatusCode   string
+	Organization string
+	StartTime    time.Time
+	EndTime      time.Time
+	Attributes   map[string]any
 }
 
 type SpanEmitter interface {
@@ -78,7 +81,7 @@ func spanFromMetrics(metrics RequestMetrics) Span {
 	if metrics.UpstreamStatus != 0 {
 		attributes["egress.upstream_status"] = metrics.UpstreamStatus
 	}
-	return Span{Name: "egress.request", Kind: "CLIENT", StatusCode: statusCode, Attributes: attributes}
+	return Span{Name: "egress.request", Kind: "CLIENT", StatusCode: statusCode, Organization: metrics.Context.Agent.OrganizationID, StartTime: metrics.StartedAt, EndTime: metrics.CompletedAt, Attributes: attributes}
 }
 
 func meteringRecordFromMetrics(metrics RequestMetrics, now time.Time) *meteringv1.UsageRecord {

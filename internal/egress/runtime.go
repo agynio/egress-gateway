@@ -43,6 +43,10 @@ func (r *Runtime) ServeRequest(ctx context.Context, w http.ResponseWriter, req *
 		}
 		return err
 	}
+	if evaluation.Outcome == OutcomeBypass {
+		http.Error(w, "egress gateway bypassed unmatched destination", http.StatusNotFound)
+		return nil
+	}
 	metrics := r.forwarder.ServeHTTP(w, req, requestContext, evaluation)
 	if r.observed != nil {
 		r.emitObservability(ctx, metrics)
