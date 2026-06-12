@@ -52,18 +52,20 @@ func NewForwarderWithTransport(timeout time.Duration, transport http.RoundTrippe
 
 func (f *Forwarder) ServeHTTP(w http.ResponseWriter, r *http.Request, reqCtx RequestContext, evaluation Evaluation) RequestMetrics {
 	start := time.Now()
-	metrics := RequestMetrics{Context: reqCtx, Outcome: evaluation.Outcome, MatchedRuleIDs: matchedRuleIDs(evaluation.MatchedRules)}
+	metrics := RequestMetrics{Context: reqCtx, Outcome: evaluation.Outcome, MatchedRuleIDs: matchedRuleIDs(evaluation.MatchedRules), StartedAt: start}
 	if isUpgradeRequest(r) {
 		metrics.Outcome = OutcomeUpstreamError
 		http.Error(w, "egress gateway does not support upgraded connections", http.StatusUpgradeRequired)
 		metrics.UpstreamStatus = http.StatusUpgradeRequired
 		metrics.Latency = time.Since(start)
+		metrics.CompletedAt = time.Now()
 		return metrics
 	}
 	if evaluation.Outcome == OutcomeDeny {
 		http.Error(w, "egress rule denied request", http.StatusForbidden)
 		metrics.UpstreamStatus = http.StatusForbidden
 		metrics.Latency = time.Since(start)
+		metrics.CompletedAt = time.Now()
 		return metrics
 	}
 	upstream, err := buildUpstreamRequest(r, reqCtx, evaluation.InjectedHeader)
@@ -72,6 +74,7 @@ func (f *Forwarder) ServeHTTP(w http.ResponseWriter, r *http.Request, reqCtx Req
 		http.Error(w, "egress gateway could not build upstream request", http.StatusBadGateway)
 		metrics.UpstreamStatus = http.StatusBadGateway
 		metrics.Latency = time.Since(start)
+		metrics.CompletedAt = time.Now()
 		return metrics
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), f.timeout)
@@ -83,6 +86,7 @@ func (f *Forwarder) ServeHTTP(w http.ResponseWriter, r *http.Request, reqCtx Req
 		http.Error(w, "egress gateway upstream request failed", http.StatusBadGateway)
 		metrics.UpstreamStatus = http.StatusBadGateway
 		metrics.Latency = time.Since(start)
+		metrics.CompletedAt = time.Now()
 		return metrics
 	}
 	defer resp.Body.Close()
@@ -93,6 +97,7 @@ func (f *Forwarder) ServeHTTP(w http.ResponseWriter, r *http.Request, reqCtx Req
 	metrics.BytesOut = bytesOut
 	metrics.UpstreamStatus = resp.StatusCode
 	metrics.Latency = time.Since(start)
+	metrics.CompletedAt = time.Now()
 	if copyErr != nil {
 		metrics.Outcome = OutcomeUpstreamError
 	}

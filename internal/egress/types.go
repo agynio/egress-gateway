@@ -51,4 +51,6 @@ type RequestMetrics struct {
 	BytesIn        int64
 	BytesOut       int64
 	Latency        time.Duration
+	StartedAt      time.Time
+	CompletedAt    time.Time
 }

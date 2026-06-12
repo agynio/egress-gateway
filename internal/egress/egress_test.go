@@ -34,6 +34,8 @@ import (
 	"github.com/openziti/edge-api/rest_model"
 	"github.com/openziti/sdk-golang/ziti"
 	"github.com/openziti/sdk-golang/ziti/edge"
+	collectortracev1 "go.opentelemetry.io/proto/otlp/collector/trace/v1"
+	tracev1 "go.opentelemetry.io/proto/otlp/trace/v1"
 	"golang.org/x/net/http2"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -278,6 +280,33 @@ func TestLeafCertificateCacheGeneratesAndCaches(t *testing.T) {
 	}
 	if third == first {
 		t.Fatal("expected regenerated certificate after ttl")
+	}
+}
+
+func TestOTLPSpanEmitterExportsSpan(t *testing.T) {
+	client := &fakeOTLPTraceClient{}
+	emitter := NewOTLPSpanEmitter(client)
+	span := Span{
+		Name:         "egress.request",
+		Kind:         "CLIENT",
+		StatusCode:   "OK",
+		Organization: "org-1",
+		StartTime:    time.Unix(10, 0),
+		EndTime:      time.Unix(11, 0),
+		Attributes: map[string]any{
+			"egress.host": "api.example.com",
+			"egress.port": 443,
+		},
+	}
+	if err := emitter.EmitSpan(context.Background(), span); err != nil {
+		t.Fatalf("EmitSpan: %v", err)
+	}
+	if len(client.requests) != 1 {
+		t.Fatalf("export requests = %d", len(client.requests))
+	}
+	spans := client.requests[0].GetResourceSpans()[0].GetScopeSpans()[0].GetSpans()
+	if len(spans) != 1 || spans[0].GetName() != "egress.request" || spans[0].GetKind() != tracev1.Span_SPAN_KIND_CLIENT {
+		t.Fatalf("exported spans = %+v", spans)
 	}
 }
 
@@ -622,6 +651,15 @@ func (f *fakeMeteringClient) Record(_ context.Context, req *meteringv1.RecordReq
 	}
 	f.requests = append(f.requests, req)
 	return &meteringv1.RecordResponse{}, nil
+}
+
+type fakeOTLPTraceClient struct {
+	requests []*collectortracev1.ExportTraceServiceRequest
+}
+
+func (f *fakeOTLPTraceClient) Export(_ context.Context, req *collectortracev1.ExportTraceServiceRequest, _ ...grpc.CallOption) (*collectortracev1.ExportTraceServiceResponse, error) {
+	f.requests = append(f.requests, req)
+	return &collectortracev1.ExportTraceServiceResponse{}, nil
 }
 
 type fakeNotificationsClient struct{}

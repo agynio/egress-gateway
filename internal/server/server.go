@@ -18,7 +18,7 @@ import (
 	zitimanagementv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/ziti_management/v1"
 	"github.com/agynio/egress-gateway/internal/config"
 	"github.com/agynio/egress-gateway/internal/egress"
-	"go.opentelemetry.io/otel"
+	collectortracev1 "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -133,12 +133,13 @@ func (s *Server) buildDataPlane(ctx context.Context) (*egress.DataPlaneServer, e
 	agentClient := agentsv1.NewAgentsServiceClient(grpcConns[3])
 	meteringClient := meteringv1.NewMeteringServiceClient(grpcConns[4])
 	notificationsClient := notificationsv1.NewNotificationsServiceClient(grpcConns[5])
+	traceClient := collectortracev1.NewTraceServiceClient(grpcConns[6])
 	clock := egress.SystemClock{}
 	rules := egress.NewRuleCache(ruleClient, s.cfg.RuleCacheTTL, clock)
 	secrets := egress.NewSecretCache(secretClient, s.cfg.SecretCacheTTL, clock)
 	evaluator := egress.NewEvaluator(secrets)
 	forwarder := egress.NewForwarder(s.cfg.ForwardTimeout)
-	spans := egress.NewOTelSpanEmitter(otel.Tracer("github.com/agynio/egress-gateway"))
+	spans := egress.NewOTLPSpanEmitter(traceClient)
 	observed := egress.NewObservability(spans, meteringClient, clock)
 	runtime := egress.NewRuntime(rules, evaluator, forwarder, observed)
 	go func() {
@@ -152,7 +153,7 @@ func (s *Server) buildDataPlane(ctx context.Context) (*egress.DataPlaneServer, e
 }
 
 func (s *Server) newGRPCConns() ([]*grpc.ClientConn, error) {
-	targets := []string{s.cfg.EgressAddress, s.cfg.SecretsAddress, s.cfg.ZitiManagementAddress, s.cfg.AgentsAddress, s.cfg.MeteringAddress, s.cfg.NotificationsAddress}
+	targets := []string{s.cfg.EgressAddress, s.cfg.SecretsAddress, s.cfg.ZitiManagementAddress, s.cfg.AgentsAddress, s.cfg.MeteringAddress, s.cfg.NotificationsAddress, s.cfg.TracingAddress}
 	conns := make([]*grpc.ClientConn, 0, len(targets))
 	for _, target := range targets {
 		conn, err := grpc.NewClient(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
