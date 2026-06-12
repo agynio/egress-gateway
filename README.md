@@ -51,6 +51,7 @@ go run ./cmd/egress-gateway
 | `AGENTS_SERVICE_ADDRESS` | No | `agents:50051` | Agents gRPC target. |
 | `ZITI_MANAGEMENT_ADDRESS` | No | `ziti-management:50051` | Ziti Management gRPC target. |
 | `ZITI_IDENTITY_FILE` | No | `/var/lib/ziti/identity.json` | Enrolled OpenZiti identity path. |
+| `ZITI_ENROLLMENT_JWT_FILE` | No | `/var/run/ziti/enrollment/enrollmentJwt` | Enrollment JWT used to create the identity file when it is missing. |
 | `ZITI_SERVICE_NAME` | No | empty | Explicit OpenZiti service name to bind; when empty, the gateway reconciles and binds accessible services tagged with the `egress-services` role attribute. |
 | `EGRESS_CA_CERT_PATH` | No | `/var/run/agyn/egress-ca/tls.crt` | Platform Egress CA certificate path. |
 | `EGRESS_CA_KEY_PATH` | No | `/var/run/agyn/egress-ca/tls.key` | Platform Egress CA key path. |

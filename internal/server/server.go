@@ -106,6 +106,9 @@ func (s *Server) runDataPlane(ctx context.Context) {
 }
 
 func (s *Server) buildDataPlane(ctx context.Context) (*egress.DataPlaneServer, egress.ZitiContext, []*grpc.ClientConn, error) {
+	if err := egress.EnsureZitiIdentity(s.cfg.ZitiIdentityFile, s.cfg.ZitiEnrollmentJWTFile); err != nil {
+		return nil, nil, nil, err
+	}
 	zitiCtx, err := egress.LoadZitiContext(s.cfg.ZitiIdentityFile)
 	if err != nil {
 		return nil, nil, nil, err

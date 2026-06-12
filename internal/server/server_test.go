@@ -10,7 +10,7 @@ import (
 )
 
 func TestAdminHealthDoesNotDependOnDataPlane(t *testing.T) {
-	cfg := config.Config{GRPCAddress: "127.0.0.1:0", DataPlaneRetryInterval: time.Hour}
+	cfg := config.Config{GRPCAddress: "127.0.0.1:0", ZitiIdentityFile: t.TempDir() + "/identity.json", DataPlaneRetryInterval: time.Hour}
 	srv := New(cfg)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

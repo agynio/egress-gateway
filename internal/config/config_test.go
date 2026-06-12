@@ -20,6 +20,9 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.SecretCacheTTL != defaultSecretCacheTTL {
 		t.Fatalf("secret cache ttl = %s", cfg.SecretCacheTTL)
 	}
+	if cfg.ZitiEnrollmentJWTFile != defaultZitiEnrollmentJWT {
+		t.Fatalf("ziti enrollment jwt file = %q", cfg.ZitiEnrollmentJWTFile)
+	}
 	if cfg.ZitiServiceName != defaultZitiServiceName {
 		t.Fatalf("ziti service name = %q", cfg.ZitiServiceName)
 	}
@@ -44,5 +47,16 @@ func TestLoadRejectsInvalidLeafCertCacheSize(t *testing.T) {
 	_, err := Load()
 	if err == nil {
 		t.Fatal("expected invalid cache size to fail")
+	}
+}
+
+func TestLoadReadsZitiEnrollmentJWTFile(t *testing.T) {
+	t.Setenv("ZITI_ENROLLMENT_JWT_FILE", "/var/run/secrets/ziti/enrollmentJwt")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if cfg.ZitiEnrollmentJWTFile != "/var/run/secrets/ziti/enrollmentJwt" {
+		t.Fatalf("ziti enrollment jwt file = %q", cfg.ZitiEnrollmentJWTFile)
 	}
 }

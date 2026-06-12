@@ -17,6 +17,7 @@ const (
 	defaultAgentsTarget         = "agents:50051"
 	defaultZitiManagementTarget = "ziti-management:50051"
 	defaultZitiIdentityFile     = "/var/lib/ziti/identity.json"
+	defaultZitiEnrollmentJWT    = ""
 	defaultZitiServiceName      = ""
 	defaultEgressCACertPath     = "/var/run/agyn/egress-ca/tls.crt"
 	defaultEgressCAKeyPath      = "/var/run/agyn/egress-ca/tls.key"
@@ -38,6 +39,7 @@ type Config struct {
 	AgentsAddress          string
 	ZitiManagementAddress  string
 	ZitiIdentityFile       string
+	ZitiEnrollmentJWTFile  string
 	ZitiServiceName        string
 	EgressCACertPath       string
 	EgressCAKeyPath        string
@@ -60,6 +62,7 @@ func Load() (Config, error) {
 		AgentsAddress:          envOrDefault("AGENTS_SERVICE_ADDRESS", defaultAgentsTarget),
 		ZitiManagementAddress:  envOrDefault("ZITI_MANAGEMENT_ADDRESS", defaultZitiManagementTarget),
 		ZitiIdentityFile:       envOrDefault("ZITI_IDENTITY_FILE", defaultZitiIdentityFile),
+		ZitiEnrollmentJWTFile:  envOrDefault("ZITI_ENROLLMENT_JWT_FILE", defaultZitiEnrollmentJWT),
 		ZitiServiceName:        envOrDefault("ZITI_SERVICE_NAME", defaultZitiServiceName),
 		EgressCACertPath:       envOrDefault("EGRESS_CA_CERT_PATH", defaultEgressCACertPath),
 		EgressCAKeyPath:        envOrDefault("EGRESS_CA_KEY_PATH", defaultEgressCAKeyPath),
