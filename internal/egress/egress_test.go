@@ -528,6 +528,23 @@ func TestDataPlaneRuntimeErrorDoesNotWriteDefaultSuccess(t *testing.T) {
 	}
 }
 
+func TestEnsureZitiIdentityUsesExistingIdentityFile(t *testing.T) {
+	identityFile := tempPEM(t, "IDENTITY", []byte("existing"))
+	if err := EnsureZitiIdentity(identityFile, ""); err != nil {
+		t.Fatalf("EnsureZitiIdentity: %v", err)
+	}
+}
+
+func TestEnsureZitiIdentityRequiresEnrollmentJWTWhenIdentityMissing(t *testing.T) {
+	err := EnsureZitiIdentity(t.TempDir()+"/identity.json", "")
+	if err == nil {
+		t.Fatal("expected missing enrollment jwt to fail")
+	}
+	if !strings.Contains(err.Error(), "ZITI_ENROLLMENT_JWT_FILE") {
+		t.Fatalf("err = %v", err)
+	}
+}
+
 func TestDefaultZitiBindingDiscoversRoleServices(t *testing.T) {
 	services := []rest_model.ServiceDetail{
 		serviceDetail("egress-rule-1", "egress-services"),
