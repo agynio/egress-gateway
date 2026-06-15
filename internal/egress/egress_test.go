@@ -145,7 +145,7 @@ func TestEvaluateMatcherAndDenyWins(t *testing.T) {
 	evaluator := NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()}))
 	request := RequestContext{Method: http.MethodGet, Host: "api.example.com", Port: 443, Path: "/v1/repos"}
 	rules := []*egressv1.EgressRule{
-		rule("1", "*.example.com", allowEffect(), withPorts(443), withMethods(http.MethodGet), withPath("/v1/*")),
+		rule("1", "*.example.com", allowEffect(), withPorts(443), withMethods(http.MethodGet), withPath("/v1/**")),
 		rule("2", "api.example.com", denyEffect(), withPorts(443)),
 	}
 	evaluation, err := evaluator.Evaluate(context.Background(), request, rules)
@@ -157,6 +157,57 @@ func TestEvaluateMatcherAndDenyWins(t *testing.T) {
 	}
 	if len(evaluation.MatchedRules) != 2 {
 		t.Fatalf("matched rules = %d", len(evaluation.MatchedRules))
+	}
+}
+
+func TestEvaluateWildcardHostMatchesSingleSubdomain(t *testing.T) {
+	evaluator := NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()}))
+	rules := []*egressv1.EgressRule{rule("1", "*.github.com", allowEffect(), withPorts(443))}
+
+	for _, tc := range []struct {
+		name string
+		host string
+		want Outcome
+	}{
+		{name: "single subdomain", host: "api.github.com", want: OutcomeAllow},
+		{name: "root domain", host: "github.com", want: OutcomeBypass},
+		{name: "multiple subdomains", host: "code.api.github.com", want: OutcomeBypass},
+	} {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			evaluation, err := evaluator.Evaluate(context.Background(), RequestContext{Method: http.MethodGet, Host: tc.host, Port: 443, Path: "/"}, rules)
+			if err != nil {
+				t.Fatalf("Evaluate: %v", err)
+			}
+			if evaluation.Outcome != tc.want {
+				t.Fatalf("outcome = %s, want %s", evaluation.Outcome, tc.want)
+			}
+		})
+	}
+}
+
+func TestEvaluateRecursivePathGlob(t *testing.T) {
+	evaluator := NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()}))
+	rules := []*egressv1.EgressRule{rule("1", "api.github.com", allowEffect(), withPorts(443), withPath("/repos/**"))}
+
+	for _, tc := range []struct {
+		path string
+		want Outcome
+	}{
+		{path: "/repos/owner/project", want: OutcomeAllow},
+		{path: "/repos/owner/project/issues/1", want: OutcomeAllow},
+		{path: "/users/owner/project", want: OutcomeBypass},
+	} {
+		tc := tc
+		t.Run(tc.path, func(t *testing.T) {
+			evaluation, err := evaluator.Evaluate(context.Background(), RequestContext{Method: http.MethodGet, Host: "api.github.com", Port: 443, Path: tc.path}, rules)
+			if err != nil {
+				t.Fatalf("Evaluate: %v", err)
+			}
+			if evaluation.Outcome != tc.want {
+				t.Fatalf("outcome = %s, want %s", evaluation.Outcome, tc.want)
+			}
+		})
 	}
 }
 

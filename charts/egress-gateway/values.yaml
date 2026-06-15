@@ -89,6 +89,8 @@ env:
     value: "ziti-management:50051"
   - name: ZITI_IDENTITY_FILE
     value: "/var/lib/ziti/identity.json"
+  - name: ZITI_LEASE_INTERVAL
+    value: "30s"
   - name: ZITI_SERVICE_NAME
     value: ""
   - name: EGRESS_CA_CERT_PATH
@@ -116,14 +118,13 @@ configMounts: []
 extraVolumeMounts:
   - name: ziti-identity
     mountPath: /var/lib/ziti
-    readOnly: true
+    readOnly: false
   - name: egress-ca
     mountPath: /var/run/agyn/egress-ca
     readOnly: true
 extraVolumes:
   - name: ziti-identity
-    secret:
-      secretName: egress-gateway-ziti-identity
+    emptyDir: {}
   - name: egress-ca
     secret:
       secretName: egress-ca

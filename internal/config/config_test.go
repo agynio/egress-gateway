@@ -23,6 +23,9 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.ZitiServiceName != defaultZitiServiceName {
 		t.Fatalf("ziti service name = %q", cfg.ZitiServiceName)
 	}
+	if cfg.ZitiLeaseInterval != defaultZitiLeaseInterval {
+		t.Fatalf("ziti lease interval = %s", cfg.ZitiLeaseInterval)
+	}
 	if cfg.LeafCertCacheSize != defaultLeafCertCacheSize {
 		t.Fatalf("leaf cert cache size = %d", cfg.LeafCertCacheSize)
 	}
