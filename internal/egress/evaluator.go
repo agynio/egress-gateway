@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"path"
 	"sort"
 	"strings"
+	"unicode/utf8"
 
 	egressv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/egress/v1"
 )
@@ -71,7 +71,11 @@ func domainMatches(host string, pattern string) bool {
 	pattern = strings.ToLower(strings.TrimSuffix(pattern, "."))
 	if strings.HasPrefix(pattern, "*.") {
 		suffix := strings.TrimPrefix(pattern, "*.")
-		return strings.HasSuffix(host, "."+suffix) && host != suffix
+		if !strings.HasSuffix(host, "."+suffix) || host == suffix {
+			return false
+		}
+		prefix := strings.TrimSuffix(host, "."+suffix)
+		return !strings.Contains(prefix, ".") && prefix != ""
 	}
 	return host == pattern
 }
@@ -104,11 +108,81 @@ func pathMatches(requestPath string, pattern string) (bool, error) {
 	if pattern == "" {
 		return true, nil
 	}
-	matched, err := path.Match(pattern, requestPath)
+	matched, err := globPathMatch(pattern, requestPath)
 	if err != nil {
 		return false, err
 	}
 	return matched, nil
+}
+
+func globPathMatch(pattern string, requestPath string) (bool, error) {
+	if _, err := compilePathGlob(pattern); err != nil {
+		return false, err
+	}
+	return matchPathGlob(pattern, requestPath), nil
+}
+
+func compilePathGlob(pattern string) ([]rune, error) {
+	if !utf8.ValidString(pattern) {
+		return nil, fmt.Errorf("path pattern must be valid UTF-8")
+	}
+	runes := []rune(pattern)
+	for i := 0; i < len(runes); i++ {
+		switch runes[i] {
+		case '[':
+			return nil, fmt.Errorf("character classes are not supported")
+		case '\\':
+			return nil, fmt.Errorf("escapes are not supported")
+		}
+	}
+	return runes, nil
+}
+
+func matchPathGlob(pattern string, requestPath string) bool {
+	patternRunes := []rune(pattern)
+	pathRunes := []rune(requestPath)
+	matches := make([][]bool, len(patternRunes)+1)
+	for i := range matches {
+		matches[i] = make([]bool, len(pathRunes)+1)
+	}
+	matches[0][0] = true
+	for patternIndex := 0; patternIndex < len(patternRunes); patternIndex++ {
+		for pathIndex := 0; pathIndex <= len(pathRunes); pathIndex++ {
+			if !matches[patternIndex][pathIndex] {
+				continue
+			}
+			if isRecursiveGlob(patternRunes, patternIndex) {
+				matches[patternIndex+2][pathIndex] = true
+				if pathIndex < len(pathRunes) {
+					matches[patternIndex][pathIndex+1] = true
+				}
+				continue
+			}
+			if pathIndex >= len(pathRunes) {
+				continue
+			}
+			switch patternRunes[patternIndex] {
+			case '*':
+				if pathRunes[pathIndex] != '/' {
+					matches[patternIndex][pathIndex+1] = true
+				}
+				matches[patternIndex+1][pathIndex] = true
+			case '?':
+				if pathRunes[pathIndex] != '/' {
+					matches[patternIndex+1][pathIndex+1] = true
+				}
+			default:
+				if patternRunes[patternIndex] == pathRunes[pathIndex] {
+					matches[patternIndex+1][pathIndex+1] = true
+				}
+			}
+		}
+	}
+	return matches[len(patternRunes)][len(pathRunes)]
+}
+
+func isRecursiveGlob(pattern []rune, index int) bool {
+	return index+1 < len(pattern) && pattern[index] == '*' && pattern[index+1] == '*'
 }
 
 func hasDeny(rules []*egressv1.EgressRule) bool {

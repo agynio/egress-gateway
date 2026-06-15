@@ -106,30 +106,37 @@ func (s *Server) runDataPlane(ctx context.Context) {
 }
 
 func (s *Server) buildDataPlane(ctx context.Context) (*egress.DataPlaneServer, egress.ZitiContext, []*grpc.ClientConn, error) {
+	grpcConns, err := s.newGRPCConns()
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	zitiClient := zitimanagementv1.NewZitiManagementServiceClient(grpcConns[2])
+	identityManager := egress.NewServiceIdentityManager(zitiClient, s.cfg.ZitiIdentityFile, s.cfg.ZitiLeaseInterval)
+	zitiIdentityID, err := identityManager.Enroll(ctx)
+	if err != nil {
+		closeGRPCConns(grpcConns)
+		return nil, nil, nil, err
+	}
 	zitiCtx, err := egress.LoadZitiContext(s.cfg.ZitiIdentityFile)
 	if err != nil {
+		closeGRPCConns(grpcConns)
 		return nil, nil, nil, err
 	}
 	listener, err := egress.ListenForEgressServices(zitiCtx, s.cfg.ZitiServiceName)
 	if err != nil {
 		zitiCtx.Close()
+		closeGRPCConns(grpcConns)
 		return nil, nil, nil, err
 	}
 	ca, err := egress.LoadCertificateAuthority(s.cfg.EgressCACertPath, s.cfg.EgressCAKeyPath)
 	if err != nil {
 		listener.Close()
 		zitiCtx.Close()
-		return nil, nil, nil, err
-	}
-	grpcConns, err := s.newGRPCConns()
-	if err != nil {
-		listener.Close()
-		zitiCtx.Close()
+		closeGRPCConns(grpcConns)
 		return nil, nil, nil, err
 	}
 	ruleClient := egressv1.NewEgressRulesServiceClient(grpcConns[0])
 	secretClient := secretsv1.NewSecretsServiceClient(grpcConns[1])
-	zitiClient := zitimanagementv1.NewZitiManagementServiceClient(grpcConns[2])
 	agentClient := agentsv1.NewAgentsServiceClient(grpcConns[3])
 	meteringClient := meteringv1.NewMeteringServiceClient(grpcConns[4])
 	notificationsClient := notificationsv1.NewNotificationsServiceClient(grpcConns[5])
@@ -147,6 +154,7 @@ func (s *Server) buildDataPlane(ctx context.Context) (*egress.DataPlaneServer, e
 			log.Printf("egress rule invalidation subscriber stopped: %v", err)
 		}
 	}()
+	go identityManager.RunLeaseExtender(ctx, zitiIdentityID)
 	identity := egress.NewIdentityResolver(zitiClient, agentClient)
 	certs := egress.NewLeafCertificateCache(ca, s.cfg.LeafCertTTL, s.cfg.LeafCertCacheSize, clock)
 	return egress.NewDataPlaneServer(listener, runtime, identity, certs), zitiCtx, grpcConns, nil

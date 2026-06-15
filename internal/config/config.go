@@ -17,6 +17,7 @@ const (
 	defaultAgentsTarget         = "agents:50051"
 	defaultZitiManagementTarget = "ziti-management:50051"
 	defaultZitiIdentityFile     = "/var/lib/ziti/identity.json"
+	defaultZitiLeaseInterval    = 30 * time.Second
 	defaultZitiServiceName      = ""
 	defaultEgressCACertPath     = "/var/run/agyn/egress-ca/tls.crt"
 	defaultEgressCAKeyPath      = "/var/run/agyn/egress-ca/tls.key"
@@ -38,6 +39,7 @@ type Config struct {
 	AgentsAddress          string
 	ZitiManagementAddress  string
 	ZitiIdentityFile       string
+	ZitiLeaseInterval      time.Duration
 	ZitiServiceName        string
 	EgressCACertPath       string
 	EgressCAKeyPath        string
@@ -60,6 +62,7 @@ func Load() (Config, error) {
 		AgentsAddress:          envOrDefault("AGENTS_SERVICE_ADDRESS", defaultAgentsTarget),
 		ZitiManagementAddress:  envOrDefault("ZITI_MANAGEMENT_ADDRESS", defaultZitiManagementTarget),
 		ZitiIdentityFile:       envOrDefault("ZITI_IDENTITY_FILE", defaultZitiIdentityFile),
+		ZitiLeaseInterval:      defaultZitiLeaseInterval,
 		ZitiServiceName:        envOrDefault("ZITI_SERVICE_NAME", defaultZitiServiceName),
 		EgressCACertPath:       envOrDefault("EGRESS_CA_CERT_PATH", defaultEgressCACertPath),
 		EgressCAKeyPath:        envOrDefault("EGRESS_CA_KEY_PATH", defaultEgressCAKeyPath),
@@ -80,6 +83,10 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 	cfg.LeafCertTTL, err = durationEnvOrDefault("LEAF_CERT_TTL", cfg.LeafCertTTL)
+	if err != nil {
+		return Config{}, err
+	}
+	cfg.ZitiLeaseInterval, err = durationEnvOrDefault("ZITI_LEASE_INTERVAL", cfg.ZitiLeaseInterval)
 	if err != nil {
 		return Config{}, err
 	}
