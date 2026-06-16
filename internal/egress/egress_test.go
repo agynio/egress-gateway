@@ -801,6 +801,27 @@ func headerSecret(name string, secretID string, scheme egressv1.HeaderAuthScheme
 	return &egressv1.EgressRuleHeader{Name: name, Scheme: scheme, Credential: &egressv1.EgressRuleHeader_SecretId{SecretId: secretID}}
 }
 
+func TestLoadCertificateAuthorityAcceptsECPrivateKey(t *testing.T) {
+	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		t.Fatalf("generate ca key: %v", err)
+	}
+	template := &x509.Certificate{SerialNumber: big.NewInt(1), Subject: pkix.Name{CommonName: "test ca"}, NotBefore: time.Now().Add(-time.Minute), NotAfter: time.Now().Add(time.Hour), IsCA: true, KeyUsage: x509.KeyUsageCertSign | x509.KeyUsageDigitalSignature, BasicConstraintsValid: true}
+	der, err := x509.CreateCertificate(rand.Reader, template, template, key.Public(), key)
+	if err != nil {
+		t.Fatalf("create ca cert: %v", err)
+	}
+	keyBytes, err := x509.MarshalECPrivateKey(key)
+	if err != nil {
+		t.Fatalf("marshal ca key: %v", err)
+	}
+	certFile := tempPEM(t, "CERTIFICATE", der)
+	keyFile := tempPEM(t, "EC PRIVATE KEY", keyBytes)
+	if _, err := LoadCertificateAuthority(certFile, keyFile); err != nil {
+		t.Fatalf("LoadCertificateAuthority: %v", err)
+	}
+}
+
 func testCA(t *testing.T) *CertificateAuthority {
 	t.Helper()
 	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
