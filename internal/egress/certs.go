@@ -2,6 +2,7 @@ package egress
 
 import (
 	"container/list"
+	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -21,7 +22,7 @@ import (
 
 type CertificateAuthority struct {
 	cert        *x509.Certificate
-	privateKey  any
+	privateKey  crypto.Signer
 	fingerprint string
 }
 
@@ -46,12 +47,29 @@ func LoadCertificateAuthority(certPath string, keyPath string) (*CertificateAuth
 	if keyBlock == nil {
 		return nil, fmt.Errorf("decode egress ca key: missing PEM block")
 	}
-	key, err := x509.ParsePKCS8PrivateKey(keyBlock.Bytes)
+	key, err := parsePrivateKey(keyBlock.Bytes)
 	if err != nil {
 		return nil, fmt.Errorf("parse egress ca key: %w", err)
 	}
 	fingerprintBytes := sha256.Sum256(cert.Raw)
 	return &CertificateAuthority{cert: cert, privateKey: key, fingerprint: hex.EncodeToString(fingerprintBytes[:])}, nil
+}
+
+func parsePrivateKey(der []byte) (crypto.Signer, error) {
+	if key, err := x509.ParsePKCS8PrivateKey(der); err == nil {
+		signer, ok := key.(crypto.Signer)
+		if !ok {
+			return nil, fmt.Errorf("PKCS#8 private key type %T does not implement crypto.Signer", key)
+		}
+		return signer, nil
+	}
+	if key, err := x509.ParseECPrivateKey(der); err == nil {
+		return key, nil
+	}
+	if key, err := x509.ParsePKCS1PrivateKey(der); err == nil {
+		return key, nil
+	}
+	return nil, fmt.Errorf("unsupported private key format")
 }
 
 type LeafCertificateCache struct {
