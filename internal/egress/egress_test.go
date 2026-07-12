@@ -552,6 +552,75 @@ func TestDataPlaneStreamsResponseBody(t *testing.T) {
 	close(finishResponse)
 }
 
+func TestDataPlaneCompletesCloseDelimitedUpstreamResponse(t *testing.T) {
+	transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Header:     http.Header{"Connection": []string{"close"}},
+			Body:       io.NopCloser(strings.NewReader("close-delimited body")),
+		}, nil
+	})
+	rules := NewRuleCache(&fakeRuleClient{rules: [][]*egressv1.EgressRule{{rule("rule-1", "api.example.com", allowEffect())}}}, time.Minute, &fakeClock{now: time.Now()})
+	runtime := NewRuntime(rules, NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()})), NewForwarderWithTransport(time.Second, transport), nil)
+	identity := NewIdentityResolver(&fakeZitiIdentityClient{}, &fakeAgentIdentityClient{})
+	serverConn, clientConn := net.Pipe()
+	listener := &fakeDataPlaneListener{conn: &fakeDataPlaneConn{Conn: serverConn, dialerIdentityID: "ziti-agent-1", appData: []byte(`{"dst_protocol":"tcp","dst_hostname":"api.example.com","dst_port":"80"}`)}}
+	server := NewDataPlaneServer(listener, runtime, identity, NewLeafCertificateCache(testCA(t), time.Minute, 2, &fakeClock{now: time.Now()}))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() { _ = server.Serve(ctx) }()
+
+	if _, err := clientConn.Write([]byte("GET /close-delimited HTTP/1.1\r\nHost: api.example.com\r\n\r\n")); err != nil {
+		t.Fatalf("write request: %v", err)
+	}
+	response, err := http.ReadResponse(bufioReader(clientConn), nil)
+	if err != nil {
+		t.Fatalf("read response: %v", err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d", response.StatusCode)
+	}
+	if !response.Close {
+		t.Fatal("response did not signal connection close")
+	}
+	body := readResponseBodyWithCompletion(t, clientConn, response)
+	if string(body) != "close-delimited body" {
+		t.Fatalf("body = %q", string(body))
+	}
+}
+
+func TestDataPlaneDenyResponseCompletes(t *testing.T) {
+	rules := NewRuleCache(&fakeRuleClient{rules: [][]*egressv1.EgressRule{{rule("rule-1", "api.example.com", denyEffect())}}}, time.Minute, &fakeClock{now: time.Now()})
+	runtime := NewRuntime(rules, NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()})), NewForwarderWithTransport(time.Second, roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		t.Fatal("forwarder should not be called for denied requests")
+		return nil, nil
+	})), nil)
+	identity := NewIdentityResolver(&fakeZitiIdentityClient{}, &fakeAgentIdentityClient{})
+	serverConn, clientConn := net.Pipe()
+	listener := &fakeDataPlaneListener{conn: &fakeDataPlaneConn{Conn: serverConn, dialerIdentityID: "ziti-agent-1", appData: []byte(`{"dst_protocol":"tcp","dst_hostname":"api.example.com","dst_port":"80"}`)}}
+	server := NewDataPlaneServer(listener, runtime, identity, NewLeafCertificateCache(testCA(t), time.Minute, 2, &fakeClock{now: time.Now()}))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() { _ = server.Serve(ctx) }()
+
+	if _, err := clientConn.Write([]byte("GET /denied HTTP/1.1\r\nHost: api.example.com\r\n\r\n")); err != nil {
+		t.Fatalf("write request: %v", err)
+	}
+	response, err := http.ReadResponse(bufioReader(clientConn), nil)
+	if err != nil {
+		t.Fatalf("read response: %v", err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusForbidden {
+		t.Fatalf("status = %d", response.StatusCode)
+	}
+	body := readResponseBodyWithCompletion(t, clientConn, response)
+	if !strings.Contains(string(body), "egress rule denied request") {
+		t.Fatalf("body = %q", string(body))
+	}
+}
+
 func TestDataPlaneRuntimeErrorDoesNotWriteDefaultSuccess(t *testing.T) {
 	rules := NewRuleCache(&fakeRuleClient{errors: []error{errors.New("rules down")}}, time.Minute, &fakeClock{now: time.Now()})
 	runtime := NewRuntime(rules, NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()})), NewForwarderWithTransport(time.Second, roundTripFunc(func(r *http.Request) (*http.Response, error) {
@@ -1009,6 +1078,30 @@ func (f *fakeDataPlaneConn) AppData() []byte { return f.appData }
 func stringPtr(value string) *string { return &value }
 
 func bufioReader(conn net.Conn) *bufio.Reader { return bufio.NewReader(conn) }
+
+func readResponseBodyWithCompletion(t *testing.T, conn net.Conn, response *http.Response) []byte {
+	t.Helper()
+	readBody := make(chan []byte, 1)
+	readErr := make(chan error, 1)
+	go func() {
+		body, err := io.ReadAll(response.Body)
+		if err != nil {
+			readErr <- err
+			return
+		}
+		readBody <- body
+	}()
+	select {
+	case body := <-readBody:
+		return body
+	case err := <-readErr:
+		t.Fatalf("read response body: %v", err)
+	case <-time.After(time.Second):
+		_ = conn.Close()
+		t.Fatal("response body did not complete")
+	}
+	panic("response body completion select exited unexpectedly")
+}
 
 func serviceDetail(name string, roles ...string) rest_model.ServiceDetail {
 	attributes := rest_model.Attributes(roles)
