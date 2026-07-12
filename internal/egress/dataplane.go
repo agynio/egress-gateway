@@ -127,34 +127,30 @@ func (s *DataPlaneServer) serveHTTP2(ctx context.Context, conn net.Conn, agent A
 
 func (s *DataPlaneServer) serveHTTP(ctx context.Context, conn net.Conn, agent AgentContext, destination Destination) error {
 	reader := bufio.NewReader(conn)
-	for {
-		req, err := ReadHTTPRequest(reader)
-		if err != nil {
-			if errors.Is(err, io.EOF) {
-				return nil
-			}
-			return fmt.Errorf("read request: %w", err)
-		}
-		req.RemoteAddr = conn.RemoteAddr().String()
-		req.RequestURI = ""
-		requestContext := RequestContextFromHTTP(agent, destination.Scheme, destination.Host, destination.Port, req, uuid.NewString())
-		response := newConnResponseWriter(conn)
-		runtimeErr := s.runtime.ServeRequest(ctx, response, req, requestContext)
-		if runtimeErr != nil {
-			if !response.sentHeader {
-				if err := response.finish(); err != nil {
-					return fmt.Errorf("write response: %w", err)
-				}
-			}
-			return fmt.Errorf("serve egress request: %w", runtimeErr)
-		}
-		if err := response.finish(); err != nil {
-			return fmt.Errorf("write response: %w", err)
-		}
-		if shouldClose(req, response.header) {
+	req, err := ReadHTTPRequest(reader)
+	if err != nil {
+		if errors.Is(err, io.EOF) {
 			return nil
 		}
+		return fmt.Errorf("read request: %w", err)
 	}
+	req.RemoteAddr = conn.RemoteAddr().String()
+	req.RequestURI = ""
+	requestContext := RequestContextFromHTTP(agent, destination.Scheme, destination.Host, destination.Port, req, uuid.NewString())
+	response := newConnResponseWriter(conn)
+	runtimeErr := s.runtime.ServeRequest(ctx, response, req, requestContext)
+	if runtimeErr != nil {
+		if !response.sentHeader {
+			if err := response.finish(); err != nil {
+				return fmt.Errorf("write response: %w", err)
+			}
+		}
+		return fmt.Errorf("serve egress request: %w", runtimeErr)
+	}
+	if err := response.finish(); err != nil {
+		return fmt.Errorf("write response: %w", err)
+	}
+	return nil
 }
 
 func (s *DataPlaneServer) certificateForClientHello(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
@@ -163,10 +159,6 @@ func (s *DataPlaneServer) certificateForClientHello(hello *tls.ClientHelloInfo) 
 		return nil, errors.New("client hello missing server name")
 	}
 	return s.certs.Certificate(host)
-}
-
-func shouldClose(req *http.Request, responseHeader http.Header) bool {
-	return req.Close || strings.EqualFold(responseHeader.Get("Connection"), "close")
 }
 
 type Destination struct {
@@ -224,7 +216,7 @@ type connResponseWriter struct {
 }
 
 func newConnResponseWriter(conn net.Conn) *connResponseWriter {
-	return &connResponseWriter{conn: conn, header: http.Header{}}
+	return &connResponseWriter{conn: conn, header: http.Header{"Connection": []string{"close"}}}
 }
 
 func (w *connResponseWriter) Header() http.Header {
@@ -276,6 +268,7 @@ func (w *connResponseWriter) writeHeader() error {
 		Header:        w.header,
 		Body:          http.NoBody,
 		ContentLength: -1,
+		Close:         true,
 	}
 	w.sentHeader = true
 	return response.Write(w.conn)
