@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -139,18 +140,38 @@ func (s *DataPlaneServer) serveHTTP(ctx context.Context, conn net.Conn, agent Ag
 	requestContext := RequestContextFromHTTP(agent, destination.Scheme, destination.Host, destination.Port, req, uuid.NewString())
 	response := newConnResponseWriter(conn)
 	runtimeErr := s.runtime.ServeRequest(ctx, response, req, requestContext)
-	if runtimeErr != nil {
-		if !response.sentHeader {
-			if err := response.finish(); err != nil {
-				return fmt.Errorf("write response: %w", err)
-			}
+	if runtimeErr == nil || !response.sentHeader {
+		if err := response.finish(); err != nil {
+			return fmt.Errorf("write response: %w", err)
 		}
+	}
+	// The response is close-delimited, so the deferred conn.Close() must not
+	// race it: half-close to flush + signal EOF, then drain the client so the
+	// full close doesn't reset an undelivered response over the ziti circuit.
+	drainAfterResponse(conn, reader)
+	if runtimeErr != nil {
 		return fmt.Errorf("serve egress request: %w", runtimeErr)
 	}
-	if err := response.finish(); err != nil {
-		return fmt.Errorf("write response: %w", err)
-	}
 	return nil
+}
+
+// gracefulDrainTimeout bounds how long we wait for the client to close its
+// side after we half-close, so a misbehaving client can't block the conn.
+const gracefulDrainTimeout = 10 * time.Second
+
+func drainAfterResponse(conn net.Conn, reader io.Reader) {
+	cw, ok := conn.(interface{ CloseWrite() error })
+	if !ok {
+		// No half-close support: rely on the deferred full Close to signal EOF.
+		return
+	}
+	if err := cw.CloseWrite(); err != nil {
+		return
+	}
+	// Half-close flushed the response and sent EOF; wait for the client to
+	// close its side (bounded) so the full Close doesn't reset the circuit.
+	_ = conn.SetReadDeadline(time.Now().Add(gracefulDrainTimeout))
+	_, _ = io.Copy(io.Discard, reader)
 }
 
 func (s *DataPlaneServer) certificateForClientHello(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {

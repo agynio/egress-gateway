@@ -1140,3 +1140,51 @@ func (b *blockingBody) Read(p []byte) (int, error) {
 func (b *blockingBody) Close() error { return nil }
 
 var _ = timestamppb.Now
+
+type halfCloseConn struct {
+	net.Conn
+	closeWriteCalls int
+	readDeadlineSet bool
+	remaining       []byte
+}
+
+func (c *halfCloseConn) CloseWrite() error { c.closeWriteCalls++; return nil }
+
+func (c *halfCloseConn) SetReadDeadline(time.Time) error { c.readDeadlineSet = true; return nil }
+
+func (c *halfCloseConn) Read(p []byte) (int, error) {
+	if len(c.remaining) == 0 {
+		return 0, io.EOF
+	}
+	n := copy(p, c.remaining)
+	c.remaining = c.remaining[n:]
+	return n, nil
+}
+
+func TestDrainAfterResponseHalfClosesAndDrains(t *testing.T) {
+	conn := &halfCloseConn{remaining: []byte("leftover client bytes")}
+	drainAfterResponse(conn, bufio.NewReader(conn))
+	if conn.closeWriteCalls != 1 {
+		t.Fatalf("expected CloseWrite to be called once, got %d", conn.closeWriteCalls)
+	}
+	if !conn.readDeadlineSet {
+		t.Fatal("expected a read deadline to bound the drain")
+	}
+	if len(conn.remaining) != 0 {
+		t.Fatalf("expected client bytes to be drained, %d left", len(conn.remaining))
+	}
+}
+
+func TestDrainAfterResponseWithoutHalfCloseIsNoop(t *testing.T) {
+	server, client := net.Pipe()
+	defer server.Close()
+	defer client.Close()
+	// Must not block: net.Pipe has no CloseWrite, so drain returns immediately.
+	done := make(chan struct{})
+	go func() { drainAfterResponse(server, bufio.NewReader(server)); close(done) }()
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("drainAfterResponse blocked without half-close support")
+	}
+}
