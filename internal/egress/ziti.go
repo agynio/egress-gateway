@@ -224,7 +224,9 @@ func hasServiceRole(attributes *rest_model.Attributes, role string) bool {
 }
 
 func listenForService(ctx ZitiContext, serviceName string) (DataPlaneListener, error) {
-	listener, err := ctx.ListenWithOptions(serviceName, &ziti.ListenOptions{BindUsingEdgeIdentity: true})
+	// Bind non-addressed: workload intercepts dial without dialOptions.identity,
+	// and an identity-addressed terminator never matches an empty instanceId.
+	listener, err := ctx.ListenWithOptions(serviceName, &ziti.ListenOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("listen for ziti service %q: %w", serviceName, err)
 	}
