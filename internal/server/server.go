@@ -154,7 +154,11 @@ func (s *Server) buildDataPlane(ctx context.Context) (*egress.DataPlaneServer, e
 			log.Printf("egress rule invalidation subscriber stopped: %v", err)
 		}
 	}()
-	go identityManager.RunLeaseExtender(ctx, zitiIdentityID)
+	go func() {
+		if err := identityManager.RunLeaseExtender(ctx, zitiIdentityID); err != nil {
+			log.Fatalf("terminating: %v", err)
+		}
+	}()
 	identity := egress.NewIdentityResolver(zitiClient, agentClient)
 	certs := egress.NewLeafCertificateCache(ca, s.cfg.LeafCertTTL, s.cfg.LeafCertCacheSize, clock)
 	return egress.NewDataPlaneServer(listener, runtime, identity, certs), zitiCtx, grpcConns, nil

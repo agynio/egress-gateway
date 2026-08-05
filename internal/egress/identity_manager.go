@@ -2,6 +2,7 @@ package egress
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -9,12 +10,19 @@ import (
 	"time"
 
 	zitimanagementv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/ziti_management/v1"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
 	serviceIdentityFileMode      = 0o600
 	defaultIdentityLeaseInterval = 30 * time.Second
 )
+
+// ErrIdentityLost reports that the egress gateway's OpenZiti identity no longer
+// exists (garbage-collected while the pod was running). Recovery is a pod
+// restart: a fresh pod enrolls a fresh identity.
+var ErrIdentityLost = errors.New("ziti identity lost")
 
 type ServiceIdentityManager struct {
 	client        zitimanagementv1.ZitiManagementServiceClient
@@ -55,7 +63,12 @@ func (m *ServiceIdentityManager) Enroll(ctx context.Context) (string, error) {
 	return resp.GetZitiIdentityId(), nil
 }
 
-func (m *ServiceIdentityManager) RunLeaseExtender(ctx context.Context, zitiIdentityID string) {
+// RunLeaseExtender extends the identity lease until ctx is cancelled (returns
+// nil) or the identity is definitively gone (returns an error wrapping
+// ErrIdentityLost). Identity loss is fatal by design: the caller must log the
+// error and terminate so the pod restart path enrolls a fresh identity.
+// Transient extension failures are logged and retried on the next tick.
+func (m *ServiceIdentityManager) RunLeaseExtender(ctx context.Context, zitiIdentityID string) error {
 	if zitiIdentityID == "" {
 		panic("ziti identity id is required")
 	}
@@ -64,11 +77,19 @@ func (m *ServiceIdentityManager) RunLeaseExtender(ctx context.Context, zitiIdent
 	for {
 		select {
 		case <-ticker.C:
-			if err := m.extendLease(ctx, zitiIdentityID); err != nil {
-				log.Printf("extend egress gateway ziti identity lease: %v", err)
+			err := m.extendLease(ctx, zitiIdentityID)
+			if err == nil {
+				continue
 			}
+			if ctx.Err() != nil {
+				return nil
+			}
+			if status.Code(err) == codes.NotFound {
+				return fmt.Errorf("%w: identity %s no longer exists: %v", ErrIdentityLost, zitiIdentityID, err)
+			}
+			log.Printf("extend egress gateway ziti identity lease for %s: %v", zitiIdentityID, err)
 		case <-ctx.Done():
-			return
+			return nil
 		}
 	}
 }
