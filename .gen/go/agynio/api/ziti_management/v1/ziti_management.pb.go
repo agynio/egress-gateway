@@ -33,6 +33,7 @@ const (
 	ServiceType_SERVICE_TYPE_TRACING        ServiceType = 5
 	ServiceType_SERVICE_TYPE_RUNNERS        ServiceType = 6
 	ServiceType_SERVICE_TYPE_EGRESS_GATEWAY ServiceType = 7
+	ServiceType_SERVICE_TYPE_TERMINAL_PROXY ServiceType = 8
 )
 
 // Enum value maps for ServiceType.
@@ -45,6 +46,7 @@ var (
 		5: "SERVICE_TYPE_TRACING",
 		6: "SERVICE_TYPE_RUNNERS",
 		7: "SERVICE_TYPE_EGRESS_GATEWAY",
+		8: "SERVICE_TYPE_TERMINAL_PROXY",
 	}
 	ServiceType_value = map[string]int32{
 		"SERVICE_TYPE_UNSPECIFIED":    0,
@@ -54,6 +56,7 @@ var (
 		"SERVICE_TYPE_TRACING":        5,
 		"SERVICE_TYPE_RUNNERS":        6,
 		"SERVICE_TYPE_EGRESS_GATEWAY": 7,
+		"SERVICE_TYPE_TERMINAL_PROXY": 8,
 	}
 )
 
@@ -134,6 +137,55 @@ func (ServicePolicyType) EnumDescriptor() ([]byte, []int) {
 	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{1}
 }
 
+type IdentityEnrollmentState int32
+
+const (
+	IdentityEnrollmentState_IDENTITY_ENROLLMENT_STATE_UNSPECIFIED IdentityEnrollmentState = 0
+	IdentityEnrollmentState_IDENTITY_ENROLLMENT_STATE_PENDING     IdentityEnrollmentState = 1
+	IdentityEnrollmentState_IDENTITY_ENROLLMENT_STATE_ENROLLED    IdentityEnrollmentState = 2
+)
+
+// Enum value maps for IdentityEnrollmentState.
+var (
+	IdentityEnrollmentState_name = map[int32]string{
+		0: "IDENTITY_ENROLLMENT_STATE_UNSPECIFIED",
+		1: "IDENTITY_ENROLLMENT_STATE_PENDING",
+		2: "IDENTITY_ENROLLMENT_STATE_ENROLLED",
+	}
+	IdentityEnrollmentState_value = map[string]int32{
+		"IDENTITY_ENROLLMENT_STATE_UNSPECIFIED": 0,
+		"IDENTITY_ENROLLMENT_STATE_PENDING":     1,
+		"IDENTITY_ENROLLMENT_STATE_ENROLLED":    2,
+	}
+)
+
+func (x IdentityEnrollmentState) Enum() *IdentityEnrollmentState {
+	p := new(IdentityEnrollmentState)
+	*p = x
+	return p
+}
+
+func (x IdentityEnrollmentState) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (IdentityEnrollmentState) Descriptor() protoreflect.EnumDescriptor {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_enumTypes[2].Descriptor()
+}
+
+func (IdentityEnrollmentState) Type() protoreflect.EnumType {
+	return &file_agynio_api_ziti_management_v1_ziti_management_proto_enumTypes[2]
+}
+
+func (x IdentityEnrollmentState) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use IdentityEnrollmentState.Descriptor instead.
+func (IdentityEnrollmentState) EnumDescriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{2}
+}
+
 type ManagedIdentity struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	ZitiIdentityId string                 `protobuf:"bytes,1,opt,name=ziti_identity_id,json=zitiIdentityId,proto3" json:"ziti_identity_id,omitempty"`
@@ -211,9 +263,13 @@ func (x *ManagedIdentity) GetCreatedAt() *timestamppb.Timestamp {
 }
 
 type CreateAgentIdentityRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AgentId       string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
-	WorkloadId    string                 `protobuf:"bytes,2,opt,name=workload_id,json=workloadId,proto3" json:"workload_id,omitempty"`
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	AgentId    string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	WorkloadId string                 `protobuf:"bytes,2,opt,name=workload_id,json=workloadId,proto3" json:"workload_id,omitempty"`
+	// Extra role attributes such as group-<id>. Base agent attributes are added by Ziti Management.
+	AdditionalRoleAttributes []string `protobuf:"bytes,3,rep,name=additional_role_attributes,json=additionalRoleAttributes,proto3" json:"additional_role_attributes,omitempty"`
+	// Tags attached to the OpenZiti identity.
+	Tags          map[string]string `protobuf:"bytes,4,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -260,6 +316,20 @@ func (x *CreateAgentIdentityRequest) GetWorkloadId() string {
 		return x.WorkloadId
 	}
 	return ""
+}
+
+func (x *CreateAgentIdentityRequest) GetAdditionalRoleAttributes() []string {
+	if x != nil {
+		return x.AdditionalRoleAttributes
+	}
+	return nil
+}
+
+func (x *CreateAgentIdentityRequest) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
 }
 
 type CreateAgentIdentityResponse struct {
@@ -314,18 +384,168 @@ func (x *CreateAgentIdentityResponse) GetEnrollmentJwt() string {
 	return ""
 }
 
+type CreateSandboxIdentityRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	SandboxId      string                 `protobuf:"bytes,1,opt,name=sandbox_id,json=sandboxId,proto3" json:"sandbox_id,omitempty"`
+	OwnerId        string                 `protobuf:"bytes,2,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`
+	EnvironmentId  string                 `protobuf:"bytes,3,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"`
+	OrganizationId string                 `protobuf:"bytes,4,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	WorkloadId     string                 `protobuf:"bytes,5,opt,name=workload_id,json=workloadId,proto3" json:"workload_id,omitempty"`
+	// Extra role attributes such as group-<id>. Base sandbox workload attributes are added by Ziti Management.
+	AdditionalRoleAttributes []string `protobuf:"bytes,6,rep,name=additional_role_attributes,json=additionalRoleAttributes,proto3" json:"additional_role_attributes,omitempty"`
+	// Tags attached to the OpenZiti identity.
+	Tags          map[string]string `protobuf:"bytes,7,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateSandboxIdentityRequest) Reset() {
+	*x = CreateSandboxIdentityRequest{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateSandboxIdentityRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateSandboxIdentityRequest) ProtoMessage() {}
+
+func (x *CreateSandboxIdentityRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateSandboxIdentityRequest.ProtoReflect.Descriptor instead.
+func (*CreateSandboxIdentityRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *CreateSandboxIdentityRequest) GetSandboxId() string {
+	if x != nil {
+		return x.SandboxId
+	}
+	return ""
+}
+
+func (x *CreateSandboxIdentityRequest) GetOwnerId() string {
+	if x != nil {
+		return x.OwnerId
+	}
+	return ""
+}
+
+func (x *CreateSandboxIdentityRequest) GetEnvironmentId() string {
+	if x != nil {
+		return x.EnvironmentId
+	}
+	return ""
+}
+
+func (x *CreateSandboxIdentityRequest) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+func (x *CreateSandboxIdentityRequest) GetWorkloadId() string {
+	if x != nil {
+		return x.WorkloadId
+	}
+	return ""
+}
+
+func (x *CreateSandboxIdentityRequest) GetAdditionalRoleAttributes() []string {
+	if x != nil {
+		return x.AdditionalRoleAttributes
+	}
+	return nil
+}
+
+func (x *CreateSandboxIdentityRequest) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+type CreateSandboxIdentityResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	ZitiIdentityId string                 `protobuf:"bytes,1,opt,name=ziti_identity_id,json=zitiIdentityId,proto3" json:"ziti_identity_id,omitempty"`
+	EnrollmentJwt  string                 `protobuf:"bytes,2,opt,name=enrollment_jwt,json=enrollmentJwt,proto3" json:"enrollment_jwt,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *CreateSandboxIdentityResponse) Reset() {
+	*x = CreateSandboxIdentityResponse{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateSandboxIdentityResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateSandboxIdentityResponse) ProtoMessage() {}
+
+func (x *CreateSandboxIdentityResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateSandboxIdentityResponse.ProtoReflect.Descriptor instead.
+func (*CreateSandboxIdentityResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *CreateSandboxIdentityResponse) GetZitiIdentityId() string {
+	if x != nil {
+		return x.ZitiIdentityId
+	}
+	return ""
+}
+
+func (x *CreateSandboxIdentityResponse) GetEnrollmentJwt() string {
+	if x != nil {
+		return x.EnrollmentJwt
+	}
+	return ""
+}
+
 // Request to create and enroll an OpenZiti identity for an app.
 type CreateAppIdentityRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	IdentityId    string                 `protobuf:"bytes,1,opt,name=identity_id,json=identityId,proto3" json:"identity_id,omitempty"`
-	Slug          string                 `protobuf:"bytes,2,opt,name=slug,proto3" json:"slug,omitempty"`
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	IdentityId string                 `protobuf:"bytes,1,opt,name=identity_id,json=identityId,proto3" json:"identity_id,omitempty"`
+	Slug       string                 `protobuf:"bytes,2,opt,name=slug,proto3" json:"slug,omitempty"`
+	// Extra role attributes such as group-<id>. Base app attributes are added by Ziti Management.
+	AdditionalRoleAttributes []string `protobuf:"bytes,3,rep,name=additional_role_attributes,json=additionalRoleAttributes,proto3" json:"additional_role_attributes,omitempty"`
+	// Tags attached to the OpenZiti identity.
+	Tags          map[string]string `protobuf:"bytes,4,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreateAppIdentityRequest) Reset() {
 	*x = CreateAppIdentityRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[3]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -337,7 +557,7 @@ func (x *CreateAppIdentityRequest) String() string {
 func (*CreateAppIdentityRequest) ProtoMessage() {}
 
 func (x *CreateAppIdentityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[3]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -350,7 +570,7 @@ func (x *CreateAppIdentityRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAppIdentityRequest.ProtoReflect.Descriptor instead.
 func (*CreateAppIdentityRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{3}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *CreateAppIdentityRequest) GetIdentityId() string {
@@ -367,6 +587,20 @@ func (x *CreateAppIdentityRequest) GetSlug() string {
 	return ""
 }
 
+func (x *CreateAppIdentityRequest) GetAdditionalRoleAttributes() []string {
+	if x != nil {
+		return x.AdditionalRoleAttributes
+	}
+	return nil
+}
+
+func (x *CreateAppIdentityRequest) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
 // Response with enrolled OpenZiti credentials for an app identity.
 type CreateAppIdentityResponse struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
@@ -378,7 +612,7 @@ type CreateAppIdentityResponse struct {
 
 func (x *CreateAppIdentityResponse) Reset() {
 	*x = CreateAppIdentityResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[4]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -390,7 +624,7 @@ func (x *CreateAppIdentityResponse) String() string {
 func (*CreateAppIdentityResponse) ProtoMessage() {}
 
 func (x *CreateAppIdentityResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[4]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -403,7 +637,7 @@ func (x *CreateAppIdentityResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAppIdentityResponse.ProtoReflect.Descriptor instead.
 func (*CreateAppIdentityResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{4}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *CreateAppIdentityResponse) GetZitiIdentityId() string {
@@ -438,7 +672,7 @@ type HostV1Config struct {
 
 func (x *HostV1Config) Reset() {
 	*x = HostV1Config{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[5]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -450,7 +684,7 @@ func (x *HostV1Config) String() string {
 func (*HostV1Config) ProtoMessage() {}
 
 func (x *HostV1Config) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[5]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -463,7 +697,7 @@ func (x *HostV1Config) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HostV1Config.ProtoReflect.Descriptor instead.
 func (*HostV1Config) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{5}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *HostV1Config) GetProtocol() string {
@@ -541,7 +775,7 @@ type InterceptV1Config struct {
 
 func (x *InterceptV1Config) Reset() {
 	*x = InterceptV1Config{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[6]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -553,7 +787,7 @@ func (x *InterceptV1Config) String() string {
 func (*InterceptV1Config) ProtoMessage() {}
 
 func (x *InterceptV1Config) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[6]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -566,7 +800,7 @@ func (x *InterceptV1Config) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InterceptV1Config.ProtoReflect.Descriptor instead.
 func (*InterceptV1Config) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{6}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *InterceptV1Config) GetProtocols() []string {
@@ -601,7 +835,7 @@ type PortRange struct {
 
 func (x *PortRange) Reset() {
 	*x = PortRange{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[7]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -613,7 +847,7 @@ func (x *PortRange) String() string {
 func (*PortRange) ProtoMessage() {}
 
 func (x *PortRange) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[7]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -626,7 +860,7 @@ func (x *PortRange) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PortRange.ProtoReflect.Descriptor instead.
 func (*PortRange) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{7}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *PortRange) GetLow() int32 {
@@ -655,15 +889,17 @@ type CreateServiceRequest struct {
 	// Optional intercept.v1 config to create and attach to the service.
 	// Used by Expose Service for port exposure.
 	InterceptV1Config *InterceptV1Config `protobuf:"bytes,4,opt,name=intercept_v1_config,json=interceptV1Config,proto3,oneof" json:"intercept_v1_config,omitempty"`
-	// If true, duplicate-name creates return the existing service without mutation.
-	ReturnExisting bool `protobuf:"varint,5,opt,name=return_existing,json=returnExisting,proto3" json:"return_existing,omitempty"`
+	// Tags attached to the OpenZiti service and any created config resources.
+	Tags map[string]string `protobuf:"bytes,5,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// If a create conflicts with an existing service name, return that service.
+	ReturnExisting bool `protobuf:"varint,6,opt,name=return_existing,json=returnExisting,proto3" json:"return_existing,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
 
 func (x *CreateServiceRequest) Reset() {
 	*x = CreateServiceRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[8]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -675,7 +911,7 @@ func (x *CreateServiceRequest) String() string {
 func (*CreateServiceRequest) ProtoMessage() {}
 
 func (x *CreateServiceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[8]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -688,7 +924,7 @@ func (x *CreateServiceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateServiceRequest.ProtoReflect.Descriptor instead.
 func (*CreateServiceRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{8}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *CreateServiceRequest) GetName() string {
@@ -719,6 +955,13 @@ func (x *CreateServiceRequest) GetInterceptV1Config() *InterceptV1Config {
 	return nil
 }
 
+func (x *CreateServiceRequest) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
 func (x *CreateServiceRequest) GetReturnExisting() bool {
 	if x != nil {
 		return x.ReturnExisting
@@ -738,7 +981,7 @@ type CreateServiceResponse struct {
 
 func (x *CreateServiceResponse) Reset() {
 	*x = CreateServiceResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[9]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -750,7 +993,7 @@ func (x *CreateServiceResponse) String() string {
 func (*CreateServiceResponse) ProtoMessage() {}
 
 func (x *CreateServiceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[9]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -763,7 +1006,7 @@ func (x *CreateServiceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateServiceResponse.ProtoReflect.Descriptor instead.
 func (*CreateServiceResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{9}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *CreateServiceResponse) GetZitiServiceId() string {
@@ -780,96 +1023,19 @@ func (x *CreateServiceResponse) GetZitiServiceName() string {
 	return ""
 }
 
-type Service struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	ZitiServiceId     string                 `protobuf:"bytes,1,opt,name=ziti_service_id,json=zitiServiceId,proto3" json:"ziti_service_id,omitempty"`
-	Name              string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	RoleAttributes    []string               `protobuf:"bytes,3,rep,name=role_attributes,json=roleAttributes,proto3" json:"role_attributes,omitempty"`
-	HostV1Config      *HostV1Config          `protobuf:"bytes,4,opt,name=host_v1_config,json=hostV1Config,proto3,oneof" json:"host_v1_config,omitempty"`
-	InterceptV1Config *InterceptV1Config     `protobuf:"bytes,5,opt,name=intercept_v1_config,json=interceptV1Config,proto3,oneof" json:"intercept_v1_config,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
-}
-
-func (x *Service) Reset() {
-	*x = Service{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Service) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Service) ProtoMessage() {}
-
-func (x *Service) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Service.ProtoReflect.Descriptor instead.
-func (*Service) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *Service) GetZitiServiceId() string {
-	if x != nil {
-		return x.ZitiServiceId
-	}
-	return ""
-}
-
-func (x *Service) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *Service) GetRoleAttributes() []string {
-	if x != nil {
-		return x.RoleAttributes
-	}
-	return nil
-}
-
-func (x *Service) GetHostV1Config() *HostV1Config {
-	if x != nil {
-		return x.HostV1Config
-	}
-	return nil
-}
-
-func (x *Service) GetInterceptV1Config() *InterceptV1Config {
-	if x != nil {
-		return x.InterceptV1Config
-	}
-	return nil
-}
-
 type GetServiceRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Types that are valid to be assigned to Lookup:
-	//
-	//	*GetServiceRequest_ZitiServiceId
-	//	*GetServiceRequest_Name
-	Lookup        isGetServiceRequest_Lookup `protobuf_oneof:"lookup"`
+	// OpenZiti service ID. If omitted, name must be set.
+	ZitiServiceId string `protobuf:"bytes,1,opt,name=ziti_service_id,json=zitiServiceId,proto3" json:"ziti_service_id,omitempty"`
+	// Exact OpenZiti service name. Used when ziti_service_id is omitted.
+	Name          string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetServiceRequest) Reset() {
 	*x = GetServiceRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[11]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -881,7 +1047,7 @@ func (x *GetServiceRequest) String() string {
 func (*GetServiceRequest) ProtoMessage() {}
 
 func (x *GetServiceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[11]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -894,60 +1060,33 @@ func (x *GetServiceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetServiceRequest.ProtoReflect.Descriptor instead.
 func (*GetServiceRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *GetServiceRequest) GetLookup() isGetServiceRequest_Lookup {
-	if x != nil {
-		return x.Lookup
-	}
-	return nil
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetServiceRequest) GetZitiServiceId() string {
 	if x != nil {
-		if x, ok := x.Lookup.(*GetServiceRequest_ZitiServiceId); ok {
-			return x.ZitiServiceId
-		}
+		return x.ZitiServiceId
 	}
 	return ""
 }
 
 func (x *GetServiceRequest) GetName() string {
 	if x != nil {
-		if x, ok := x.Lookup.(*GetServiceRequest_Name); ok {
-			return x.Name
-		}
+		return x.Name
 	}
 	return ""
 }
 
-type isGetServiceRequest_Lookup interface {
-	isGetServiceRequest_Lookup()
-}
-
-type GetServiceRequest_ZitiServiceId struct {
-	ZitiServiceId string `protobuf:"bytes,1,opt,name=ziti_service_id,json=zitiServiceId,proto3,oneof"`
-}
-
-type GetServiceRequest_Name struct {
-	Name string `protobuf:"bytes,2,opt,name=name,proto3,oneof"`
-}
-
-func (*GetServiceRequest_ZitiServiceId) isGetServiceRequest_Lookup() {}
-
-func (*GetServiceRequest_Name) isGetServiceRequest_Lookup() {}
-
 type GetServiceResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Service       *Service               `protobuf:"bytes,1,opt,name=service,proto3" json:"service,omitempty"`
+	Service       *OpenZitiService       `protobuf:"bytes,1,opt,name=service,proto3" json:"service,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetServiceResponse) Reset() {
 	*x = GetServiceResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[12]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -959,7 +1098,7 @@ func (x *GetServiceResponse) String() string {
 func (*GetServiceResponse) ProtoMessage() {}
 
 func (x *GetServiceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[12]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -972,10 +1111,10 @@ func (x *GetServiceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetServiceResponse.ProtoReflect.Descriptor instead.
 func (*GetServiceResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{12}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{13}
 }
 
-func (x *GetServiceResponse) GetService() *Service {
+func (x *GetServiceResponse) GetService() *OpenZitiService {
 	if x != nil {
 		return x.Service
 	}
@@ -984,8 +1123,8 @@ func (x *GetServiceResponse) GetService() *Service {
 
 type ListServicesRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
-	Name           *string                `protobuf:"bytes,1,opt,name=name,proto3,oneof" json:"name,omitempty"`
-	NamePrefix     *string                `protobuf:"bytes,2,opt,name=name_prefix,json=namePrefix,proto3,oneof" json:"name_prefix,omitempty"`
+	Name           string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	NamePrefix     string                 `protobuf:"bytes,2,opt,name=name_prefix,json=namePrefix,proto3" json:"name_prefix,omitempty"`
 	RoleAttributes []string               `protobuf:"bytes,3,rep,name=role_attributes,json=roleAttributes,proto3" json:"role_attributes,omitempty"`
 	PageSize       int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	PageToken      string                 `protobuf:"bytes,5,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
@@ -995,7 +1134,7 @@ type ListServicesRequest struct {
 
 func (x *ListServicesRequest) Reset() {
 	*x = ListServicesRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[13]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1007,7 +1146,7 @@ func (x *ListServicesRequest) String() string {
 func (*ListServicesRequest) ProtoMessage() {}
 
 func (x *ListServicesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[13]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1020,19 +1159,19 @@ func (x *ListServicesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListServicesRequest.ProtoReflect.Descriptor instead.
 func (*ListServicesRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{13}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ListServicesRequest) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
+	if x != nil {
+		return x.Name
 	}
 	return ""
 }
 
 func (x *ListServicesRequest) GetNamePrefix() string {
-	if x != nil && x.NamePrefix != nil {
-		return *x.NamePrefix
+	if x != nil {
+		return x.NamePrefix
 	}
 	return ""
 }
@@ -1060,7 +1199,7 @@ func (x *ListServicesRequest) GetPageToken() string {
 
 type ListServicesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Services      []*Service             `protobuf:"bytes,1,rep,name=services,proto3" json:"services,omitempty"`
+	Services      []*OpenZitiService     `protobuf:"bytes,1,rep,name=services,proto3" json:"services,omitempty"`
 	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1068,7 +1207,7 @@ type ListServicesResponse struct {
 
 func (x *ListServicesResponse) Reset() {
 	*x = ListServicesResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[14]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1080,7 +1219,7 @@ func (x *ListServicesResponse) String() string {
 func (*ListServicesResponse) ProtoMessage() {}
 
 func (x *ListServicesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[14]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1093,10 +1232,10 @@ func (x *ListServicesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListServicesResponse.ProtoReflect.Descriptor instead.
 func (*ListServicesResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{14}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{15}
 }
 
-func (x *ListServicesResponse) GetServices() []*Service {
+func (x *ListServicesResponse) GetServices() []*OpenZitiService {
 	if x != nil {
 		return x.Services
 	}
@@ -1108,126 +1247,6 @@ func (x *ListServicesResponse) GetNextPageToken() string {
 		return x.NextPageToken
 	}
 	return ""
-}
-
-type UpdateServiceRequest struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	ZitiServiceId     string                 `protobuf:"bytes,1,opt,name=ziti_service_id,json=zitiServiceId,proto3" json:"ziti_service_id,omitempty"`
-	Name              *string                `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
-	RoleAttributes    []string               `protobuf:"bytes,3,rep,name=role_attributes,json=roleAttributes,proto3" json:"role_attributes,omitempty"`
-	HostV1Config      *HostV1Config          `protobuf:"bytes,4,opt,name=host_v1_config,json=hostV1Config,proto3,oneof" json:"host_v1_config,omitempty"`
-	InterceptV1Config *InterceptV1Config     `protobuf:"bytes,5,opt,name=intercept_v1_config,json=interceptV1Config,proto3,oneof" json:"intercept_v1_config,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
-}
-
-func (x *UpdateServiceRequest) Reset() {
-	*x = UpdateServiceRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[15]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateServiceRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateServiceRequest) ProtoMessage() {}
-
-func (x *UpdateServiceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[15]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateServiceRequest.ProtoReflect.Descriptor instead.
-func (*UpdateServiceRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *UpdateServiceRequest) GetZitiServiceId() string {
-	if x != nil {
-		return x.ZitiServiceId
-	}
-	return ""
-}
-
-func (x *UpdateServiceRequest) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
-}
-
-func (x *UpdateServiceRequest) GetRoleAttributes() []string {
-	if x != nil {
-		return x.RoleAttributes
-	}
-	return nil
-}
-
-func (x *UpdateServiceRequest) GetHostV1Config() *HostV1Config {
-	if x != nil {
-		return x.HostV1Config
-	}
-	return nil
-}
-
-func (x *UpdateServiceRequest) GetInterceptV1Config() *InterceptV1Config {
-	if x != nil {
-		return x.InterceptV1Config
-	}
-	return nil
-}
-
-type UpdateServiceResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Service       *Service               `protobuf:"bytes,1,opt,name=service,proto3" json:"service,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateServiceResponse) Reset() {
-	*x = UpdateServiceResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[16]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateServiceResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateServiceResponse) ProtoMessage() {}
-
-func (x *UpdateServiceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[16]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateServiceResponse.ProtoReflect.Descriptor instead.
-func (*UpdateServiceResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{16}
-}
-
-func (x *UpdateServiceResponse) GetService() *Service {
-	if x != nil {
-		return x.Service
-	}
-	return nil
 }
 
 // Request to delete an app's OpenZiti identity and service by platform identity_id.
@@ -1243,7 +1262,7 @@ type DeleteAppIdentityRequest struct {
 
 func (x *DeleteAppIdentityRequest) Reset() {
 	*x = DeleteAppIdentityRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[17]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1255,7 +1274,7 @@ func (x *DeleteAppIdentityRequest) String() string {
 func (*DeleteAppIdentityRequest) ProtoMessage() {}
 
 func (x *DeleteAppIdentityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[17]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1268,7 +1287,7 @@ func (x *DeleteAppIdentityRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAppIdentityRequest.ProtoReflect.Descriptor instead.
 func (*DeleteAppIdentityRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{17}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *DeleteAppIdentityRequest) GetIdentityId() string {
@@ -1294,7 +1313,7 @@ type DeleteAppIdentityResponse struct {
 
 func (x *DeleteAppIdentityResponse) Reset() {
 	*x = DeleteAppIdentityResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[18]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1306,7 +1325,7 @@ func (x *DeleteAppIdentityResponse) String() string {
 func (*DeleteAppIdentityResponse) ProtoMessage() {}
 
 func (x *DeleteAppIdentityResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[18]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1319,20 +1338,21 @@ func (x *DeleteAppIdentityResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAppIdentityResponse.ProtoReflect.Descriptor instead.
 func (*DeleteAppIdentityResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{18}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{17}
 }
 
 type CreateRunnerIdentityRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	RunnerId       string                 `protobuf:"bytes,1,opt,name=runner_id,json=runnerId,proto3" json:"runner_id,omitempty"`
 	RoleAttributes []string               `protobuf:"bytes,2,rep,name=role_attributes,json=roleAttributes,proto3" json:"role_attributes,omitempty"`
+	Tags           map[string]string      `protobuf:"bytes,5,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
 
 func (x *CreateRunnerIdentityRequest) Reset() {
 	*x = CreateRunnerIdentityRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[19]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1344,7 +1364,7 @@ func (x *CreateRunnerIdentityRequest) String() string {
 func (*CreateRunnerIdentityRequest) ProtoMessage() {}
 
 func (x *CreateRunnerIdentityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[19]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1357,7 +1377,7 @@ func (x *CreateRunnerIdentityRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRunnerIdentityRequest.ProtoReflect.Descriptor instead.
 func (*CreateRunnerIdentityRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{19}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *CreateRunnerIdentityRequest) GetRunnerId() string {
@@ -1374,6 +1394,13 @@ func (x *CreateRunnerIdentityRequest) GetRoleAttributes() []string {
 	return nil
 }
 
+func (x *CreateRunnerIdentityRequest) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
 type CreateRunnerIdentityResponse struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	ZitiIdentityId string                 `protobuf:"bytes,1,opt,name=ziti_identity_id,json=zitiIdentityId,proto3" json:"ziti_identity_id,omitempty"`
@@ -1384,7 +1411,7 @@ type CreateRunnerIdentityResponse struct {
 
 func (x *CreateRunnerIdentityResponse) Reset() {
 	*x = CreateRunnerIdentityResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[20]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1396,7 +1423,7 @@ func (x *CreateRunnerIdentityResponse) String() string {
 func (*CreateRunnerIdentityResponse) ProtoMessage() {}
 
 func (x *CreateRunnerIdentityResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[20]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1409,7 +1436,7 @@ func (x *CreateRunnerIdentityResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRunnerIdentityResponse.ProtoReflect.Descriptor instead.
 func (*CreateRunnerIdentityResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{20}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *CreateRunnerIdentityResponse) GetZitiIdentityId() string {
@@ -1438,7 +1465,7 @@ type DeleteRunnerIdentityRequest struct {
 
 func (x *DeleteRunnerIdentityRequest) Reset() {
 	*x = DeleteRunnerIdentityRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[21]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1450,7 +1477,7 @@ func (x *DeleteRunnerIdentityRequest) String() string {
 func (*DeleteRunnerIdentityRequest) ProtoMessage() {}
 
 func (x *DeleteRunnerIdentityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[21]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1463,7 +1490,7 @@ func (x *DeleteRunnerIdentityRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteRunnerIdentityRequest.ProtoReflect.Descriptor instead.
 func (*DeleteRunnerIdentityRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{21}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *DeleteRunnerIdentityRequest) GetIdentityId() string {
@@ -1488,7 +1515,7 @@ type DeleteRunnerIdentityResponse struct {
 
 func (x *DeleteRunnerIdentityResponse) Reset() {
 	*x = DeleteRunnerIdentityResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[22]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1500,7 +1527,7 @@ func (x *DeleteRunnerIdentityResponse) String() string {
 func (*DeleteRunnerIdentityResponse) ProtoMessage() {}
 
 func (x *DeleteRunnerIdentityResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[22]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1513,7 +1540,7 @@ func (x *DeleteRunnerIdentityResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteRunnerIdentityResponse.ProtoReflect.Descriptor instead.
 func (*DeleteRunnerIdentityResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{22}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{21}
 }
 
 type DeleteIdentityRequest struct {
@@ -1525,7 +1552,7 @@ type DeleteIdentityRequest struct {
 
 func (x *DeleteIdentityRequest) Reset() {
 	*x = DeleteIdentityRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[23]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1537,7 +1564,7 @@ func (x *DeleteIdentityRequest) String() string {
 func (*DeleteIdentityRequest) ProtoMessage() {}
 
 func (x *DeleteIdentityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[23]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1550,7 +1577,7 @@ func (x *DeleteIdentityRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteIdentityRequest.ProtoReflect.Descriptor instead.
 func (*DeleteIdentityRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{23}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *DeleteIdentityRequest) GetZitiIdentityId() string {
@@ -1568,7 +1595,7 @@ type DeleteIdentityResponse struct {
 
 func (x *DeleteIdentityResponse) Reset() {
 	*x = DeleteIdentityResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[24]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1580,7 +1607,7 @@ func (x *DeleteIdentityResponse) String() string {
 func (*DeleteIdentityResponse) ProtoMessage() {}
 
 func (x *DeleteIdentityResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[24]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1593,7 +1620,7 @@ func (x *DeleteIdentityResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteIdentityResponse.ProtoReflect.Descriptor instead.
 func (*DeleteIdentityResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{24}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{23}
 }
 
 type ListManagedIdentitiesRequest struct {
@@ -1607,7 +1634,7 @@ type ListManagedIdentitiesRequest struct {
 
 func (x *ListManagedIdentitiesRequest) Reset() {
 	*x = ListManagedIdentitiesRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[25]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1619,7 +1646,7 @@ func (x *ListManagedIdentitiesRequest) String() string {
 func (*ListManagedIdentitiesRequest) ProtoMessage() {}
 
 func (x *ListManagedIdentitiesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[25]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1632,7 +1659,7 @@ func (x *ListManagedIdentitiesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListManagedIdentitiesRequest.ProtoReflect.Descriptor instead.
 func (*ListManagedIdentitiesRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{25}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *ListManagedIdentitiesRequest) GetIdentityType() v1.IdentityType {
@@ -1666,7 +1693,7 @@ type ListManagedIdentitiesResponse struct {
 
 func (x *ListManagedIdentitiesResponse) Reset() {
 	*x = ListManagedIdentitiesResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[26]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1678,7 +1705,7 @@ func (x *ListManagedIdentitiesResponse) String() string {
 func (*ListManagedIdentitiesResponse) ProtoMessage() {}
 
 func (x *ListManagedIdentitiesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[26]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1691,7 +1718,7 @@ func (x *ListManagedIdentitiesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListManagedIdentitiesResponse.ProtoReflect.Descriptor instead.
 func (*ListManagedIdentitiesResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{26}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *ListManagedIdentitiesResponse) GetIdentities() []*ManagedIdentity {
@@ -1717,7 +1744,7 @@ type ResolveIdentityRequest struct {
 
 func (x *ResolveIdentityRequest) Reset() {
 	*x = ResolveIdentityRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[27]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1729,7 +1756,7 @@ func (x *ResolveIdentityRequest) String() string {
 func (*ResolveIdentityRequest) ProtoMessage() {}
 
 func (x *ResolveIdentityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[27]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1742,7 +1769,7 @@ func (x *ResolveIdentityRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResolveIdentityRequest.ProtoReflect.Descriptor instead.
 func (*ResolveIdentityRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{27}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *ResolveIdentityRequest) GetZitiIdentityId() string {
@@ -1763,7 +1790,7 @@ type ResolveIdentityResponse struct {
 
 func (x *ResolveIdentityResponse) Reset() {
 	*x = ResolveIdentityResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[28]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1775,7 +1802,7 @@ func (x *ResolveIdentityResponse) String() string {
 func (*ResolveIdentityResponse) ProtoMessage() {}
 
 func (x *ResolveIdentityResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[28]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1788,7 +1815,7 @@ func (x *ResolveIdentityResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResolveIdentityResponse.ProtoReflect.Descriptor instead.
 func (*ResolveIdentityResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{28}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *ResolveIdentityResponse) GetIdentityId() string {
@@ -1822,7 +1849,7 @@ type RequestServiceIdentityRequest struct {
 
 func (x *RequestServiceIdentityRequest) Reset() {
 	*x = RequestServiceIdentityRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[29]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1834,7 +1861,7 @@ func (x *RequestServiceIdentityRequest) String() string {
 func (*RequestServiceIdentityRequest) ProtoMessage() {}
 
 func (x *RequestServiceIdentityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[29]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1847,7 +1874,7 @@ func (x *RequestServiceIdentityRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestServiceIdentityRequest.ProtoReflect.Descriptor instead.
 func (*RequestServiceIdentityRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{29}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *RequestServiceIdentityRequest) GetServiceType() ServiceType {
@@ -1870,7 +1897,7 @@ type RequestServiceIdentityResponse struct {
 
 func (x *RequestServiceIdentityResponse) Reset() {
 	*x = RequestServiceIdentityResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[30]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1882,7 +1909,7 @@ func (x *RequestServiceIdentityResponse) String() string {
 func (*RequestServiceIdentityResponse) ProtoMessage() {}
 
 func (x *RequestServiceIdentityResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[30]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1895,7 +1922,7 @@ func (x *RequestServiceIdentityResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestServiceIdentityResponse.ProtoReflect.Descriptor instead.
 func (*RequestServiceIdentityResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{30}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *RequestServiceIdentityResponse) GetZitiIdentityId() string {
@@ -1922,7 +1949,7 @@ type ExtendIdentityLeaseRequest struct {
 
 func (x *ExtendIdentityLeaseRequest) Reset() {
 	*x = ExtendIdentityLeaseRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[31]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1934,7 +1961,7 @@ func (x *ExtendIdentityLeaseRequest) String() string {
 func (*ExtendIdentityLeaseRequest) ProtoMessage() {}
 
 func (x *ExtendIdentityLeaseRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[31]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1947,7 +1974,7 @@ func (x *ExtendIdentityLeaseRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExtendIdentityLeaseRequest.ProtoReflect.Descriptor instead.
 func (*ExtendIdentityLeaseRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{31}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *ExtendIdentityLeaseRequest) GetZitiIdentityId() string {
@@ -1965,7 +1992,7 @@ type ExtendIdentityLeaseResponse struct {
 
 func (x *ExtendIdentityLeaseResponse) Reset() {
 	*x = ExtendIdentityLeaseResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[32]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1977,7 +2004,7 @@ func (x *ExtendIdentityLeaseResponse) String() string {
 func (*ExtendIdentityLeaseResponse) ProtoMessage() {}
 
 func (x *ExtendIdentityLeaseResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[32]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1990,7 +2017,7 @@ func (x *ExtendIdentityLeaseResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExtendIdentityLeaseResponse.ProtoReflect.Descriptor instead.
 func (*ExtendIdentityLeaseResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{32}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{31}
 }
 
 type CreateServicePolicyRequest struct {
@@ -2003,15 +2030,17 @@ type CreateServicePolicyRequest struct {
 	IdentityRoles []string `protobuf:"bytes,3,rep,name=identity_roles,json=identityRoles,proto3" json:"identity_roles,omitempty"`
 	// Service roles for the policy (e.g. ["@exposed-<id>"]).
 	ServiceRoles []string `protobuf:"bytes,4,rep,name=service_roles,json=serviceRoles,proto3" json:"service_roles,omitempty"`
-	// If true, duplicate-name creates return the existing policy without mutation.
-	ReturnExisting bool `protobuf:"varint,5,opt,name=return_existing,json=returnExisting,proto3" json:"return_existing,omitempty"`
+	// Tags attached to the OpenZiti service policy.
+	Tags map[string]string `protobuf:"bytes,5,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// If a create conflicts with an existing service policy name, return that policy.
+	ReturnExisting bool `protobuf:"varint,6,opt,name=return_existing,json=returnExisting,proto3" json:"return_existing,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
 
 func (x *CreateServicePolicyRequest) Reset() {
 	*x = CreateServicePolicyRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[33]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2023,7 +2052,7 @@ func (x *CreateServicePolicyRequest) String() string {
 func (*CreateServicePolicyRequest) ProtoMessage() {}
 
 func (x *CreateServicePolicyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[33]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2036,7 +2065,7 @@ func (x *CreateServicePolicyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateServicePolicyRequest.ProtoReflect.Descriptor instead.
 func (*CreateServicePolicyRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{33}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *CreateServicePolicyRequest) GetType() ServicePolicyType {
@@ -2067,6 +2096,13 @@ func (x *CreateServicePolicyRequest) GetServiceRoles() []string {
 	return nil
 }
 
+func (x *CreateServicePolicyRequest) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
 func (x *CreateServicePolicyRequest) GetReturnExisting() bool {
 	if x != nil {
 		return x.ReturnExisting
@@ -2084,7 +2120,7 @@ type CreateServicePolicyResponse struct {
 
 func (x *CreateServicePolicyResponse) Reset() {
 	*x = CreateServicePolicyResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[34]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2096,7 +2132,7 @@ func (x *CreateServicePolicyResponse) String() string {
 func (*CreateServicePolicyResponse) ProtoMessage() {}
 
 func (x *CreateServicePolicyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[34]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2109,7 +2145,7 @@ func (x *CreateServicePolicyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateServicePolicyResponse.ProtoReflect.Descriptor instead.
 func (*CreateServicePolicyResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{34}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *CreateServicePolicyResponse) GetZitiServicePolicyId() string {
@@ -2119,96 +2155,19 @@ func (x *CreateServicePolicyResponse) GetZitiServicePolicyId() string {
 	return ""
 }
 
-type ServicePolicy struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	ZitiServicePolicyId string                 `protobuf:"bytes,1,opt,name=ziti_service_policy_id,json=zitiServicePolicyId,proto3" json:"ziti_service_policy_id,omitempty"`
-	Name                string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Type                ServicePolicyType      `protobuf:"varint,3,opt,name=type,proto3,enum=agynio.api.ziti_management.v1.ServicePolicyType" json:"type,omitempty"`
-	IdentityRoles       []string               `protobuf:"bytes,4,rep,name=identity_roles,json=identityRoles,proto3" json:"identity_roles,omitempty"`
-	ServiceRoles        []string               `protobuf:"bytes,5,rep,name=service_roles,json=serviceRoles,proto3" json:"service_roles,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
-}
-
-func (x *ServicePolicy) Reset() {
-	*x = ServicePolicy{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[35]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ServicePolicy) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ServicePolicy) ProtoMessage() {}
-
-func (x *ServicePolicy) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[35]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ServicePolicy.ProtoReflect.Descriptor instead.
-func (*ServicePolicy) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{35}
-}
-
-func (x *ServicePolicy) GetZitiServicePolicyId() string {
-	if x != nil {
-		return x.ZitiServicePolicyId
-	}
-	return ""
-}
-
-func (x *ServicePolicy) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *ServicePolicy) GetType() ServicePolicyType {
-	if x != nil {
-		return x.Type
-	}
-	return ServicePolicyType_SERVICE_POLICY_TYPE_UNSPECIFIED
-}
-
-func (x *ServicePolicy) GetIdentityRoles() []string {
-	if x != nil {
-		return x.IdentityRoles
-	}
-	return nil
-}
-
-func (x *ServicePolicy) GetServiceRoles() []string {
-	if x != nil {
-		return x.ServiceRoles
-	}
-	return nil
-}
-
 type GetServicePolicyRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Types that are valid to be assigned to Lookup:
-	//
-	//	*GetServicePolicyRequest_ZitiServicePolicyId
-	//	*GetServicePolicyRequest_Name
-	Lookup        isGetServicePolicyRequest_Lookup `protobuf_oneof:"lookup"`
+	// OpenZiti service policy ID. If omitted, name must be set.
+	ZitiServicePolicyId string `protobuf:"bytes,1,opt,name=ziti_service_policy_id,json=zitiServicePolicyId,proto3" json:"ziti_service_policy_id,omitempty"`
+	// Exact OpenZiti service policy name. Used when ziti_service_policy_id is omitted.
+	Name          string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetServicePolicyRequest) Reset() {
 	*x = GetServicePolicyRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[36]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2220,7 +2179,7 @@ func (x *GetServicePolicyRequest) String() string {
 func (*GetServicePolicyRequest) ProtoMessage() {}
 
 func (x *GetServicePolicyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[36]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2233,60 +2192,33 @@ func (x *GetServicePolicyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetServicePolicyRequest.ProtoReflect.Descriptor instead.
 func (*GetServicePolicyRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{36}
-}
-
-func (x *GetServicePolicyRequest) GetLookup() isGetServicePolicyRequest_Lookup {
-	if x != nil {
-		return x.Lookup
-	}
-	return nil
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *GetServicePolicyRequest) GetZitiServicePolicyId() string {
 	if x != nil {
-		if x, ok := x.Lookup.(*GetServicePolicyRequest_ZitiServicePolicyId); ok {
-			return x.ZitiServicePolicyId
-		}
+		return x.ZitiServicePolicyId
 	}
 	return ""
 }
 
 func (x *GetServicePolicyRequest) GetName() string {
 	if x != nil {
-		if x, ok := x.Lookup.(*GetServicePolicyRequest_Name); ok {
-			return x.Name
-		}
+		return x.Name
 	}
 	return ""
 }
 
-type isGetServicePolicyRequest_Lookup interface {
-	isGetServicePolicyRequest_Lookup()
-}
-
-type GetServicePolicyRequest_ZitiServicePolicyId struct {
-	ZitiServicePolicyId string `protobuf:"bytes,1,opt,name=ziti_service_policy_id,json=zitiServicePolicyId,proto3,oneof"`
-}
-
-type GetServicePolicyRequest_Name struct {
-	Name string `protobuf:"bytes,2,opt,name=name,proto3,oneof"`
-}
-
-func (*GetServicePolicyRequest_ZitiServicePolicyId) isGetServicePolicyRequest_Lookup() {}
-
-func (*GetServicePolicyRequest_Name) isGetServicePolicyRequest_Lookup() {}
-
 type GetServicePolicyResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ServicePolicy *ServicePolicy         `protobuf:"bytes,1,opt,name=service_policy,json=servicePolicy,proto3" json:"service_policy,omitempty"`
+	ServicePolicy *OpenZitiServicePolicy `protobuf:"bytes,1,opt,name=service_policy,json=servicePolicy,proto3" json:"service_policy,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetServicePolicyResponse) Reset() {
 	*x = GetServicePolicyResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[37]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2298,7 +2230,7 @@ func (x *GetServicePolicyResponse) String() string {
 func (*GetServicePolicyResponse) ProtoMessage() {}
 
 func (x *GetServicePolicyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[37]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2311,10 +2243,10 @@ func (x *GetServicePolicyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetServicePolicyResponse.ProtoReflect.Descriptor instead.
 func (*GetServicePolicyResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{37}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{35}
 }
 
-func (x *GetServicePolicyResponse) GetServicePolicy() *ServicePolicy {
+func (x *GetServicePolicyResponse) GetServicePolicy() *OpenZitiServicePolicy {
 	if x != nil {
 		return x.ServicePolicy
 	}
@@ -2323,8 +2255,8 @@ func (x *GetServicePolicyResponse) GetServicePolicy() *ServicePolicy {
 
 type ListServicePoliciesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          *string                `protobuf:"bytes,1,opt,name=name,proto3,oneof" json:"name,omitempty"`
-	NamePrefix    *string                `protobuf:"bytes,2,opt,name=name_prefix,json=namePrefix,proto3,oneof" json:"name_prefix,omitempty"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	NamePrefix    string                 `protobuf:"bytes,2,opt,name=name_prefix,json=namePrefix,proto3" json:"name_prefix,omitempty"`
 	Type          ServicePolicyType      `protobuf:"varint,3,opt,name=type,proto3,enum=agynio.api.ziti_management.v1.ServicePolicyType" json:"type,omitempty"`
 	IdentityRoles []string               `protobuf:"bytes,4,rep,name=identity_roles,json=identityRoles,proto3" json:"identity_roles,omitempty"`
 	ServiceRoles  []string               `protobuf:"bytes,5,rep,name=service_roles,json=serviceRoles,proto3" json:"service_roles,omitempty"`
@@ -2336,7 +2268,7 @@ type ListServicePoliciesRequest struct {
 
 func (x *ListServicePoliciesRequest) Reset() {
 	*x = ListServicePoliciesRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[38]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2348,7 +2280,7 @@ func (x *ListServicePoliciesRequest) String() string {
 func (*ListServicePoliciesRequest) ProtoMessage() {}
 
 func (x *ListServicePoliciesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[38]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2361,19 +2293,19 @@ func (x *ListServicePoliciesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListServicePoliciesRequest.ProtoReflect.Descriptor instead.
 func (*ListServicePoliciesRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{38}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *ListServicePoliciesRequest) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
+	if x != nil {
+		return x.Name
 	}
 	return ""
 }
 
 func (x *ListServicePoliciesRequest) GetNamePrefix() string {
-	if x != nil && x.NamePrefix != nil {
-		return *x.NamePrefix
+	if x != nil {
+		return x.NamePrefix
 	}
 	return ""
 }
@@ -2414,16 +2346,16 @@ func (x *ListServicePoliciesRequest) GetPageToken() string {
 }
 
 type ListServicePoliciesResponse struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	ServicePolicies []*ServicePolicy       `protobuf:"bytes,1,rep,name=service_policies,json=servicePolicies,proto3" json:"service_policies,omitempty"`
-	NextPageToken   string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	state           protoimpl.MessageState   `protogen:"open.v1"`
+	ServicePolicies []*OpenZitiServicePolicy `protobuf:"bytes,1,rep,name=service_policies,json=servicePolicies,proto3" json:"service_policies,omitempty"`
+	NextPageToken   string                   `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
 
 func (x *ListServicePoliciesResponse) Reset() {
 	*x = ListServicePoliciesResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[39]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2435,7 +2367,7 @@ func (x *ListServicePoliciesResponse) String() string {
 func (*ListServicePoliciesResponse) ProtoMessage() {}
 
 func (x *ListServicePoliciesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[39]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2448,10 +2380,10 @@ func (x *ListServicePoliciesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListServicePoliciesResponse.ProtoReflect.Descriptor instead.
 func (*ListServicePoliciesResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{39}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{37}
 }
 
-func (x *ListServicePoliciesResponse) GetServicePolicies() []*ServicePolicy {
+func (x *ListServicePoliciesResponse) GetServicePolicies() []*OpenZitiServicePolicy {
 	if x != nil {
 		return x.ServicePolicies
 	}
@@ -2475,7 +2407,7 @@ type DeleteServicePolicyRequest struct {
 
 func (x *DeleteServicePolicyRequest) Reset() {
 	*x = DeleteServicePolicyRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[40]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2487,7 +2419,7 @@ func (x *DeleteServicePolicyRequest) String() string {
 func (*DeleteServicePolicyRequest) ProtoMessage() {}
 
 func (x *DeleteServicePolicyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[40]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2500,7 +2432,7 @@ func (x *DeleteServicePolicyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteServicePolicyRequest.ProtoReflect.Descriptor instead.
 func (*DeleteServicePolicyRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{40}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *DeleteServicePolicyRequest) GetZitiServicePolicyId() string {
@@ -2518,7 +2450,7 @@ type DeleteServicePolicyResponse struct {
 
 func (x *DeleteServicePolicyResponse) Reset() {
 	*x = DeleteServicePolicyResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[41]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2530,7 +2462,7 @@ func (x *DeleteServicePolicyResponse) String() string {
 func (*DeleteServicePolicyResponse) ProtoMessage() {}
 
 func (x *DeleteServicePolicyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[41]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2543,7 +2475,7 @@ func (x *DeleteServicePolicyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteServicePolicyResponse.ProtoReflect.Descriptor instead.
 func (*DeleteServicePolicyResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{41}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{39}
 }
 
 type DeleteServiceRequest struct {
@@ -2556,7 +2488,7 @@ type DeleteServiceRequest struct {
 
 func (x *DeleteServiceRequest) Reset() {
 	*x = DeleteServiceRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[42]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2568,7 +2500,7 @@ func (x *DeleteServiceRequest) String() string {
 func (*DeleteServiceRequest) ProtoMessage() {}
 
 func (x *DeleteServiceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[42]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2581,7 +2513,7 @@ func (x *DeleteServiceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteServiceRequest.ProtoReflect.Descriptor instead.
 func (*DeleteServiceRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{42}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *DeleteServiceRequest) GetZitiServiceId() string {
@@ -2599,7 +2531,7 @@ type DeleteServiceResponse struct {
 
 func (x *DeleteServiceResponse) Reset() {
 	*x = DeleteServiceResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[43]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2611,7 +2543,7 @@ func (x *DeleteServiceResponse) String() string {
 func (*DeleteServiceResponse) ProtoMessage() {}
 
 func (x *DeleteServiceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[43]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2624,7 +2556,7 @@ func (x *DeleteServiceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteServiceResponse.ProtoReflect.Descriptor instead.
 func (*DeleteServiceResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{43}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{41}
 }
 
 type CreateDeviceIdentityRequest struct {
@@ -2632,14 +2564,18 @@ type CreateDeviceIdentityRequest struct {
 	// Owning user's platform identity ID.
 	UserIdentityId string `protobuf:"bytes,1,opt,name=user_identity_id,json=userIdentityId,proto3" json:"user_identity_id,omitempty"`
 	// User-provided device name.
-	Name          string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// Extra role attributes such as group-<id>. Base device/user attributes are added by Ziti Management.
+	AdditionalRoleAttributes []string `protobuf:"bytes,3,rep,name=additional_role_attributes,json=additionalRoleAttributes,proto3" json:"additional_role_attributes,omitempty"`
+	// Tags attached to the OpenZiti identity.
+	Tags          map[string]string `protobuf:"bytes,4,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreateDeviceIdentityRequest) Reset() {
 	*x = CreateDeviceIdentityRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[44]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2651,7 +2587,7 @@ func (x *CreateDeviceIdentityRequest) String() string {
 func (*CreateDeviceIdentityRequest) ProtoMessage() {}
 
 func (x *CreateDeviceIdentityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[44]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2664,7 +2600,7 @@ func (x *CreateDeviceIdentityRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateDeviceIdentityRequest.ProtoReflect.Descriptor instead.
 func (*CreateDeviceIdentityRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{44}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *CreateDeviceIdentityRequest) GetUserIdentityId() string {
@@ -2681,6 +2617,20 @@ func (x *CreateDeviceIdentityRequest) GetName() string {
 	return ""
 }
 
+func (x *CreateDeviceIdentityRequest) GetAdditionalRoleAttributes() []string {
+	if x != nil {
+		return x.AdditionalRoleAttributes
+	}
+	return nil
+}
+
+func (x *CreateDeviceIdentityRequest) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
 type CreateDeviceIdentityResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The OpenZiti identity ID for this device.
@@ -2693,7 +2643,7 @@ type CreateDeviceIdentityResponse struct {
 
 func (x *CreateDeviceIdentityResponse) Reset() {
 	*x = CreateDeviceIdentityResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[45]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2705,7 +2655,7 @@ func (x *CreateDeviceIdentityResponse) String() string {
 func (*CreateDeviceIdentityResponse) ProtoMessage() {}
 
 func (x *CreateDeviceIdentityResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[45]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2718,7 +2668,7 @@ func (x *CreateDeviceIdentityResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateDeviceIdentityResponse.ProtoReflect.Descriptor instead.
 func (*CreateDeviceIdentityResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{45}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *CreateDeviceIdentityResponse) GetZitiIdentityId() string {
@@ -2745,7 +2695,7 @@ type DeleteDeviceIdentityRequest struct {
 
 func (x *DeleteDeviceIdentityRequest) Reset() {
 	*x = DeleteDeviceIdentityRequest{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[46]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2757,7 +2707,7 @@ func (x *DeleteDeviceIdentityRequest) String() string {
 func (*DeleteDeviceIdentityRequest) ProtoMessage() {}
 
 func (x *DeleteDeviceIdentityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[46]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2770,7 +2720,7 @@ func (x *DeleteDeviceIdentityRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteDeviceIdentityRequest.ProtoReflect.Descriptor instead.
 func (*DeleteDeviceIdentityRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{46}
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *DeleteDeviceIdentityRequest) GetZitiIdentityId() string {
@@ -2788,7 +2738,7 @@ type DeleteDeviceIdentityResponse struct {
 
 func (x *DeleteDeviceIdentityResponse) Reset() {
 	*x = DeleteDeviceIdentityResponse{}
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[47]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2800,7 +2750,7 @@ func (x *DeleteDeviceIdentityResponse) String() string {
 func (*DeleteDeviceIdentityResponse) ProtoMessage() {}
 
 func (x *DeleteDeviceIdentityResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[47]
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2813,7 +2763,1123 @@ func (x *DeleteDeviceIdentityResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteDeviceIdentityResponse.ProtoReflect.Descriptor instead.
 func (*DeleteDeviceIdentityResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{45}
+}
+
+type CreateTunnelIdentityRequest struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	NetworkId          string                 `protobuf:"bytes,1,opt,name=network_id,json=networkId,proto3" json:"network_id,omitempty"`
+	TunnelCredentialId string                 `protobuf:"bytes,2,opt,name=tunnel_credential_id,json=tunnelCredentialId,proto3" json:"tunnel_credential_id,omitempty"`
+	Tags               map[string]string      `protobuf:"bytes,3,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *CreateTunnelIdentityRequest) Reset() {
+	*x = CreateTunnelIdentityRequest{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[46]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateTunnelIdentityRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateTunnelIdentityRequest) ProtoMessage() {}
+
+func (x *CreateTunnelIdentityRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[46]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateTunnelIdentityRequest.ProtoReflect.Descriptor instead.
+func (*CreateTunnelIdentityRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{46}
+}
+
+func (x *CreateTunnelIdentityRequest) GetNetworkId() string {
+	if x != nil {
+		return x.NetworkId
+	}
+	return ""
+}
+
+func (x *CreateTunnelIdentityRequest) GetTunnelCredentialId() string {
+	if x != nil {
+		return x.TunnelCredentialId
+	}
+	return ""
+}
+
+func (x *CreateTunnelIdentityRequest) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+type CreateTunnelIdentityResponse struct {
+	state                  protoimpl.MessageState `protogen:"open.v1"`
+	ZitiIdentityId         string                 `protobuf:"bytes,1,opt,name=ziti_identity_id,json=zitiIdentityId,proto3" json:"ziti_identity_id,omitempty"`
+	EnrollmentJwt          string                 `protobuf:"bytes,2,opt,name=enrollment_jwt,json=enrollmentJwt,proto3" json:"enrollment_jwt,omitempty"`
+	EnrollmentJwtExpiresAt *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=enrollment_jwt_expires_at,json=enrollmentJwtExpiresAt,proto3" json:"enrollment_jwt_expires_at,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
+}
+
+func (x *CreateTunnelIdentityResponse) Reset() {
+	*x = CreateTunnelIdentityResponse{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[47]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateTunnelIdentityResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateTunnelIdentityResponse) ProtoMessage() {}
+
+func (x *CreateTunnelIdentityResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[47]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateTunnelIdentityResponse.ProtoReflect.Descriptor instead.
+func (*CreateTunnelIdentityResponse) Descriptor() ([]byte, []int) {
 	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{47}
+}
+
+func (x *CreateTunnelIdentityResponse) GetZitiIdentityId() string {
+	if x != nil {
+		return x.ZitiIdentityId
+	}
+	return ""
+}
+
+func (x *CreateTunnelIdentityResponse) GetEnrollmentJwt() string {
+	if x != nil {
+		return x.EnrollmentJwt
+	}
+	return ""
+}
+
+func (x *CreateTunnelIdentityResponse) GetEnrollmentJwtExpiresAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.EnrollmentJwtExpiresAt
+	}
+	return nil
+}
+
+type DeleteTunnelIdentityRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	ZitiIdentityId string                 `protobuf:"bytes,1,opt,name=ziti_identity_id,json=zitiIdentityId,proto3" json:"ziti_identity_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *DeleteTunnelIdentityRequest) Reset() {
+	*x = DeleteTunnelIdentityRequest{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[48]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteTunnelIdentityRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteTunnelIdentityRequest) ProtoMessage() {}
+
+func (x *DeleteTunnelIdentityRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[48]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteTunnelIdentityRequest.ProtoReflect.Descriptor instead.
+func (*DeleteTunnelIdentityRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{48}
+}
+
+func (x *DeleteTunnelIdentityRequest) GetZitiIdentityId() string {
+	if x != nil {
+		return x.ZitiIdentityId
+	}
+	return ""
+}
+
+type DeleteTunnelIdentityResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteTunnelIdentityResponse) Reset() {
+	*x = DeleteTunnelIdentityResponse{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[49]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteTunnelIdentityResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteTunnelIdentityResponse) ProtoMessage() {}
+
+func (x *DeleteTunnelIdentityResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[49]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteTunnelIdentityResponse.ProtoReflect.Descriptor instead.
+func (*DeleteTunnelIdentityResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{49}
+}
+
+type PatchIdentityRoleAttributesRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	ZitiIdentityId string                 `protobuf:"bytes,1,opt,name=ziti_identity_id,json=zitiIdentityId,proto3" json:"ziti_identity_id,omitempty"`
+	Add            []string               `protobuf:"bytes,2,rep,name=add,proto3" json:"add,omitempty"`
+	Remove         []string               `protobuf:"bytes,3,rep,name=remove,proto3" json:"remove,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *PatchIdentityRoleAttributesRequest) Reset() {
+	*x = PatchIdentityRoleAttributesRequest{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[50]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PatchIdentityRoleAttributesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PatchIdentityRoleAttributesRequest) ProtoMessage() {}
+
+func (x *PatchIdentityRoleAttributesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[50]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PatchIdentityRoleAttributesRequest.ProtoReflect.Descriptor instead.
+func (*PatchIdentityRoleAttributesRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{50}
+}
+
+func (x *PatchIdentityRoleAttributesRequest) GetZitiIdentityId() string {
+	if x != nil {
+		return x.ZitiIdentityId
+	}
+	return ""
+}
+
+func (x *PatchIdentityRoleAttributesRequest) GetAdd() []string {
+	if x != nil {
+		return x.Add
+	}
+	return nil
+}
+
+func (x *PatchIdentityRoleAttributesRequest) GetRemove() []string {
+	if x != nil {
+		return x.Remove
+	}
+	return nil
+}
+
+type PatchIdentityRoleAttributesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PatchIdentityRoleAttributesResponse) Reset() {
+	*x = PatchIdentityRoleAttributesResponse{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[51]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PatchIdentityRoleAttributesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PatchIdentityRoleAttributesResponse) ProtoMessage() {}
+
+func (x *PatchIdentityRoleAttributesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[51]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PatchIdentityRoleAttributesResponse.ProtoReflect.Descriptor instead.
+func (*PatchIdentityRoleAttributesResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{51}
+}
+
+type GetIdentityLivenessRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	ZitiIdentityId string                 `protobuf:"bytes,1,opt,name=ziti_identity_id,json=zitiIdentityId,proto3" json:"ziti_identity_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *GetIdentityLivenessRequest) Reset() {
+	*x = GetIdentityLivenessRequest{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[52]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetIdentityLivenessRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetIdentityLivenessRequest) ProtoMessage() {}
+
+func (x *GetIdentityLivenessRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[52]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetIdentityLivenessRequest.ProtoReflect.Descriptor instead.
+func (*GetIdentityLivenessRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{52}
+}
+
+func (x *GetIdentityLivenessRequest) GetZitiIdentityId() string {
+	if x != nil {
+		return x.ZitiIdentityId
+	}
+	return ""
+}
+
+type GetIdentityLivenessResponse struct {
+	state                   protoimpl.MessageState  `protogen:"open.v1"`
+	EnrollmentState         IdentityEnrollmentState `protobuf:"varint,1,opt,name=enrollment_state,json=enrollmentState,proto3,enum=agynio.api.ziti_management.v1.IdentityEnrollmentState" json:"enrollment_state,omitempty"`
+	HasEdgeRouterConnection bool                    `protobuf:"varint,2,opt,name=has_edge_router_connection,json=hasEdgeRouterConnection,proto3" json:"has_edge_router_connection,omitempty"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
+}
+
+func (x *GetIdentityLivenessResponse) Reset() {
+	*x = GetIdentityLivenessResponse{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[53]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetIdentityLivenessResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetIdentityLivenessResponse) ProtoMessage() {}
+
+func (x *GetIdentityLivenessResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[53]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetIdentityLivenessResponse.ProtoReflect.Descriptor instead.
+func (*GetIdentityLivenessResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{53}
+}
+
+func (x *GetIdentityLivenessResponse) GetEnrollmentState() IdentityEnrollmentState {
+	if x != nil {
+		return x.EnrollmentState
+	}
+	return IdentityEnrollmentState_IDENTITY_ENROLLMENT_STATE_UNSPECIFIED
+}
+
+func (x *GetIdentityLivenessResponse) GetHasEdgeRouterConnection() bool {
+	if x != nil {
+		return x.HasEdgeRouterConnection
+	}
+	return false
+}
+
+type OpenZitiService struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	ZitiServiceId  string                 `protobuf:"bytes,1,opt,name=ziti_service_id,json=zitiServiceId,proto3" json:"ziti_service_id,omitempty"`
+	Name           string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	RoleAttributes []string               `protobuf:"bytes,3,rep,name=role_attributes,json=roleAttributes,proto3" json:"role_attributes,omitempty"`
+	Tags           map[string]string      `protobuf:"bytes,4,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *OpenZitiService) Reset() {
+	*x = OpenZitiService{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[54]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OpenZitiService) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OpenZitiService) ProtoMessage() {}
+
+func (x *OpenZitiService) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[54]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OpenZitiService.ProtoReflect.Descriptor instead.
+func (*OpenZitiService) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{54}
+}
+
+func (x *OpenZitiService) GetZitiServiceId() string {
+	if x != nil {
+		return x.ZitiServiceId
+	}
+	return ""
+}
+
+func (x *OpenZitiService) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *OpenZitiService) GetRoleAttributes() []string {
+	if x != nil {
+		return x.RoleAttributes
+	}
+	return nil
+}
+
+func (x *OpenZitiService) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+type ListServicesByTagRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tags          map[string]string      `protobuf:"bytes,1,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken     string                 `protobuf:"bytes,3,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListServicesByTagRequest) Reset() {
+	*x = ListServicesByTagRequest{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[55]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListServicesByTagRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListServicesByTagRequest) ProtoMessage() {}
+
+func (x *ListServicesByTagRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[55]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListServicesByTagRequest.ProtoReflect.Descriptor instead.
+func (*ListServicesByTagRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{55}
+}
+
+func (x *ListServicesByTagRequest) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+func (x *ListServicesByTagRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListServicesByTagRequest) GetPageToken() string {
+	if x != nil {
+		return x.PageToken
+	}
+	return ""
+}
+
+type ListServicesByTagResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Services      []*OpenZitiService     `protobuf:"bytes,1,rep,name=services,proto3" json:"services,omitempty"`
+	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListServicesByTagResponse) Reset() {
+	*x = ListServicesByTagResponse{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[56]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListServicesByTagResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListServicesByTagResponse) ProtoMessage() {}
+
+func (x *ListServicesByTagResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[56]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListServicesByTagResponse.ProtoReflect.Descriptor instead.
+func (*ListServicesByTagResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{56}
+}
+
+func (x *ListServicesByTagResponse) GetServices() []*OpenZitiService {
+	if x != nil {
+		return x.Services
+	}
+	return nil
+}
+
+func (x *ListServicesByTagResponse) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
+}
+
+type OpenZitiIdentity struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	ZitiIdentityId string                 `protobuf:"bytes,1,opt,name=ziti_identity_id,json=zitiIdentityId,proto3" json:"ziti_identity_id,omitempty"`
+	Name           string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	RoleAttributes []string               `protobuf:"bytes,3,rep,name=role_attributes,json=roleAttributes,proto3" json:"role_attributes,omitempty"`
+	Tags           map[string]string      `protobuf:"bytes,4,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *OpenZitiIdentity) Reset() {
+	*x = OpenZitiIdentity{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[57]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OpenZitiIdentity) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OpenZitiIdentity) ProtoMessage() {}
+
+func (x *OpenZitiIdentity) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[57]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OpenZitiIdentity.ProtoReflect.Descriptor instead.
+func (*OpenZitiIdentity) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{57}
+}
+
+func (x *OpenZitiIdentity) GetZitiIdentityId() string {
+	if x != nil {
+		return x.ZitiIdentityId
+	}
+	return ""
+}
+
+func (x *OpenZitiIdentity) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *OpenZitiIdentity) GetRoleAttributes() []string {
+	if x != nil {
+		return x.RoleAttributes
+	}
+	return nil
+}
+
+func (x *OpenZitiIdentity) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+type ListIdentitiesByTagRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tags          map[string]string      `protobuf:"bytes,1,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken     string                 `protobuf:"bytes,3,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListIdentitiesByTagRequest) Reset() {
+	*x = ListIdentitiesByTagRequest{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[58]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListIdentitiesByTagRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListIdentitiesByTagRequest) ProtoMessage() {}
+
+func (x *ListIdentitiesByTagRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[58]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListIdentitiesByTagRequest.ProtoReflect.Descriptor instead.
+func (*ListIdentitiesByTagRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{58}
+}
+
+func (x *ListIdentitiesByTagRequest) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+func (x *ListIdentitiesByTagRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListIdentitiesByTagRequest) GetPageToken() string {
+	if x != nil {
+		return x.PageToken
+	}
+	return ""
+}
+
+type ListIdentitiesByTagResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Identities    []*OpenZitiIdentity    `protobuf:"bytes,1,rep,name=identities,proto3" json:"identities,omitempty"`
+	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListIdentitiesByTagResponse) Reset() {
+	*x = ListIdentitiesByTagResponse{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[59]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListIdentitiesByTagResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListIdentitiesByTagResponse) ProtoMessage() {}
+
+func (x *ListIdentitiesByTagResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[59]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListIdentitiesByTagResponse.ProtoReflect.Descriptor instead.
+func (*ListIdentitiesByTagResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{59}
+}
+
+func (x *ListIdentitiesByTagResponse) GetIdentities() []*OpenZitiIdentity {
+	if x != nil {
+		return x.Identities
+	}
+	return nil
+}
+
+func (x *ListIdentitiesByTagResponse) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
+}
+
+type OpenZitiServicePolicy struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	ZitiServicePolicyId string                 `protobuf:"bytes,1,opt,name=ziti_service_policy_id,json=zitiServicePolicyId,proto3" json:"ziti_service_policy_id,omitempty"`
+	Name                string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Type                ServicePolicyType      `protobuf:"varint,3,opt,name=type,proto3,enum=agynio.api.ziti_management.v1.ServicePolicyType" json:"type,omitempty"`
+	IdentityRoles       []string               `protobuf:"bytes,4,rep,name=identity_roles,json=identityRoles,proto3" json:"identity_roles,omitempty"`
+	ServiceRoles        []string               `protobuf:"bytes,5,rep,name=service_roles,json=serviceRoles,proto3" json:"service_roles,omitempty"`
+	Tags                map[string]string      `protobuf:"bytes,6,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *OpenZitiServicePolicy) Reset() {
+	*x = OpenZitiServicePolicy{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[60]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OpenZitiServicePolicy) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OpenZitiServicePolicy) ProtoMessage() {}
+
+func (x *OpenZitiServicePolicy) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[60]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OpenZitiServicePolicy.ProtoReflect.Descriptor instead.
+func (*OpenZitiServicePolicy) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{60}
+}
+
+func (x *OpenZitiServicePolicy) GetZitiServicePolicyId() string {
+	if x != nil {
+		return x.ZitiServicePolicyId
+	}
+	return ""
+}
+
+func (x *OpenZitiServicePolicy) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *OpenZitiServicePolicy) GetType() ServicePolicyType {
+	if x != nil {
+		return x.Type
+	}
+	return ServicePolicyType_SERVICE_POLICY_TYPE_UNSPECIFIED
+}
+
+func (x *OpenZitiServicePolicy) GetIdentityRoles() []string {
+	if x != nil {
+		return x.IdentityRoles
+	}
+	return nil
+}
+
+func (x *OpenZitiServicePolicy) GetServiceRoles() []string {
+	if x != nil {
+		return x.ServiceRoles
+	}
+	return nil
+}
+
+func (x *OpenZitiServicePolicy) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+type ListServicePoliciesByTagRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tags          map[string]string      `protobuf:"bytes,1,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken     string                 `protobuf:"bytes,3,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListServicePoliciesByTagRequest) Reset() {
+	*x = ListServicePoliciesByTagRequest{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[61]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListServicePoliciesByTagRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListServicePoliciesByTagRequest) ProtoMessage() {}
+
+func (x *ListServicePoliciesByTagRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[61]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListServicePoliciesByTagRequest.ProtoReflect.Descriptor instead.
+func (*ListServicePoliciesByTagRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{61}
+}
+
+func (x *ListServicePoliciesByTagRequest) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+func (x *ListServicePoliciesByTagRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListServicePoliciesByTagRequest) GetPageToken() string {
+	if x != nil {
+		return x.PageToken
+	}
+	return ""
+}
+
+type ListServicePoliciesByTagResponse struct {
+	state           protoimpl.MessageState   `protogen:"open.v1"`
+	ServicePolicies []*OpenZitiServicePolicy `protobuf:"bytes,1,rep,name=service_policies,json=servicePolicies,proto3" json:"service_policies,omitempty"`
+	NextPageToken   string                   `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *ListServicePoliciesByTagResponse) Reset() {
+	*x = ListServicePoliciesByTagResponse{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[62]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListServicePoliciesByTagResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListServicePoliciesByTagResponse) ProtoMessage() {}
+
+func (x *ListServicePoliciesByTagResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[62]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListServicePoliciesByTagResponse.ProtoReflect.Descriptor instead.
+func (*ListServicePoliciesByTagResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{62}
+}
+
+func (x *ListServicePoliciesByTagResponse) GetServicePolicies() []*OpenZitiServicePolicy {
+	if x != nil {
+		return x.ServicePolicies
+	}
+	return nil
+}
+
+func (x *ListServicePoliciesByTagResponse) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
+}
+
+type UpdateServiceRequest struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	ZitiServiceId     string                 `protobuf:"bytes,1,opt,name=ziti_service_id,json=zitiServiceId,proto3" json:"ziti_service_id,omitempty"`
+	HostV1Config      *HostV1Config          `protobuf:"bytes,2,opt,name=host_v1_config,json=hostV1Config,proto3,oneof" json:"host_v1_config,omitempty"`
+	InterceptV1Config *InterceptV1Config     `protobuf:"bytes,3,opt,name=intercept_v1_config,json=interceptV1Config,proto3,oneof" json:"intercept_v1_config,omitempty"`
+	// Deprecated: use tags_update to distinguish omitted from empty.
+	//
+	// Deprecated: Marked as deprecated in agynio/api/ziti_management/v1/ziti_management.proto.
+	Tags          map[string]string `protobuf:"bytes,4,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	TagsUpdate    *TagsUpdate       `protobuf:"bytes,5,opt,name=tags_update,json=tagsUpdate,proto3,oneof" json:"tags_update,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateServiceRequest) Reset() {
+	*x = UpdateServiceRequest{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[63]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateServiceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateServiceRequest) ProtoMessage() {}
+
+func (x *UpdateServiceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[63]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateServiceRequest.ProtoReflect.Descriptor instead.
+func (*UpdateServiceRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{63}
+}
+
+func (x *UpdateServiceRequest) GetZitiServiceId() string {
+	if x != nil {
+		return x.ZitiServiceId
+	}
+	return ""
+}
+
+func (x *UpdateServiceRequest) GetHostV1Config() *HostV1Config {
+	if x != nil {
+		return x.HostV1Config
+	}
+	return nil
+}
+
+func (x *UpdateServiceRequest) GetInterceptV1Config() *InterceptV1Config {
+	if x != nil {
+		return x.InterceptV1Config
+	}
+	return nil
+}
+
+// Deprecated: Marked as deprecated in agynio/api/ziti_management/v1/ziti_management.proto.
+func (x *UpdateServiceRequest) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+func (x *UpdateServiceRequest) GetTagsUpdate() *TagsUpdate {
+	if x != nil {
+		return x.TagsUpdate
+	}
+	return nil
+}
+
+type TagsUpdate struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tags          map[string]string      `protobuf:"bytes,1,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TagsUpdate) Reset() {
+	*x = TagsUpdate{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[64]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TagsUpdate) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TagsUpdate) ProtoMessage() {}
+
+func (x *TagsUpdate) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[64]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TagsUpdate.ProtoReflect.Descriptor instead.
+func (*TagsUpdate) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{64}
+}
+
+func (x *TagsUpdate) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+type UpdateServiceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Service       *OpenZitiService       `protobuf:"bytes,1,opt,name=service,proto3" json:"service,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateServiceResponse) Reset() {
+	*x = UpdateServiceResponse{}
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[65]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateServiceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateServiceResponse) ProtoMessage() {}
+
+func (x *UpdateServiceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[65]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateServiceResponse.ProtoReflect.Descriptor instead.
+func (*UpdateServiceResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP(), []int{65}
+}
+
+func (x *UpdateServiceResponse) GetService() *OpenZitiService {
+	if x != nil {
+		return x.Service
+	}
+	return nil
 }
 
 var File_agynio_api_ziti_management_v1_ziti_management_proto protoreflect.FileDescriptor
@@ -2828,18 +3894,44 @@ const file_agynio_api_ziti_management_v1_ziti_management_proto_rawDesc = "" +
 	"\ridentity_type\x18\x03 \x01(\x0e2$.agynio.api.identity.v1.IdentityTypeR\fidentityType\x12&\n" +
 	"\x0fziti_service_id\x18\x04 \x01(\tR\rzitiServiceId\x129\n" +
 	"\n" +
-	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"X\n" +
+	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xa8\x02\n" +
 	"\x1aCreateAgentIdentityRequest\x12\x19\n" +
 	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12\x1f\n" +
 	"\vworkload_id\x18\x02 \x01(\tR\n" +
-	"workloadId\"n\n" +
+	"workloadId\x12<\n" +
+	"\x1aadditional_role_attributes\x18\x03 \x03(\tR\x18additionalRoleAttributes\x12W\n" +
+	"\x04tags\x18\x04 \x03(\v2C.agynio.api.ziti_management.v1.CreateAgentIdentityRequest.TagsEntryR\x04tags\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"n\n" +
 	"\x1bCreateAgentIdentityResponse\x12(\n" +
 	"\x10ziti_identity_id\x18\x01 \x01(\tR\x0ezitiIdentityId\x12%\n" +
-	"\x0eenrollment_jwt\x18\x02 \x01(\tR\renrollmentJwt\"O\n" +
+	"\x0eenrollment_jwt\x18\x02 \x01(\tR\renrollmentJwt\"\x9b\x03\n" +
+	"\x1cCreateSandboxIdentityRequest\x12\x1d\n" +
+	"\n" +
+	"sandbox_id\x18\x01 \x01(\tR\tsandboxId\x12\x19\n" +
+	"\bowner_id\x18\x02 \x01(\tR\aownerId\x12%\n" +
+	"\x0eenvironment_id\x18\x03 \x01(\tR\renvironmentId\x12'\n" +
+	"\x0forganization_id\x18\x04 \x01(\tR\x0eorganizationId\x12\x1f\n" +
+	"\vworkload_id\x18\x05 \x01(\tR\n" +
+	"workloadId\x12<\n" +
+	"\x1aadditional_role_attributes\x18\x06 \x03(\tR\x18additionalRoleAttributes\x12Y\n" +
+	"\x04tags\x18\a \x03(\v2E.agynio.api.ziti_management.v1.CreateSandboxIdentityRequest.TagsEntryR\x04tags\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"p\n" +
+	"\x1dCreateSandboxIdentityResponse\x12(\n" +
+	"\x10ziti_identity_id\x18\x01 \x01(\tR\x0ezitiIdentityId\x12%\n" +
+	"\x0eenrollment_jwt\x18\x02 \x01(\tR\renrollmentJwt\"\x9d\x02\n" +
 	"\x18CreateAppIdentityRequest\x12\x1f\n" +
 	"\videntity_id\x18\x01 \x01(\tR\n" +
 	"identityId\x12\x12\n" +
-	"\x04slug\x18\x02 \x01(\tR\x04slug\"\x81\x01\n" +
+	"\x04slug\x18\x02 \x01(\tR\x04slug\x12<\n" +
+	"\x1aadditional_role_attributes\x18\x03 \x03(\tR\x18additionalRoleAttributes\x12U\n" +
+	"\x04tags\x18\x04 \x03(\v2A.agynio.api.ziti_management.v1.CreateAppIdentityRequest.TagsEntryR\x04tags\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x81\x01\n" +
 	"\x19CreateAppIdentityResponse\x12(\n" +
 	"\x10ziti_identity_id\x18\x01 \x01(\tR\x0ezitiIdentityId\x12#\n" +
 	"\ridentity_json\x18\x02 \x01(\fR\fidentityJsonJ\x04\b\x03\x10\x04R\x0fziti_service_id\"\x83\x03\n" +
@@ -2860,64 +3952,50 @@ const file_agynio_api_ziti_management_v1_ziti_management_proto_rawDesc = "" +
 	"portRanges\"1\n" +
 	"\tPortRange\x12\x10\n" +
 	"\x03low\x18\x01 \x01(\x05R\x03low\x12\x12\n" +
-	"\x04high\x18\x02 \x01(\x05R\x04high\"\xe6\x02\n" +
+	"\x04high\x18\x02 \x01(\x05R\x04high\"\xf2\x03\n" +
 	"\x14CreateServiceRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12'\n" +
 	"\x0frole_attributes\x18\x02 \x03(\tR\x0eroleAttributes\x12V\n" +
 	"\x0ehost_v1_config\x18\x03 \x01(\v2+.agynio.api.ziti_management.v1.HostV1ConfigH\x00R\fhostV1Config\x88\x01\x01\x12e\n" +
-	"\x13intercept_v1_config\x18\x04 \x01(\v20.agynio.api.ziti_management.v1.InterceptV1ConfigH\x01R\x11interceptV1Config\x88\x01\x01\x12'\n" +
-	"\x0freturn_existing\x18\x05 \x01(\bR\x0ereturnExistingB\x11\n" +
+	"\x13intercept_v1_config\x18\x04 \x01(\v20.agynio.api.ziti_management.v1.InterceptV1ConfigH\x01R\x11interceptV1Config\x88\x01\x01\x12Q\n" +
+	"\x04tags\x18\x05 \x03(\v2=.agynio.api.ziti_management.v1.CreateServiceRequest.TagsEntryR\x04tags\x12'\n" +
+	"\x0freturn_existing\x18\x06 \x01(\bR\x0ereturnExisting\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\x11\n" +
 	"\x0f_host_v1_configB\x16\n" +
 	"\x14_intercept_v1_config\"k\n" +
 	"\x15CreateServiceResponse\x12&\n" +
 	"\x0fziti_service_id\x18\x01 \x01(\tR\rzitiServiceId\x12*\n" +
-	"\x11ziti_service_name\x18\x02 \x01(\tR\x0fzitiServiceName\"\xd8\x02\n" +
-	"\aService\x12&\n" +
+	"\x11ziti_service_name\x18\x02 \x01(\tR\x0fzitiServiceName\"O\n" +
+	"\x11GetServiceRequest\x12&\n" +
 	"\x0fziti_service_id\x18\x01 \x01(\tR\rzitiServiceId\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12'\n" +
-	"\x0frole_attributes\x18\x03 \x03(\tR\x0eroleAttributes\x12V\n" +
-	"\x0ehost_v1_config\x18\x04 \x01(\v2+.agynio.api.ziti_management.v1.HostV1ConfigH\x00R\fhostV1Config\x88\x01\x01\x12e\n" +
-	"\x13intercept_v1_config\x18\x05 \x01(\v20.agynio.api.ziti_management.v1.InterceptV1ConfigH\x01R\x11interceptV1Config\x88\x01\x01B\x11\n" +
-	"\x0f_host_v1_configB\x16\n" +
-	"\x14_intercept_v1_config\"]\n" +
-	"\x11GetServiceRequest\x12(\n" +
-	"\x0fziti_service_id\x18\x01 \x01(\tH\x00R\rzitiServiceId\x12\x14\n" +
-	"\x04name\x18\x02 \x01(\tH\x00R\x04nameB\b\n" +
-	"\x06lookup\"V\n" +
-	"\x12GetServiceResponse\x12@\n" +
-	"\aservice\x18\x01 \x01(\v2&.agynio.api.ziti_management.v1.ServiceR\aservice\"\xd2\x01\n" +
-	"\x13ListServicesRequest\x12\x17\n" +
-	"\x04name\x18\x01 \x01(\tH\x00R\x04name\x88\x01\x01\x12$\n" +
-	"\vname_prefix\x18\x02 \x01(\tH\x01R\n" +
-	"namePrefix\x88\x01\x01\x12'\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"^\n" +
+	"\x12GetServiceResponse\x12H\n" +
+	"\aservice\x18\x01 \x01(\v2..agynio.api.ziti_management.v1.OpenZitiServiceR\aservice\"\xaf\x01\n" +
+	"\x13ListServicesRequest\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1f\n" +
+	"\vname_prefix\x18\x02 \x01(\tR\n" +
+	"namePrefix\x12'\n" +
 	"\x0frole_attributes\x18\x03 \x03(\tR\x0eroleAttributes\x12\x1b\n" +
 	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
-	"page_token\x18\x05 \x01(\tR\tpageTokenB\a\n" +
-	"\x05_nameB\x0e\n" +
-	"\f_name_prefix\"\x82\x01\n" +
-	"\x14ListServicesResponse\x12B\n" +
-	"\bservices\x18\x01 \x03(\v2&.agynio.api.ziti_management.v1.ServiceR\bservices\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xf3\x02\n" +
-	"\x14UpdateServiceRequest\x12&\n" +
-	"\x0fziti_service_id\x18\x01 \x01(\tR\rzitiServiceId\x12\x17\n" +
-	"\x04name\x18\x02 \x01(\tH\x00R\x04name\x88\x01\x01\x12'\n" +
-	"\x0frole_attributes\x18\x03 \x03(\tR\x0eroleAttributes\x12V\n" +
-	"\x0ehost_v1_config\x18\x04 \x01(\v2+.agynio.api.ziti_management.v1.HostV1ConfigH\x01R\fhostV1Config\x88\x01\x01\x12e\n" +
-	"\x13intercept_v1_config\x18\x05 \x01(\v20.agynio.api.ziti_management.v1.InterceptV1ConfigH\x02R\x11interceptV1Config\x88\x01\x01B\a\n" +
-	"\x05_nameB\x11\n" +
-	"\x0f_host_v1_configB\x16\n" +
-	"\x14_intercept_v1_config\"Y\n" +
-	"\x15UpdateServiceResponse\x12@\n" +
-	"\aservice\x18\x01 \x01(\v2&.agynio.api.ziti_management.v1.ServiceR\aservice\"c\n" +
+	"page_token\x18\x05 \x01(\tR\tpageToken\"\x8a\x01\n" +
+	"\x14ListServicesResponse\x12J\n" +
+	"\bservices\x18\x01 \x03(\v2..agynio.api.ziti_management.v1.OpenZitiServiceR\bservices\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"c\n" +
 	"\x18DeleteAppIdentityRequest\x12\x1f\n" +
 	"\videntity_id\x18\x01 \x01(\tR\n" +
 	"identityId\x12&\n" +
 	"\x0fziti_service_id\x18\x02 \x01(\tR\rzitiServiceId\"\x1b\n" +
-	"\x19DeleteAppIdentityResponse\"c\n" +
+	"\x19DeleteAppIdentityResponse\"\xa6\x02\n" +
 	"\x1bCreateRunnerIdentityRequest\x12\x1b\n" +
 	"\trunner_id\x18\x01 \x01(\tR\brunnerId\x12'\n" +
-	"\x0frole_attributes\x18\x02 \x03(\tR\x0eroleAttributes\"\x9d\x01\n" +
+	"\x0frole_attributes\x18\x02 \x03(\tR\x0eroleAttributes\x12X\n" +
+	"\x04tags\x18\x05 \x03(\v2D.agynio.api.ziti_management.v1.CreateRunnerIdentityRequest.TagsEntryR\x04tags\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01J\x04\b\x03\x10\x04J\x04\b\x04\x10\x05R\x0fziti_service_idR\x11ziti_service_name\"\x9d\x01\n" +
 	"\x1cCreateRunnerIdentityResponse\x12(\n" +
 	"\x10ziti_identity_id\x18\x01 \x01(\tR\x0ezitiIdentityId\x12#\n" +
 	"\ridentity_json\x18\x02 \x01(\fR\fidentityJsonJ\x04\b\x03\x10\x04J\x04\b\x04\x10\x05R\x0fziti_service_idR\x11ziti_service_name\"f\n" +
@@ -2955,57 +4033,164 @@ const file_agynio_api_ziti_management_v1_ziti_management_proto_rawDesc = "" +
 	"\ridentity_json\x18\x02 \x01(\fR\fidentityJson\"F\n" +
 	"\x1aExtendIdentityLeaseRequest\x12(\n" +
 	"\x10ziti_identity_id\x18\x01 \x01(\tR\x0ezitiIdentityId\"\x1d\n" +
-	"\x1bExtendIdentityLeaseResponse\"\xeb\x01\n" +
+	"\x1bExtendIdentityLeaseResponse\"\xfd\x02\n" +
 	"\x1aCreateServicePolicyRequest\x12D\n" +
 	"\x04type\x18\x01 \x01(\x0e20.agynio.api.ziti_management.v1.ServicePolicyTypeR\x04type\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12%\n" +
 	"\x0eidentity_roles\x18\x03 \x03(\tR\ridentityRoles\x12#\n" +
-	"\rservice_roles\x18\x04 \x03(\tR\fserviceRoles\x12'\n" +
-	"\x0freturn_existing\x18\x05 \x01(\bR\x0ereturnExisting\"R\n" +
+	"\rservice_roles\x18\x04 \x03(\tR\fserviceRoles\x12W\n" +
+	"\x04tags\x18\x05 \x03(\v2C.agynio.api.ziti_management.v1.CreateServicePolicyRequest.TagsEntryR\x04tags\x12'\n" +
+	"\x0freturn_existing\x18\x06 \x01(\bR\x0ereturnExisting\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"R\n" +
 	"\x1bCreateServicePolicyResponse\x123\n" +
-	"\x16ziti_service_policy_id\x18\x01 \x01(\tR\x13zitiServicePolicyId\"\xea\x01\n" +
-	"\rServicePolicy\x123\n" +
+	"\x16ziti_service_policy_id\x18\x01 \x01(\tR\x13zitiServicePolicyId\"b\n" +
+	"\x17GetServicePolicyRequest\x123\n" +
 	"\x16ziti_service_policy_id\x18\x01 \x01(\tR\x13zitiServicePolicyId\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12D\n" +
-	"\x04type\x18\x03 \x01(\x0e20.agynio.api.ziti_management.v1.ServicePolicyTypeR\x04type\x12%\n" +
-	"\x0eidentity_roles\x18\x04 \x03(\tR\ridentityRoles\x12#\n" +
-	"\rservice_roles\x18\x05 \x03(\tR\fserviceRoles\"p\n" +
-	"\x17GetServicePolicyRequest\x125\n" +
-	"\x16ziti_service_policy_id\x18\x01 \x01(\tH\x00R\x13zitiServicePolicyId\x12\x14\n" +
-	"\x04name\x18\x02 \x01(\tH\x00R\x04nameB\b\n" +
-	"\x06lookup\"o\n" +
-	"\x18GetServicePolicyResponse\x12S\n" +
-	"\x0eservice_policy\x18\x01 \x01(\v2,.agynio.api.ziti_management.v1.ServicePolicyR\rservicePolicy\"\xc2\x02\n" +
-	"\x1aListServicePoliciesRequest\x12\x17\n" +
-	"\x04name\x18\x01 \x01(\tH\x00R\x04name\x88\x01\x01\x12$\n" +
-	"\vname_prefix\x18\x02 \x01(\tH\x01R\n" +
-	"namePrefix\x88\x01\x01\x12D\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"w\n" +
+	"\x18GetServicePolicyResponse\x12[\n" +
+	"\x0eservice_policy\x18\x01 \x01(\v24.agynio.api.ziti_management.v1.OpenZitiServicePolicyR\rservicePolicy\"\x9f\x02\n" +
+	"\x1aListServicePoliciesRequest\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1f\n" +
+	"\vname_prefix\x18\x02 \x01(\tR\n" +
+	"namePrefix\x12D\n" +
 	"\x04type\x18\x03 \x01(\x0e20.agynio.api.ziti_management.v1.ServicePolicyTypeR\x04type\x12%\n" +
 	"\x0eidentity_roles\x18\x04 \x03(\tR\ridentityRoles\x12#\n" +
 	"\rservice_roles\x18\x05 \x03(\tR\fserviceRoles\x12\x1b\n" +
 	"\tpage_size\x18\x06 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
-	"page_token\x18\a \x01(\tR\tpageTokenB\a\n" +
-	"\x05_nameB\x0e\n" +
-	"\f_name_prefix\"\x9e\x01\n" +
-	"\x1bListServicePoliciesResponse\x12W\n" +
-	"\x10service_policies\x18\x01 \x03(\v2,.agynio.api.ziti_management.v1.ServicePolicyR\x0fservicePolicies\x12&\n" +
+	"page_token\x18\a \x01(\tR\tpageToken\"\xa6\x01\n" +
+	"\x1bListServicePoliciesResponse\x12_\n" +
+	"\x10service_policies\x18\x01 \x03(\v24.agynio.api.ziti_management.v1.OpenZitiServicePolicyR\x0fservicePolicies\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"Q\n" +
 	"\x1aDeleteServicePolicyRequest\x123\n" +
 	"\x16ziti_service_policy_id\x18\x01 \x01(\tR\x13zitiServicePolicyId\"\x1d\n" +
 	"\x1bDeleteServicePolicyResponse\">\n" +
 	"\x14DeleteServiceRequest\x12&\n" +
 	"\x0fziti_service_id\x18\x01 \x01(\tR\rzitiServiceId\"\x17\n" +
-	"\x15DeleteServiceResponse\"[\n" +
+	"\x15DeleteServiceResponse\"\xac\x02\n" +
 	"\x1bCreateDeviceIdentityRequest\x12(\n" +
 	"\x10user_identity_id\x18\x01 \x01(\tR\x0euserIdentityId\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\"o\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12<\n" +
+	"\x1aadditional_role_attributes\x18\x03 \x03(\tR\x18additionalRoleAttributes\x12X\n" +
+	"\x04tags\x18\x04 \x03(\v2D.agynio.api.ziti_management.v1.CreateDeviceIdentityRequest.TagsEntryR\x04tags\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"o\n" +
 	"\x1cCreateDeviceIdentityResponse\x12(\n" +
 	"\x10ziti_identity_id\x18\x01 \x01(\tR\x0ezitiIdentityId\x12%\n" +
 	"\x0eenrollment_jwt\x18\x02 \x01(\tR\renrollmentJwt\"G\n" +
 	"\x1bDeleteDeviceIdentityRequest\x12(\n" +
 	"\x10ziti_identity_id\x18\x01 \x01(\tR\x0ezitiIdentityId\"\x1e\n" +
-	"\x1cDeleteDeviceIdentityResponse*\xf0\x01\n" +
+	"\x1cDeleteDeviceIdentityResponse\"\x81\x02\n" +
+	"\x1bCreateTunnelIdentityRequest\x12\x1d\n" +
+	"\n" +
+	"network_id\x18\x01 \x01(\tR\tnetworkId\x120\n" +
+	"\x14tunnel_credential_id\x18\x02 \x01(\tR\x12tunnelCredentialId\x12X\n" +
+	"\x04tags\x18\x03 \x03(\v2D.agynio.api.ziti_management.v1.CreateTunnelIdentityRequest.TagsEntryR\x04tags\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xc6\x01\n" +
+	"\x1cCreateTunnelIdentityResponse\x12(\n" +
+	"\x10ziti_identity_id\x18\x01 \x01(\tR\x0ezitiIdentityId\x12%\n" +
+	"\x0eenrollment_jwt\x18\x02 \x01(\tR\renrollmentJwt\x12U\n" +
+	"\x19enrollment_jwt_expires_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x16enrollmentJwtExpiresAt\"G\n" +
+	"\x1bDeleteTunnelIdentityRequest\x12(\n" +
+	"\x10ziti_identity_id\x18\x01 \x01(\tR\x0ezitiIdentityId\"\x1e\n" +
+	"\x1cDeleteTunnelIdentityResponse\"x\n" +
+	"\"PatchIdentityRoleAttributesRequest\x12(\n" +
+	"\x10ziti_identity_id\x18\x01 \x01(\tR\x0ezitiIdentityId\x12\x10\n" +
+	"\x03add\x18\x02 \x03(\tR\x03add\x12\x16\n" +
+	"\x06remove\x18\x03 \x03(\tR\x06remove\"%\n" +
+	"#PatchIdentityRoleAttributesResponse\"F\n" +
+	"\x1aGetIdentityLivenessRequest\x12(\n" +
+	"\x10ziti_identity_id\x18\x01 \x01(\tR\x0ezitiIdentityId\"\xbd\x01\n" +
+	"\x1bGetIdentityLivenessResponse\x12a\n" +
+	"\x10enrollment_state\x18\x01 \x01(\x0e26.agynio.api.ziti_management.v1.IdentityEnrollmentStateR\x0fenrollmentState\x12;\n" +
+	"\x1ahas_edge_router_connection\x18\x02 \x01(\bR\x17hasEdgeRouterConnection\"\xfd\x01\n" +
+	"\x0fOpenZitiService\x12&\n" +
+	"\x0fziti_service_id\x18\x01 \x01(\tR\rzitiServiceId\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12'\n" +
+	"\x0frole_attributes\x18\x03 \x03(\tR\x0eroleAttributes\x12L\n" +
+	"\x04tags\x18\x04 \x03(\v28.agynio.api.ziti_management.v1.OpenZitiService.TagsEntryR\x04tags\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xe6\x01\n" +
+	"\x18ListServicesByTagRequest\x12U\n" +
+	"\x04tags\x18\x01 \x03(\v2A.agynio.api.ziti_management.v1.ListServicesByTagRequest.TagsEntryR\x04tags\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\n" +
+	"page_token\x18\x03 \x01(\tR\tpageToken\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x8f\x01\n" +
+	"\x19ListServicesByTagResponse\x12J\n" +
+	"\bservices\x18\x01 \x03(\v2..agynio.api.ziti_management.v1.OpenZitiServiceR\bservices\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\x81\x02\n" +
+	"\x10OpenZitiIdentity\x12(\n" +
+	"\x10ziti_identity_id\x18\x01 \x01(\tR\x0ezitiIdentityId\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12'\n" +
+	"\x0frole_attributes\x18\x03 \x03(\tR\x0eroleAttributes\x12M\n" +
+	"\x04tags\x18\x04 \x03(\v29.agynio.api.ziti_management.v1.OpenZitiIdentity.TagsEntryR\x04tags\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xea\x01\n" +
+	"\x1aListIdentitiesByTagRequest\x12W\n" +
+	"\x04tags\x18\x01 \x03(\v2C.agynio.api.ziti_management.v1.ListIdentitiesByTagRequest.TagsEntryR\x04tags\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\n" +
+	"page_token\x18\x03 \x01(\tR\tpageToken\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x96\x01\n" +
+	"\x1bListIdentitiesByTagResponse\x12O\n" +
+	"\n" +
+	"identities\x18\x01 \x03(\v2/.agynio.api.ziti_management.v1.OpenZitiIdentityR\n" +
+	"identities\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xff\x02\n" +
+	"\x15OpenZitiServicePolicy\x123\n" +
+	"\x16ziti_service_policy_id\x18\x01 \x01(\tR\x13zitiServicePolicyId\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12D\n" +
+	"\x04type\x18\x03 \x01(\x0e20.agynio.api.ziti_management.v1.ServicePolicyTypeR\x04type\x12%\n" +
+	"\x0eidentity_roles\x18\x04 \x03(\tR\ridentityRoles\x12#\n" +
+	"\rservice_roles\x18\x05 \x03(\tR\fserviceRoles\x12R\n" +
+	"\x04tags\x18\x06 \x03(\v2>.agynio.api.ziti_management.v1.OpenZitiServicePolicy.TagsEntryR\x04tags\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xf4\x01\n" +
+	"\x1fListServicePoliciesByTagRequest\x12\\\n" +
+	"\x04tags\x18\x01 \x03(\v2H.agynio.api.ziti_management.v1.ListServicePoliciesByTagRequest.TagsEntryR\x04tags\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\n" +
+	"page_token\x18\x03 \x01(\tR\tpageToken\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xab\x01\n" +
+	" ListServicePoliciesByTagResponse\x12_\n" +
+	"\x10service_policies\x18\x01 \x03(\v24.agynio.api.ziti_management.v1.OpenZitiServicePolicyR\x0fservicePolicies\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\x99\x04\n" +
+	"\x14UpdateServiceRequest\x12&\n" +
+	"\x0fziti_service_id\x18\x01 \x01(\tR\rzitiServiceId\x12V\n" +
+	"\x0ehost_v1_config\x18\x02 \x01(\v2+.agynio.api.ziti_management.v1.HostV1ConfigH\x00R\fhostV1Config\x88\x01\x01\x12e\n" +
+	"\x13intercept_v1_config\x18\x03 \x01(\v20.agynio.api.ziti_management.v1.InterceptV1ConfigH\x01R\x11interceptV1Config\x88\x01\x01\x12U\n" +
+	"\x04tags\x18\x04 \x03(\v2=.agynio.api.ziti_management.v1.UpdateServiceRequest.TagsEntryB\x02\x18\x01R\x04tags\x12O\n" +
+	"\vtags_update\x18\x05 \x01(\v2).agynio.api.ziti_management.v1.TagsUpdateH\x02R\n" +
+	"tagsUpdate\x88\x01\x01\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\x11\n" +
+	"\x0f_host_v1_configB\x16\n" +
+	"\x14_intercept_v1_configB\x0e\n" +
+	"\f_tags_update\"\x8e\x01\n" +
+	"\n" +
+	"TagsUpdate\x12G\n" +
+	"\x04tags\x18\x01 \x03(\v23.agynio.api.ziti_management.v1.TagsUpdate.TagsEntryR\x04tags\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"a\n" +
+	"\x15UpdateServiceResponse\x12H\n" +
+	"\aservice\x18\x01 \x01(\v2..agynio.api.ziti_management.v1.OpenZitiServiceR\aservice*\x91\x02\n" +
 	"\vServiceType\x12\x1c\n" +
 	"\x18SERVICE_TYPE_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14SERVICE_TYPE_GATEWAY\x10\x01\x12\x1d\n" +
@@ -3013,19 +4198,24 @@ const file_agynio_api_ziti_management_v1_ziti_management_proto_rawDesc = "" +
 	"\x16SERVICE_TYPE_LLM_PROXY\x10\x04\x12\x18\n" +
 	"\x14SERVICE_TYPE_TRACING\x10\x05\x12\x18\n" +
 	"\x14SERVICE_TYPE_RUNNERS\x10\x06\x12\x1f\n" +
-	"\x1bSERVICE_TYPE_EGRESS_GATEWAY\x10\a\"\x04\b\x03\x10\x03*\x13SERVICE_TYPE_RUNNER*t\n" +
+	"\x1bSERVICE_TYPE_EGRESS_GATEWAY\x10\a\x12\x1f\n" +
+	"\x1bSERVICE_TYPE_TERMINAL_PROXY\x10\b\"\x04\b\x03\x10\x03*\x13SERVICE_TYPE_RUNNER*t\n" +
 	"\x11ServicePolicyType\x12#\n" +
 	"\x1fSERVICE_POLICY_TYPE_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18SERVICE_POLICY_TYPE_BIND\x10\x01\x12\x1c\n" +
-	"\x18SERVICE_POLICY_TYPE_DIAL\x10\x022\xd1\x16\n" +
+	"\x18SERVICE_POLICY_TYPE_DIAL\x10\x02*\x93\x01\n" +
+	"\x17IdentityEnrollmentState\x12)\n" +
+	"%IDENTITY_ENROLLMENT_STATE_UNSPECIFIED\x10\x00\x12%\n" +
+	"!IDENTITY_ENROLLMENT_STATE_PENDING\x10\x01\x12&\n" +
+	"\"IDENTITY_ENROLLMENT_STATE_ENROLLED\x10\x022\xf6\x1f\n" +
 	"\x15ZitiManagementService\x12\x8c\x01\n" +
-	"\x13CreateAgentIdentity\x129.agynio.api.ziti_management.v1.CreateAgentIdentityRequest\x1a:.agynio.api.ziti_management.v1.CreateAgentIdentityResponse\x12\x86\x01\n" +
+	"\x13CreateAgentIdentity\x129.agynio.api.ziti_management.v1.CreateAgentIdentityRequest\x1a:.agynio.api.ziti_management.v1.CreateAgentIdentityResponse\x12\x92\x01\n" +
+	"\x15CreateSandboxIdentity\x12;.agynio.api.ziti_management.v1.CreateSandboxIdentityRequest\x1a<.agynio.api.ziti_management.v1.CreateSandboxIdentityResponse\x12\x86\x01\n" +
 	"\x11CreateAppIdentity\x127.agynio.api.ziti_management.v1.CreateAppIdentityRequest\x1a8.agynio.api.ziti_management.v1.CreateAppIdentityResponse\x12z\n" +
 	"\rCreateService\x123.agynio.api.ziti_management.v1.CreateServiceRequest\x1a4.agynio.api.ziti_management.v1.CreateServiceResponse\x12q\n" +
 	"\n" +
 	"GetService\x120.agynio.api.ziti_management.v1.GetServiceRequest\x1a1.agynio.api.ziti_management.v1.GetServiceResponse\x12w\n" +
-	"\fListServices\x122.agynio.api.ziti_management.v1.ListServicesRequest\x1a3.agynio.api.ziti_management.v1.ListServicesResponse\x12z\n" +
-	"\rUpdateService\x123.agynio.api.ziti_management.v1.UpdateServiceRequest\x1a4.agynio.api.ziti_management.v1.UpdateServiceResponse\x12}\n" +
+	"\fListServices\x122.agynio.api.ziti_management.v1.ListServicesRequest\x1a3.agynio.api.ziti_management.v1.ListServicesResponse\x12}\n" +
 	"\x0eDeleteIdentity\x124.agynio.api.ziti_management.v1.DeleteIdentityRequest\x1a5.agynio.api.ziti_management.v1.DeleteIdentityResponse\x12\x86\x01\n" +
 	"\x11DeleteAppIdentity\x127.agynio.api.ziti_management.v1.DeleteAppIdentityRequest\x1a8.agynio.api.ziti_management.v1.DeleteAppIdentityResponse\x12\x8f\x01\n" +
 	"\x14CreateRunnerIdentity\x12:.agynio.api.ziti_management.v1.CreateRunnerIdentityRequest\x1a;.agynio.api.ziti_management.v1.CreateRunnerIdentityResponse\x12\x8f\x01\n" +
@@ -3040,7 +4230,15 @@ const file_agynio_api_ziti_management_v1_ziti_management_proto_rawDesc = "" +
 	"\x13DeleteServicePolicy\x129.agynio.api.ziti_management.v1.DeleteServicePolicyRequest\x1a:.agynio.api.ziti_management.v1.DeleteServicePolicyResponse\x12z\n" +
 	"\rDeleteService\x123.agynio.api.ziti_management.v1.DeleteServiceRequest\x1a4.agynio.api.ziti_management.v1.DeleteServiceResponse\x12\x8f\x01\n" +
 	"\x14CreateDeviceIdentity\x12:.agynio.api.ziti_management.v1.CreateDeviceIdentityRequest\x1a;.agynio.api.ziti_management.v1.CreateDeviceIdentityResponse\x12\x8f\x01\n" +
-	"\x14DeleteDeviceIdentity\x12:.agynio.api.ziti_management.v1.DeleteDeviceIdentityRequest\x1a;.agynio.api.ziti_management.v1.DeleteDeviceIdentityResponseBJZHgithub.com/agynio/api/gen/agynio/api/ziti_management/v1;zitimanagementv1b\x06proto3"
+	"\x14DeleteDeviceIdentity\x12:.agynio.api.ziti_management.v1.DeleteDeviceIdentityRequest\x1a;.agynio.api.ziti_management.v1.DeleteDeviceIdentityResponse\x12\x8f\x01\n" +
+	"\x14CreateTunnelIdentity\x12:.agynio.api.ziti_management.v1.CreateTunnelIdentityRequest\x1a;.agynio.api.ziti_management.v1.CreateTunnelIdentityResponse\x12\x8f\x01\n" +
+	"\x14DeleteTunnelIdentity\x12:.agynio.api.ziti_management.v1.DeleteTunnelIdentityRequest\x1a;.agynio.api.ziti_management.v1.DeleteTunnelIdentityResponse\x12\xa4\x01\n" +
+	"\x1bPatchIdentityRoleAttributes\x12A.agynio.api.ziti_management.v1.PatchIdentityRoleAttributesRequest\x1aB.agynio.api.ziti_management.v1.PatchIdentityRoleAttributesResponse\x12\x8c\x01\n" +
+	"\x13GetIdentityLiveness\x129.agynio.api.ziti_management.v1.GetIdentityLivenessRequest\x1a:.agynio.api.ziti_management.v1.GetIdentityLivenessResponse\x12\x86\x01\n" +
+	"\x11ListServicesByTag\x127.agynio.api.ziti_management.v1.ListServicesByTagRequest\x1a8.agynio.api.ziti_management.v1.ListServicesByTagResponse\x12\x8c\x01\n" +
+	"\x13ListIdentitiesByTag\x129.agynio.api.ziti_management.v1.ListIdentitiesByTagRequest\x1a:.agynio.api.ziti_management.v1.ListIdentitiesByTagResponse\x12\x9b\x01\n" +
+	"\x18ListServicePoliciesByTag\x12>.agynio.api.ziti_management.v1.ListServicePoliciesByTagRequest\x1a?.agynio.api.ziti_management.v1.ListServicePoliciesByTagResponse\x12z\n" +
+	"\rUpdateService\x123.agynio.api.ziti_management.v1.UpdateServiceRequest\x1a4.agynio.api.ziti_management.v1.UpdateServiceResponseBJZHgithub.com/agynio/api/gen/agynio/api/ziti_management/v1;zitimanagementv1b\x06proto3"
 
 var (
 	file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescOnce sync.Once
@@ -3054,132 +4252,203 @@ func file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescGZIP() []by
 	return file_agynio_api_ziti_management_v1_ziti_management_proto_rawDescData
 }
 
-var file_agynio_api_ziti_management_v1_ziti_management_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes = make([]protoimpl.MessageInfo, 48)
+var file_agynio_api_ziti_management_v1_ziti_management_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes = make([]protoimpl.MessageInfo, 82)
 var file_agynio_api_ziti_management_v1_ziti_management_proto_goTypes = []any{
-	(ServiceType)(0),                       // 0: agynio.api.ziti_management.v1.ServiceType
-	(ServicePolicyType)(0),                 // 1: agynio.api.ziti_management.v1.ServicePolicyType
-	(*ManagedIdentity)(nil),                // 2: agynio.api.ziti_management.v1.ManagedIdentity
-	(*CreateAgentIdentityRequest)(nil),     // 3: agynio.api.ziti_management.v1.CreateAgentIdentityRequest
-	(*CreateAgentIdentityResponse)(nil),    // 4: agynio.api.ziti_management.v1.CreateAgentIdentityResponse
-	(*CreateAppIdentityRequest)(nil),       // 5: agynio.api.ziti_management.v1.CreateAppIdentityRequest
-	(*CreateAppIdentityResponse)(nil),      // 6: agynio.api.ziti_management.v1.CreateAppIdentityResponse
-	(*HostV1Config)(nil),                   // 7: agynio.api.ziti_management.v1.HostV1Config
-	(*InterceptV1Config)(nil),              // 8: agynio.api.ziti_management.v1.InterceptV1Config
-	(*PortRange)(nil),                      // 9: agynio.api.ziti_management.v1.PortRange
-	(*CreateServiceRequest)(nil),           // 10: agynio.api.ziti_management.v1.CreateServiceRequest
-	(*CreateServiceResponse)(nil),          // 11: agynio.api.ziti_management.v1.CreateServiceResponse
-	(*Service)(nil),                        // 12: agynio.api.ziti_management.v1.Service
-	(*GetServiceRequest)(nil),              // 13: agynio.api.ziti_management.v1.GetServiceRequest
-	(*GetServiceResponse)(nil),             // 14: agynio.api.ziti_management.v1.GetServiceResponse
-	(*ListServicesRequest)(nil),            // 15: agynio.api.ziti_management.v1.ListServicesRequest
-	(*ListServicesResponse)(nil),           // 16: agynio.api.ziti_management.v1.ListServicesResponse
-	(*UpdateServiceRequest)(nil),           // 17: agynio.api.ziti_management.v1.UpdateServiceRequest
-	(*UpdateServiceResponse)(nil),          // 18: agynio.api.ziti_management.v1.UpdateServiceResponse
-	(*DeleteAppIdentityRequest)(nil),       // 19: agynio.api.ziti_management.v1.DeleteAppIdentityRequest
-	(*DeleteAppIdentityResponse)(nil),      // 20: agynio.api.ziti_management.v1.DeleteAppIdentityResponse
-	(*CreateRunnerIdentityRequest)(nil),    // 21: agynio.api.ziti_management.v1.CreateRunnerIdentityRequest
-	(*CreateRunnerIdentityResponse)(nil),   // 22: agynio.api.ziti_management.v1.CreateRunnerIdentityResponse
-	(*DeleteRunnerIdentityRequest)(nil),    // 23: agynio.api.ziti_management.v1.DeleteRunnerIdentityRequest
-	(*DeleteRunnerIdentityResponse)(nil),   // 24: agynio.api.ziti_management.v1.DeleteRunnerIdentityResponse
-	(*DeleteIdentityRequest)(nil),          // 25: agynio.api.ziti_management.v1.DeleteIdentityRequest
-	(*DeleteIdentityResponse)(nil),         // 26: agynio.api.ziti_management.v1.DeleteIdentityResponse
-	(*ListManagedIdentitiesRequest)(nil),   // 27: agynio.api.ziti_management.v1.ListManagedIdentitiesRequest
-	(*ListManagedIdentitiesResponse)(nil),  // 28: agynio.api.ziti_management.v1.ListManagedIdentitiesResponse
-	(*ResolveIdentityRequest)(nil),         // 29: agynio.api.ziti_management.v1.ResolveIdentityRequest
-	(*ResolveIdentityResponse)(nil),        // 30: agynio.api.ziti_management.v1.ResolveIdentityResponse
-	(*RequestServiceIdentityRequest)(nil),  // 31: agynio.api.ziti_management.v1.RequestServiceIdentityRequest
-	(*RequestServiceIdentityResponse)(nil), // 32: agynio.api.ziti_management.v1.RequestServiceIdentityResponse
-	(*ExtendIdentityLeaseRequest)(nil),     // 33: agynio.api.ziti_management.v1.ExtendIdentityLeaseRequest
-	(*ExtendIdentityLeaseResponse)(nil),    // 34: agynio.api.ziti_management.v1.ExtendIdentityLeaseResponse
-	(*CreateServicePolicyRequest)(nil),     // 35: agynio.api.ziti_management.v1.CreateServicePolicyRequest
-	(*CreateServicePolicyResponse)(nil),    // 36: agynio.api.ziti_management.v1.CreateServicePolicyResponse
-	(*ServicePolicy)(nil),                  // 37: agynio.api.ziti_management.v1.ServicePolicy
-	(*GetServicePolicyRequest)(nil),        // 38: agynio.api.ziti_management.v1.GetServicePolicyRequest
-	(*GetServicePolicyResponse)(nil),       // 39: agynio.api.ziti_management.v1.GetServicePolicyResponse
-	(*ListServicePoliciesRequest)(nil),     // 40: agynio.api.ziti_management.v1.ListServicePoliciesRequest
-	(*ListServicePoliciesResponse)(nil),    // 41: agynio.api.ziti_management.v1.ListServicePoliciesResponse
-	(*DeleteServicePolicyRequest)(nil),     // 42: agynio.api.ziti_management.v1.DeleteServicePolicyRequest
-	(*DeleteServicePolicyResponse)(nil),    // 43: agynio.api.ziti_management.v1.DeleteServicePolicyResponse
-	(*DeleteServiceRequest)(nil),           // 44: agynio.api.ziti_management.v1.DeleteServiceRequest
-	(*DeleteServiceResponse)(nil),          // 45: agynio.api.ziti_management.v1.DeleteServiceResponse
-	(*CreateDeviceIdentityRequest)(nil),    // 46: agynio.api.ziti_management.v1.CreateDeviceIdentityRequest
-	(*CreateDeviceIdentityResponse)(nil),   // 47: agynio.api.ziti_management.v1.CreateDeviceIdentityResponse
-	(*DeleteDeviceIdentityRequest)(nil),    // 48: agynio.api.ziti_management.v1.DeleteDeviceIdentityRequest
-	(*DeleteDeviceIdentityResponse)(nil),   // 49: agynio.api.ziti_management.v1.DeleteDeviceIdentityResponse
-	(v1.IdentityType)(0),                   // 50: agynio.api.identity.v1.IdentityType
-	(*timestamppb.Timestamp)(nil),          // 51: google.protobuf.Timestamp
+	(ServiceType)(0),                            // 0: agynio.api.ziti_management.v1.ServiceType
+	(ServicePolicyType)(0),                      // 1: agynio.api.ziti_management.v1.ServicePolicyType
+	(IdentityEnrollmentState)(0),                // 2: agynio.api.ziti_management.v1.IdentityEnrollmentState
+	(*ManagedIdentity)(nil),                     // 3: agynio.api.ziti_management.v1.ManagedIdentity
+	(*CreateAgentIdentityRequest)(nil),          // 4: agynio.api.ziti_management.v1.CreateAgentIdentityRequest
+	(*CreateAgentIdentityResponse)(nil),         // 5: agynio.api.ziti_management.v1.CreateAgentIdentityResponse
+	(*CreateSandboxIdentityRequest)(nil),        // 6: agynio.api.ziti_management.v1.CreateSandboxIdentityRequest
+	(*CreateSandboxIdentityResponse)(nil),       // 7: agynio.api.ziti_management.v1.CreateSandboxIdentityResponse
+	(*CreateAppIdentityRequest)(nil),            // 8: agynio.api.ziti_management.v1.CreateAppIdentityRequest
+	(*CreateAppIdentityResponse)(nil),           // 9: agynio.api.ziti_management.v1.CreateAppIdentityResponse
+	(*HostV1Config)(nil),                        // 10: agynio.api.ziti_management.v1.HostV1Config
+	(*InterceptV1Config)(nil),                   // 11: agynio.api.ziti_management.v1.InterceptV1Config
+	(*PortRange)(nil),                           // 12: agynio.api.ziti_management.v1.PortRange
+	(*CreateServiceRequest)(nil),                // 13: agynio.api.ziti_management.v1.CreateServiceRequest
+	(*CreateServiceResponse)(nil),               // 14: agynio.api.ziti_management.v1.CreateServiceResponse
+	(*GetServiceRequest)(nil),                   // 15: agynio.api.ziti_management.v1.GetServiceRequest
+	(*GetServiceResponse)(nil),                  // 16: agynio.api.ziti_management.v1.GetServiceResponse
+	(*ListServicesRequest)(nil),                 // 17: agynio.api.ziti_management.v1.ListServicesRequest
+	(*ListServicesResponse)(nil),                // 18: agynio.api.ziti_management.v1.ListServicesResponse
+	(*DeleteAppIdentityRequest)(nil),            // 19: agynio.api.ziti_management.v1.DeleteAppIdentityRequest
+	(*DeleteAppIdentityResponse)(nil),           // 20: agynio.api.ziti_management.v1.DeleteAppIdentityResponse
+	(*CreateRunnerIdentityRequest)(nil),         // 21: agynio.api.ziti_management.v1.CreateRunnerIdentityRequest
+	(*CreateRunnerIdentityResponse)(nil),        // 22: agynio.api.ziti_management.v1.CreateRunnerIdentityResponse
+	(*DeleteRunnerIdentityRequest)(nil),         // 23: agynio.api.ziti_management.v1.DeleteRunnerIdentityRequest
+	(*DeleteRunnerIdentityResponse)(nil),        // 24: agynio.api.ziti_management.v1.DeleteRunnerIdentityResponse
+	(*DeleteIdentityRequest)(nil),               // 25: agynio.api.ziti_management.v1.DeleteIdentityRequest
+	(*DeleteIdentityResponse)(nil),              // 26: agynio.api.ziti_management.v1.DeleteIdentityResponse
+	(*ListManagedIdentitiesRequest)(nil),        // 27: agynio.api.ziti_management.v1.ListManagedIdentitiesRequest
+	(*ListManagedIdentitiesResponse)(nil),       // 28: agynio.api.ziti_management.v1.ListManagedIdentitiesResponse
+	(*ResolveIdentityRequest)(nil),              // 29: agynio.api.ziti_management.v1.ResolveIdentityRequest
+	(*ResolveIdentityResponse)(nil),             // 30: agynio.api.ziti_management.v1.ResolveIdentityResponse
+	(*RequestServiceIdentityRequest)(nil),       // 31: agynio.api.ziti_management.v1.RequestServiceIdentityRequest
+	(*RequestServiceIdentityResponse)(nil),      // 32: agynio.api.ziti_management.v1.RequestServiceIdentityResponse
+	(*ExtendIdentityLeaseRequest)(nil),          // 33: agynio.api.ziti_management.v1.ExtendIdentityLeaseRequest
+	(*ExtendIdentityLeaseResponse)(nil),         // 34: agynio.api.ziti_management.v1.ExtendIdentityLeaseResponse
+	(*CreateServicePolicyRequest)(nil),          // 35: agynio.api.ziti_management.v1.CreateServicePolicyRequest
+	(*CreateServicePolicyResponse)(nil),         // 36: agynio.api.ziti_management.v1.CreateServicePolicyResponse
+	(*GetServicePolicyRequest)(nil),             // 37: agynio.api.ziti_management.v1.GetServicePolicyRequest
+	(*GetServicePolicyResponse)(nil),            // 38: agynio.api.ziti_management.v1.GetServicePolicyResponse
+	(*ListServicePoliciesRequest)(nil),          // 39: agynio.api.ziti_management.v1.ListServicePoliciesRequest
+	(*ListServicePoliciesResponse)(nil),         // 40: agynio.api.ziti_management.v1.ListServicePoliciesResponse
+	(*DeleteServicePolicyRequest)(nil),          // 41: agynio.api.ziti_management.v1.DeleteServicePolicyRequest
+	(*DeleteServicePolicyResponse)(nil),         // 42: agynio.api.ziti_management.v1.DeleteServicePolicyResponse
+	(*DeleteServiceRequest)(nil),                // 43: agynio.api.ziti_management.v1.DeleteServiceRequest
+	(*DeleteServiceResponse)(nil),               // 44: agynio.api.ziti_management.v1.DeleteServiceResponse
+	(*CreateDeviceIdentityRequest)(nil),         // 45: agynio.api.ziti_management.v1.CreateDeviceIdentityRequest
+	(*CreateDeviceIdentityResponse)(nil),        // 46: agynio.api.ziti_management.v1.CreateDeviceIdentityResponse
+	(*DeleteDeviceIdentityRequest)(nil),         // 47: agynio.api.ziti_management.v1.DeleteDeviceIdentityRequest
+	(*DeleteDeviceIdentityResponse)(nil),        // 48: agynio.api.ziti_management.v1.DeleteDeviceIdentityResponse
+	(*CreateTunnelIdentityRequest)(nil),         // 49: agynio.api.ziti_management.v1.CreateTunnelIdentityRequest
+	(*CreateTunnelIdentityResponse)(nil),        // 50: agynio.api.ziti_management.v1.CreateTunnelIdentityResponse
+	(*DeleteTunnelIdentityRequest)(nil),         // 51: agynio.api.ziti_management.v1.DeleteTunnelIdentityRequest
+	(*DeleteTunnelIdentityResponse)(nil),        // 52: agynio.api.ziti_management.v1.DeleteTunnelIdentityResponse
+	(*PatchIdentityRoleAttributesRequest)(nil),  // 53: agynio.api.ziti_management.v1.PatchIdentityRoleAttributesRequest
+	(*PatchIdentityRoleAttributesResponse)(nil), // 54: agynio.api.ziti_management.v1.PatchIdentityRoleAttributesResponse
+	(*GetIdentityLivenessRequest)(nil),          // 55: agynio.api.ziti_management.v1.GetIdentityLivenessRequest
+	(*GetIdentityLivenessResponse)(nil),         // 56: agynio.api.ziti_management.v1.GetIdentityLivenessResponse
+	(*OpenZitiService)(nil),                     // 57: agynio.api.ziti_management.v1.OpenZitiService
+	(*ListServicesByTagRequest)(nil),            // 58: agynio.api.ziti_management.v1.ListServicesByTagRequest
+	(*ListServicesByTagResponse)(nil),           // 59: agynio.api.ziti_management.v1.ListServicesByTagResponse
+	(*OpenZitiIdentity)(nil),                    // 60: agynio.api.ziti_management.v1.OpenZitiIdentity
+	(*ListIdentitiesByTagRequest)(nil),          // 61: agynio.api.ziti_management.v1.ListIdentitiesByTagRequest
+	(*ListIdentitiesByTagResponse)(nil),         // 62: agynio.api.ziti_management.v1.ListIdentitiesByTagResponse
+	(*OpenZitiServicePolicy)(nil),               // 63: agynio.api.ziti_management.v1.OpenZitiServicePolicy
+	(*ListServicePoliciesByTagRequest)(nil),     // 64: agynio.api.ziti_management.v1.ListServicePoliciesByTagRequest
+	(*ListServicePoliciesByTagResponse)(nil),    // 65: agynio.api.ziti_management.v1.ListServicePoliciesByTagResponse
+	(*UpdateServiceRequest)(nil),                // 66: agynio.api.ziti_management.v1.UpdateServiceRequest
+	(*TagsUpdate)(nil),                          // 67: agynio.api.ziti_management.v1.TagsUpdate
+	(*UpdateServiceResponse)(nil),               // 68: agynio.api.ziti_management.v1.UpdateServiceResponse
+	nil,                                         // 69: agynio.api.ziti_management.v1.CreateAgentIdentityRequest.TagsEntry
+	nil,                                         // 70: agynio.api.ziti_management.v1.CreateSandboxIdentityRequest.TagsEntry
+	nil,                                         // 71: agynio.api.ziti_management.v1.CreateAppIdentityRequest.TagsEntry
+	nil,                                         // 72: agynio.api.ziti_management.v1.CreateServiceRequest.TagsEntry
+	nil,                                         // 73: agynio.api.ziti_management.v1.CreateRunnerIdentityRequest.TagsEntry
+	nil,                                         // 74: agynio.api.ziti_management.v1.CreateServicePolicyRequest.TagsEntry
+	nil,                                         // 75: agynio.api.ziti_management.v1.CreateDeviceIdentityRequest.TagsEntry
+	nil,                                         // 76: agynio.api.ziti_management.v1.CreateTunnelIdentityRequest.TagsEntry
+	nil,                                         // 77: agynio.api.ziti_management.v1.OpenZitiService.TagsEntry
+	nil,                                         // 78: agynio.api.ziti_management.v1.ListServicesByTagRequest.TagsEntry
+	nil,                                         // 79: agynio.api.ziti_management.v1.OpenZitiIdentity.TagsEntry
+	nil,                                         // 80: agynio.api.ziti_management.v1.ListIdentitiesByTagRequest.TagsEntry
+	nil,                                         // 81: agynio.api.ziti_management.v1.OpenZitiServicePolicy.TagsEntry
+	nil,                                         // 82: agynio.api.ziti_management.v1.ListServicePoliciesByTagRequest.TagsEntry
+	nil,                                         // 83: agynio.api.ziti_management.v1.UpdateServiceRequest.TagsEntry
+	nil,                                         // 84: agynio.api.ziti_management.v1.TagsUpdate.TagsEntry
+	(v1.IdentityType)(0),                        // 85: agynio.api.identity.v1.IdentityType
+	(*timestamppb.Timestamp)(nil),               // 86: google.protobuf.Timestamp
 }
 var file_agynio_api_ziti_management_v1_ziti_management_proto_depIdxs = []int32{
-	50, // 0: agynio.api.ziti_management.v1.ManagedIdentity.identity_type:type_name -> agynio.api.identity.v1.IdentityType
-	51, // 1: agynio.api.ziti_management.v1.ManagedIdentity.created_at:type_name -> google.protobuf.Timestamp
-	9,  // 2: agynio.api.ziti_management.v1.HostV1Config.allowed_port_ranges:type_name -> agynio.api.ziti_management.v1.PortRange
-	9,  // 3: agynio.api.ziti_management.v1.InterceptV1Config.port_ranges:type_name -> agynio.api.ziti_management.v1.PortRange
-	7,  // 4: agynio.api.ziti_management.v1.CreateServiceRequest.host_v1_config:type_name -> agynio.api.ziti_management.v1.HostV1Config
-	8,  // 5: agynio.api.ziti_management.v1.CreateServiceRequest.intercept_v1_config:type_name -> agynio.api.ziti_management.v1.InterceptV1Config
-	7,  // 6: agynio.api.ziti_management.v1.Service.host_v1_config:type_name -> agynio.api.ziti_management.v1.HostV1Config
-	8,  // 7: agynio.api.ziti_management.v1.Service.intercept_v1_config:type_name -> agynio.api.ziti_management.v1.InterceptV1Config
-	12, // 8: agynio.api.ziti_management.v1.GetServiceResponse.service:type_name -> agynio.api.ziti_management.v1.Service
-	12, // 9: agynio.api.ziti_management.v1.ListServicesResponse.services:type_name -> agynio.api.ziti_management.v1.Service
-	7,  // 10: agynio.api.ziti_management.v1.UpdateServiceRequest.host_v1_config:type_name -> agynio.api.ziti_management.v1.HostV1Config
-	8,  // 11: agynio.api.ziti_management.v1.UpdateServiceRequest.intercept_v1_config:type_name -> agynio.api.ziti_management.v1.InterceptV1Config
-	12, // 12: agynio.api.ziti_management.v1.UpdateServiceResponse.service:type_name -> agynio.api.ziti_management.v1.Service
-	50, // 13: agynio.api.ziti_management.v1.ListManagedIdentitiesRequest.identity_type:type_name -> agynio.api.identity.v1.IdentityType
-	2,  // 14: agynio.api.ziti_management.v1.ListManagedIdentitiesResponse.identities:type_name -> agynio.api.ziti_management.v1.ManagedIdentity
-	50, // 15: agynio.api.ziti_management.v1.ResolveIdentityResponse.identity_type:type_name -> agynio.api.identity.v1.IdentityType
+	85, // 0: agynio.api.ziti_management.v1.ManagedIdentity.identity_type:type_name -> agynio.api.identity.v1.IdentityType
+	86, // 1: agynio.api.ziti_management.v1.ManagedIdentity.created_at:type_name -> google.protobuf.Timestamp
+	69, // 2: agynio.api.ziti_management.v1.CreateAgentIdentityRequest.tags:type_name -> agynio.api.ziti_management.v1.CreateAgentIdentityRequest.TagsEntry
+	70, // 3: agynio.api.ziti_management.v1.CreateSandboxIdentityRequest.tags:type_name -> agynio.api.ziti_management.v1.CreateSandboxIdentityRequest.TagsEntry
+	71, // 4: agynio.api.ziti_management.v1.CreateAppIdentityRequest.tags:type_name -> agynio.api.ziti_management.v1.CreateAppIdentityRequest.TagsEntry
+	12, // 5: agynio.api.ziti_management.v1.HostV1Config.allowed_port_ranges:type_name -> agynio.api.ziti_management.v1.PortRange
+	12, // 6: agynio.api.ziti_management.v1.InterceptV1Config.port_ranges:type_name -> agynio.api.ziti_management.v1.PortRange
+	10, // 7: agynio.api.ziti_management.v1.CreateServiceRequest.host_v1_config:type_name -> agynio.api.ziti_management.v1.HostV1Config
+	11, // 8: agynio.api.ziti_management.v1.CreateServiceRequest.intercept_v1_config:type_name -> agynio.api.ziti_management.v1.InterceptV1Config
+	72, // 9: agynio.api.ziti_management.v1.CreateServiceRequest.tags:type_name -> agynio.api.ziti_management.v1.CreateServiceRequest.TagsEntry
+	57, // 10: agynio.api.ziti_management.v1.GetServiceResponse.service:type_name -> agynio.api.ziti_management.v1.OpenZitiService
+	57, // 11: agynio.api.ziti_management.v1.ListServicesResponse.services:type_name -> agynio.api.ziti_management.v1.OpenZitiService
+	73, // 12: agynio.api.ziti_management.v1.CreateRunnerIdentityRequest.tags:type_name -> agynio.api.ziti_management.v1.CreateRunnerIdentityRequest.TagsEntry
+	85, // 13: agynio.api.ziti_management.v1.ListManagedIdentitiesRequest.identity_type:type_name -> agynio.api.identity.v1.IdentityType
+	3,  // 14: agynio.api.ziti_management.v1.ListManagedIdentitiesResponse.identities:type_name -> agynio.api.ziti_management.v1.ManagedIdentity
+	85, // 15: agynio.api.ziti_management.v1.ResolveIdentityResponse.identity_type:type_name -> agynio.api.identity.v1.IdentityType
 	0,  // 16: agynio.api.ziti_management.v1.RequestServiceIdentityRequest.service_type:type_name -> agynio.api.ziti_management.v1.ServiceType
 	1,  // 17: agynio.api.ziti_management.v1.CreateServicePolicyRequest.type:type_name -> agynio.api.ziti_management.v1.ServicePolicyType
-	1,  // 18: agynio.api.ziti_management.v1.ServicePolicy.type:type_name -> agynio.api.ziti_management.v1.ServicePolicyType
-	37, // 19: agynio.api.ziti_management.v1.GetServicePolicyResponse.service_policy:type_name -> agynio.api.ziti_management.v1.ServicePolicy
+	74, // 18: agynio.api.ziti_management.v1.CreateServicePolicyRequest.tags:type_name -> agynio.api.ziti_management.v1.CreateServicePolicyRequest.TagsEntry
+	63, // 19: agynio.api.ziti_management.v1.GetServicePolicyResponse.service_policy:type_name -> agynio.api.ziti_management.v1.OpenZitiServicePolicy
 	1,  // 20: agynio.api.ziti_management.v1.ListServicePoliciesRequest.type:type_name -> agynio.api.ziti_management.v1.ServicePolicyType
-	37, // 21: agynio.api.ziti_management.v1.ListServicePoliciesResponse.service_policies:type_name -> agynio.api.ziti_management.v1.ServicePolicy
-	3,  // 22: agynio.api.ziti_management.v1.ZitiManagementService.CreateAgentIdentity:input_type -> agynio.api.ziti_management.v1.CreateAgentIdentityRequest
-	5,  // 23: agynio.api.ziti_management.v1.ZitiManagementService.CreateAppIdentity:input_type -> agynio.api.ziti_management.v1.CreateAppIdentityRequest
-	10, // 24: agynio.api.ziti_management.v1.ZitiManagementService.CreateService:input_type -> agynio.api.ziti_management.v1.CreateServiceRequest
-	13, // 25: agynio.api.ziti_management.v1.ZitiManagementService.GetService:input_type -> agynio.api.ziti_management.v1.GetServiceRequest
-	15, // 26: agynio.api.ziti_management.v1.ZitiManagementService.ListServices:input_type -> agynio.api.ziti_management.v1.ListServicesRequest
-	17, // 27: agynio.api.ziti_management.v1.ZitiManagementService.UpdateService:input_type -> agynio.api.ziti_management.v1.UpdateServiceRequest
-	25, // 28: agynio.api.ziti_management.v1.ZitiManagementService.DeleteIdentity:input_type -> agynio.api.ziti_management.v1.DeleteIdentityRequest
-	19, // 29: agynio.api.ziti_management.v1.ZitiManagementService.DeleteAppIdentity:input_type -> agynio.api.ziti_management.v1.DeleteAppIdentityRequest
-	21, // 30: agynio.api.ziti_management.v1.ZitiManagementService.CreateRunnerIdentity:input_type -> agynio.api.ziti_management.v1.CreateRunnerIdentityRequest
-	23, // 31: agynio.api.ziti_management.v1.ZitiManagementService.DeleteRunnerIdentity:input_type -> agynio.api.ziti_management.v1.DeleteRunnerIdentityRequest
-	27, // 32: agynio.api.ziti_management.v1.ZitiManagementService.ListManagedIdentities:input_type -> agynio.api.ziti_management.v1.ListManagedIdentitiesRequest
-	29, // 33: agynio.api.ziti_management.v1.ZitiManagementService.ResolveIdentity:input_type -> agynio.api.ziti_management.v1.ResolveIdentityRequest
-	31, // 34: agynio.api.ziti_management.v1.ZitiManagementService.RequestServiceIdentity:input_type -> agynio.api.ziti_management.v1.RequestServiceIdentityRequest
-	33, // 35: agynio.api.ziti_management.v1.ZitiManagementService.ExtendIdentityLease:input_type -> agynio.api.ziti_management.v1.ExtendIdentityLeaseRequest
-	35, // 36: agynio.api.ziti_management.v1.ZitiManagementService.CreateServicePolicy:input_type -> agynio.api.ziti_management.v1.CreateServicePolicyRequest
-	38, // 37: agynio.api.ziti_management.v1.ZitiManagementService.GetServicePolicy:input_type -> agynio.api.ziti_management.v1.GetServicePolicyRequest
-	40, // 38: agynio.api.ziti_management.v1.ZitiManagementService.ListServicePolicies:input_type -> agynio.api.ziti_management.v1.ListServicePoliciesRequest
-	42, // 39: agynio.api.ziti_management.v1.ZitiManagementService.DeleteServicePolicy:input_type -> agynio.api.ziti_management.v1.DeleteServicePolicyRequest
-	44, // 40: agynio.api.ziti_management.v1.ZitiManagementService.DeleteService:input_type -> agynio.api.ziti_management.v1.DeleteServiceRequest
-	46, // 41: agynio.api.ziti_management.v1.ZitiManagementService.CreateDeviceIdentity:input_type -> agynio.api.ziti_management.v1.CreateDeviceIdentityRequest
-	48, // 42: agynio.api.ziti_management.v1.ZitiManagementService.DeleteDeviceIdentity:input_type -> agynio.api.ziti_management.v1.DeleteDeviceIdentityRequest
-	4,  // 43: agynio.api.ziti_management.v1.ZitiManagementService.CreateAgentIdentity:output_type -> agynio.api.ziti_management.v1.CreateAgentIdentityResponse
-	6,  // 44: agynio.api.ziti_management.v1.ZitiManagementService.CreateAppIdentity:output_type -> agynio.api.ziti_management.v1.CreateAppIdentityResponse
-	11, // 45: agynio.api.ziti_management.v1.ZitiManagementService.CreateService:output_type -> agynio.api.ziti_management.v1.CreateServiceResponse
-	14, // 46: agynio.api.ziti_management.v1.ZitiManagementService.GetService:output_type -> agynio.api.ziti_management.v1.GetServiceResponse
-	16, // 47: agynio.api.ziti_management.v1.ZitiManagementService.ListServices:output_type -> agynio.api.ziti_management.v1.ListServicesResponse
-	18, // 48: agynio.api.ziti_management.v1.ZitiManagementService.UpdateService:output_type -> agynio.api.ziti_management.v1.UpdateServiceResponse
-	26, // 49: agynio.api.ziti_management.v1.ZitiManagementService.DeleteIdentity:output_type -> agynio.api.ziti_management.v1.DeleteIdentityResponse
-	20, // 50: agynio.api.ziti_management.v1.ZitiManagementService.DeleteAppIdentity:output_type -> agynio.api.ziti_management.v1.DeleteAppIdentityResponse
-	22, // 51: agynio.api.ziti_management.v1.ZitiManagementService.CreateRunnerIdentity:output_type -> agynio.api.ziti_management.v1.CreateRunnerIdentityResponse
-	24, // 52: agynio.api.ziti_management.v1.ZitiManagementService.DeleteRunnerIdentity:output_type -> agynio.api.ziti_management.v1.DeleteRunnerIdentityResponse
-	28, // 53: agynio.api.ziti_management.v1.ZitiManagementService.ListManagedIdentities:output_type -> agynio.api.ziti_management.v1.ListManagedIdentitiesResponse
-	30, // 54: agynio.api.ziti_management.v1.ZitiManagementService.ResolveIdentity:output_type -> agynio.api.ziti_management.v1.ResolveIdentityResponse
-	32, // 55: agynio.api.ziti_management.v1.ZitiManagementService.RequestServiceIdentity:output_type -> agynio.api.ziti_management.v1.RequestServiceIdentityResponse
-	34, // 56: agynio.api.ziti_management.v1.ZitiManagementService.ExtendIdentityLease:output_type -> agynio.api.ziti_management.v1.ExtendIdentityLeaseResponse
-	36, // 57: agynio.api.ziti_management.v1.ZitiManagementService.CreateServicePolicy:output_type -> agynio.api.ziti_management.v1.CreateServicePolicyResponse
-	39, // 58: agynio.api.ziti_management.v1.ZitiManagementService.GetServicePolicy:output_type -> agynio.api.ziti_management.v1.GetServicePolicyResponse
-	41, // 59: agynio.api.ziti_management.v1.ZitiManagementService.ListServicePolicies:output_type -> agynio.api.ziti_management.v1.ListServicePoliciesResponse
-	43, // 60: agynio.api.ziti_management.v1.ZitiManagementService.DeleteServicePolicy:output_type -> agynio.api.ziti_management.v1.DeleteServicePolicyResponse
-	45, // 61: agynio.api.ziti_management.v1.ZitiManagementService.DeleteService:output_type -> agynio.api.ziti_management.v1.DeleteServiceResponse
-	47, // 62: agynio.api.ziti_management.v1.ZitiManagementService.CreateDeviceIdentity:output_type -> agynio.api.ziti_management.v1.CreateDeviceIdentityResponse
-	49, // 63: agynio.api.ziti_management.v1.ZitiManagementService.DeleteDeviceIdentity:output_type -> agynio.api.ziti_management.v1.DeleteDeviceIdentityResponse
-	43, // [43:64] is the sub-list for method output_type
-	22, // [22:43] is the sub-list for method input_type
-	22, // [22:22] is the sub-list for extension type_name
-	22, // [22:22] is the sub-list for extension extendee
-	0,  // [0:22] is the sub-list for field type_name
+	63, // 21: agynio.api.ziti_management.v1.ListServicePoliciesResponse.service_policies:type_name -> agynio.api.ziti_management.v1.OpenZitiServicePolicy
+	75, // 22: agynio.api.ziti_management.v1.CreateDeviceIdentityRequest.tags:type_name -> agynio.api.ziti_management.v1.CreateDeviceIdentityRequest.TagsEntry
+	76, // 23: agynio.api.ziti_management.v1.CreateTunnelIdentityRequest.tags:type_name -> agynio.api.ziti_management.v1.CreateTunnelIdentityRequest.TagsEntry
+	86, // 24: agynio.api.ziti_management.v1.CreateTunnelIdentityResponse.enrollment_jwt_expires_at:type_name -> google.protobuf.Timestamp
+	2,  // 25: agynio.api.ziti_management.v1.GetIdentityLivenessResponse.enrollment_state:type_name -> agynio.api.ziti_management.v1.IdentityEnrollmentState
+	77, // 26: agynio.api.ziti_management.v1.OpenZitiService.tags:type_name -> agynio.api.ziti_management.v1.OpenZitiService.TagsEntry
+	78, // 27: agynio.api.ziti_management.v1.ListServicesByTagRequest.tags:type_name -> agynio.api.ziti_management.v1.ListServicesByTagRequest.TagsEntry
+	57, // 28: agynio.api.ziti_management.v1.ListServicesByTagResponse.services:type_name -> agynio.api.ziti_management.v1.OpenZitiService
+	79, // 29: agynio.api.ziti_management.v1.OpenZitiIdentity.tags:type_name -> agynio.api.ziti_management.v1.OpenZitiIdentity.TagsEntry
+	80, // 30: agynio.api.ziti_management.v1.ListIdentitiesByTagRequest.tags:type_name -> agynio.api.ziti_management.v1.ListIdentitiesByTagRequest.TagsEntry
+	60, // 31: agynio.api.ziti_management.v1.ListIdentitiesByTagResponse.identities:type_name -> agynio.api.ziti_management.v1.OpenZitiIdentity
+	1,  // 32: agynio.api.ziti_management.v1.OpenZitiServicePolicy.type:type_name -> agynio.api.ziti_management.v1.ServicePolicyType
+	81, // 33: agynio.api.ziti_management.v1.OpenZitiServicePolicy.tags:type_name -> agynio.api.ziti_management.v1.OpenZitiServicePolicy.TagsEntry
+	82, // 34: agynio.api.ziti_management.v1.ListServicePoliciesByTagRequest.tags:type_name -> agynio.api.ziti_management.v1.ListServicePoliciesByTagRequest.TagsEntry
+	63, // 35: agynio.api.ziti_management.v1.ListServicePoliciesByTagResponse.service_policies:type_name -> agynio.api.ziti_management.v1.OpenZitiServicePolicy
+	10, // 36: agynio.api.ziti_management.v1.UpdateServiceRequest.host_v1_config:type_name -> agynio.api.ziti_management.v1.HostV1Config
+	11, // 37: agynio.api.ziti_management.v1.UpdateServiceRequest.intercept_v1_config:type_name -> agynio.api.ziti_management.v1.InterceptV1Config
+	83, // 38: agynio.api.ziti_management.v1.UpdateServiceRequest.tags:type_name -> agynio.api.ziti_management.v1.UpdateServiceRequest.TagsEntry
+	67, // 39: agynio.api.ziti_management.v1.UpdateServiceRequest.tags_update:type_name -> agynio.api.ziti_management.v1.TagsUpdate
+	84, // 40: agynio.api.ziti_management.v1.TagsUpdate.tags:type_name -> agynio.api.ziti_management.v1.TagsUpdate.TagsEntry
+	57, // 41: agynio.api.ziti_management.v1.UpdateServiceResponse.service:type_name -> agynio.api.ziti_management.v1.OpenZitiService
+	4,  // 42: agynio.api.ziti_management.v1.ZitiManagementService.CreateAgentIdentity:input_type -> agynio.api.ziti_management.v1.CreateAgentIdentityRequest
+	6,  // 43: agynio.api.ziti_management.v1.ZitiManagementService.CreateSandboxIdentity:input_type -> agynio.api.ziti_management.v1.CreateSandboxIdentityRequest
+	8,  // 44: agynio.api.ziti_management.v1.ZitiManagementService.CreateAppIdentity:input_type -> agynio.api.ziti_management.v1.CreateAppIdentityRequest
+	13, // 45: agynio.api.ziti_management.v1.ZitiManagementService.CreateService:input_type -> agynio.api.ziti_management.v1.CreateServiceRequest
+	15, // 46: agynio.api.ziti_management.v1.ZitiManagementService.GetService:input_type -> agynio.api.ziti_management.v1.GetServiceRequest
+	17, // 47: agynio.api.ziti_management.v1.ZitiManagementService.ListServices:input_type -> agynio.api.ziti_management.v1.ListServicesRequest
+	25, // 48: agynio.api.ziti_management.v1.ZitiManagementService.DeleteIdentity:input_type -> agynio.api.ziti_management.v1.DeleteIdentityRequest
+	19, // 49: agynio.api.ziti_management.v1.ZitiManagementService.DeleteAppIdentity:input_type -> agynio.api.ziti_management.v1.DeleteAppIdentityRequest
+	21, // 50: agynio.api.ziti_management.v1.ZitiManagementService.CreateRunnerIdentity:input_type -> agynio.api.ziti_management.v1.CreateRunnerIdentityRequest
+	23, // 51: agynio.api.ziti_management.v1.ZitiManagementService.DeleteRunnerIdentity:input_type -> agynio.api.ziti_management.v1.DeleteRunnerIdentityRequest
+	27, // 52: agynio.api.ziti_management.v1.ZitiManagementService.ListManagedIdentities:input_type -> agynio.api.ziti_management.v1.ListManagedIdentitiesRequest
+	29, // 53: agynio.api.ziti_management.v1.ZitiManagementService.ResolveIdentity:input_type -> agynio.api.ziti_management.v1.ResolveIdentityRequest
+	31, // 54: agynio.api.ziti_management.v1.ZitiManagementService.RequestServiceIdentity:input_type -> agynio.api.ziti_management.v1.RequestServiceIdentityRequest
+	33, // 55: agynio.api.ziti_management.v1.ZitiManagementService.ExtendIdentityLease:input_type -> agynio.api.ziti_management.v1.ExtendIdentityLeaseRequest
+	35, // 56: agynio.api.ziti_management.v1.ZitiManagementService.CreateServicePolicy:input_type -> agynio.api.ziti_management.v1.CreateServicePolicyRequest
+	37, // 57: agynio.api.ziti_management.v1.ZitiManagementService.GetServicePolicy:input_type -> agynio.api.ziti_management.v1.GetServicePolicyRequest
+	39, // 58: agynio.api.ziti_management.v1.ZitiManagementService.ListServicePolicies:input_type -> agynio.api.ziti_management.v1.ListServicePoliciesRequest
+	41, // 59: agynio.api.ziti_management.v1.ZitiManagementService.DeleteServicePolicy:input_type -> agynio.api.ziti_management.v1.DeleteServicePolicyRequest
+	43, // 60: agynio.api.ziti_management.v1.ZitiManagementService.DeleteService:input_type -> agynio.api.ziti_management.v1.DeleteServiceRequest
+	45, // 61: agynio.api.ziti_management.v1.ZitiManagementService.CreateDeviceIdentity:input_type -> agynio.api.ziti_management.v1.CreateDeviceIdentityRequest
+	47, // 62: agynio.api.ziti_management.v1.ZitiManagementService.DeleteDeviceIdentity:input_type -> agynio.api.ziti_management.v1.DeleteDeviceIdentityRequest
+	49, // 63: agynio.api.ziti_management.v1.ZitiManagementService.CreateTunnelIdentity:input_type -> agynio.api.ziti_management.v1.CreateTunnelIdentityRequest
+	51, // 64: agynio.api.ziti_management.v1.ZitiManagementService.DeleteTunnelIdentity:input_type -> agynio.api.ziti_management.v1.DeleteTunnelIdentityRequest
+	53, // 65: agynio.api.ziti_management.v1.ZitiManagementService.PatchIdentityRoleAttributes:input_type -> agynio.api.ziti_management.v1.PatchIdentityRoleAttributesRequest
+	55, // 66: agynio.api.ziti_management.v1.ZitiManagementService.GetIdentityLiveness:input_type -> agynio.api.ziti_management.v1.GetIdentityLivenessRequest
+	58, // 67: agynio.api.ziti_management.v1.ZitiManagementService.ListServicesByTag:input_type -> agynio.api.ziti_management.v1.ListServicesByTagRequest
+	61, // 68: agynio.api.ziti_management.v1.ZitiManagementService.ListIdentitiesByTag:input_type -> agynio.api.ziti_management.v1.ListIdentitiesByTagRequest
+	64, // 69: agynio.api.ziti_management.v1.ZitiManagementService.ListServicePoliciesByTag:input_type -> agynio.api.ziti_management.v1.ListServicePoliciesByTagRequest
+	66, // 70: agynio.api.ziti_management.v1.ZitiManagementService.UpdateService:input_type -> agynio.api.ziti_management.v1.UpdateServiceRequest
+	5,  // 71: agynio.api.ziti_management.v1.ZitiManagementService.CreateAgentIdentity:output_type -> agynio.api.ziti_management.v1.CreateAgentIdentityResponse
+	7,  // 72: agynio.api.ziti_management.v1.ZitiManagementService.CreateSandboxIdentity:output_type -> agynio.api.ziti_management.v1.CreateSandboxIdentityResponse
+	9,  // 73: agynio.api.ziti_management.v1.ZitiManagementService.CreateAppIdentity:output_type -> agynio.api.ziti_management.v1.CreateAppIdentityResponse
+	14, // 74: agynio.api.ziti_management.v1.ZitiManagementService.CreateService:output_type -> agynio.api.ziti_management.v1.CreateServiceResponse
+	16, // 75: agynio.api.ziti_management.v1.ZitiManagementService.GetService:output_type -> agynio.api.ziti_management.v1.GetServiceResponse
+	18, // 76: agynio.api.ziti_management.v1.ZitiManagementService.ListServices:output_type -> agynio.api.ziti_management.v1.ListServicesResponse
+	26, // 77: agynio.api.ziti_management.v1.ZitiManagementService.DeleteIdentity:output_type -> agynio.api.ziti_management.v1.DeleteIdentityResponse
+	20, // 78: agynio.api.ziti_management.v1.ZitiManagementService.DeleteAppIdentity:output_type -> agynio.api.ziti_management.v1.DeleteAppIdentityResponse
+	22, // 79: agynio.api.ziti_management.v1.ZitiManagementService.CreateRunnerIdentity:output_type -> agynio.api.ziti_management.v1.CreateRunnerIdentityResponse
+	24, // 80: agynio.api.ziti_management.v1.ZitiManagementService.DeleteRunnerIdentity:output_type -> agynio.api.ziti_management.v1.DeleteRunnerIdentityResponse
+	28, // 81: agynio.api.ziti_management.v1.ZitiManagementService.ListManagedIdentities:output_type -> agynio.api.ziti_management.v1.ListManagedIdentitiesResponse
+	30, // 82: agynio.api.ziti_management.v1.ZitiManagementService.ResolveIdentity:output_type -> agynio.api.ziti_management.v1.ResolveIdentityResponse
+	32, // 83: agynio.api.ziti_management.v1.ZitiManagementService.RequestServiceIdentity:output_type -> agynio.api.ziti_management.v1.RequestServiceIdentityResponse
+	34, // 84: agynio.api.ziti_management.v1.ZitiManagementService.ExtendIdentityLease:output_type -> agynio.api.ziti_management.v1.ExtendIdentityLeaseResponse
+	36, // 85: agynio.api.ziti_management.v1.ZitiManagementService.CreateServicePolicy:output_type -> agynio.api.ziti_management.v1.CreateServicePolicyResponse
+	38, // 86: agynio.api.ziti_management.v1.ZitiManagementService.GetServicePolicy:output_type -> agynio.api.ziti_management.v1.GetServicePolicyResponse
+	40, // 87: agynio.api.ziti_management.v1.ZitiManagementService.ListServicePolicies:output_type -> agynio.api.ziti_management.v1.ListServicePoliciesResponse
+	42, // 88: agynio.api.ziti_management.v1.ZitiManagementService.DeleteServicePolicy:output_type -> agynio.api.ziti_management.v1.DeleteServicePolicyResponse
+	44, // 89: agynio.api.ziti_management.v1.ZitiManagementService.DeleteService:output_type -> agynio.api.ziti_management.v1.DeleteServiceResponse
+	46, // 90: agynio.api.ziti_management.v1.ZitiManagementService.CreateDeviceIdentity:output_type -> agynio.api.ziti_management.v1.CreateDeviceIdentityResponse
+	48, // 91: agynio.api.ziti_management.v1.ZitiManagementService.DeleteDeviceIdentity:output_type -> agynio.api.ziti_management.v1.DeleteDeviceIdentityResponse
+	50, // 92: agynio.api.ziti_management.v1.ZitiManagementService.CreateTunnelIdentity:output_type -> agynio.api.ziti_management.v1.CreateTunnelIdentityResponse
+	52, // 93: agynio.api.ziti_management.v1.ZitiManagementService.DeleteTunnelIdentity:output_type -> agynio.api.ziti_management.v1.DeleteTunnelIdentityResponse
+	54, // 94: agynio.api.ziti_management.v1.ZitiManagementService.PatchIdentityRoleAttributes:output_type -> agynio.api.ziti_management.v1.PatchIdentityRoleAttributesResponse
+	56, // 95: agynio.api.ziti_management.v1.ZitiManagementService.GetIdentityLiveness:output_type -> agynio.api.ziti_management.v1.GetIdentityLivenessResponse
+	59, // 96: agynio.api.ziti_management.v1.ZitiManagementService.ListServicesByTag:output_type -> agynio.api.ziti_management.v1.ListServicesByTagResponse
+	62, // 97: agynio.api.ziti_management.v1.ZitiManagementService.ListIdentitiesByTag:output_type -> agynio.api.ziti_management.v1.ListIdentitiesByTagResponse
+	65, // 98: agynio.api.ziti_management.v1.ZitiManagementService.ListServicePoliciesByTag:output_type -> agynio.api.ziti_management.v1.ListServicePoliciesByTagResponse
+	68, // 99: agynio.api.ziti_management.v1.ZitiManagementService.UpdateService:output_type -> agynio.api.ziti_management.v1.UpdateServiceResponse
+	71, // [71:100] is the sub-list for method output_type
+	42, // [42:71] is the sub-list for method input_type
+	42, // [42:42] is the sub-list for extension type_name
+	42, // [42:42] is the sub-list for extension extendee
+	0,  // [0:42] is the sub-list for field type_name
 }
 
 func init() { file_agynio_api_ziti_management_v1_ziti_management_proto_init() }
@@ -3187,27 +4456,16 @@ func file_agynio_api_ziti_management_v1_ziti_management_proto_init() {
 	if File_agynio_api_ziti_management_v1_ziti_management_proto != nil {
 		return
 	}
-	file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[8].OneofWrappers = []any{}
 	file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[10].OneofWrappers = []any{}
-	file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[11].OneofWrappers = []any{
-		(*GetServiceRequest_ZitiServiceId)(nil),
-		(*GetServiceRequest_Name)(nil),
-	}
-	file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[13].OneofWrappers = []any{}
-	file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[15].OneofWrappers = []any{}
-	file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[28].OneofWrappers = []any{}
-	file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[36].OneofWrappers = []any{
-		(*GetServicePolicyRequest_ZitiServicePolicyId)(nil),
-		(*GetServicePolicyRequest_Name)(nil),
-	}
-	file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[38].OneofWrappers = []any{}
+	file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[27].OneofWrappers = []any{}
+	file_agynio_api_ziti_management_v1_ziti_management_proto_msgTypes[63].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_agynio_api_ziti_management_v1_ziti_management_proto_rawDesc), len(file_agynio_api_ziti_management_v1_ziti_management_proto_rawDesc)),
-			NumEnums:      2,
-			NumMessages:   48,
+			NumEnums:      3,
+			NumMessages:   82,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

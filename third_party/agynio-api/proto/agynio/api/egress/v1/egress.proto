@@ -6,7 +6,7 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/agynio/api/gen/agynio/api/egress/v1;egressv1";
 
-// EgressRulesService manages egress rules and agent attachments.
+// EgressRulesService manages egress rules and workload-source attachments.
 service EgressRulesService {
   // --- Egress Rules ---
   rpc CreateEgressRule(CreateEgressRuleRequest) returns (CreateEgressRuleResponse);
@@ -22,6 +22,7 @@ service EgressRulesService {
 
   // --- Internal ---
   rpc ListEgressRulesByAgent(ListEgressRulesByAgentRequest) returns (ListEgressRulesByAgentResponse);
+  rpc ListEgressRulesByEnvironment(ListEgressRulesByEnvironmentRequest) returns (ListEgressRulesByEnvironmentResponse);
   rpc CountRulesReferencingSecret(CountRulesReferencingSecretRequest) returns (CountRulesReferencingSecretResponse);
 }
 
@@ -84,11 +85,15 @@ message EgressRule {
   EgressRuleEffect effect = 6;
 }
 
-// Attachment binding an egress rule to an agent.
+// Attachment binding an egress rule to an agent or environment.
 message EgressRuleAttachment {
   EntityMeta meta = 1;
   string rule_id = 2;
-  string agent_id = 3;
+  string agent_id = 3 [deprecated = true];
+  oneof target {
+    string environment_id = 4;
+    string agent_target_id = 5;
+  }
 }
 
 message CreateEgressRuleRequest {
@@ -142,7 +147,11 @@ message DeleteEgressRuleResponse {}
 
 message CreateEgressRuleAttachmentRequest {
   string rule_id = 1;
-  string agent_id = 2;
+  string agent_id = 2 [deprecated = true];
+  oneof target {
+    string environment_id = 3;
+    string agent_target_id = 6;
+  }
 }
 
 message CreateEgressRuleAttachmentResponse {
@@ -158,9 +167,11 @@ message DeleteEgressRuleAttachmentResponse {}
 message ListEgressRuleAttachmentsRequest {
   string organization_id = 1;
   optional string rule_id = 2;
-  optional string agent_id = 3;
+  optional string agent_id = 3 [deprecated = true];
   int32 page_size = 4;
   string page_token = 5;
+  optional string environment_id = 6;
+  optional string agent_target_id = 7;
 }
 
 message ListEgressRuleAttachmentsResponse {
@@ -173,6 +184,14 @@ message ListEgressRulesByAgentRequest {
 }
 
 message ListEgressRulesByAgentResponse {
+  repeated EgressRule egress_rules = 1;
+}
+
+message ListEgressRulesByEnvironmentRequest {
+  string environment_id = 1;
+}
+
+message ListEgressRulesByEnvironmentResponse {
   repeated EgressRule egress_rules = 1;
 }
 

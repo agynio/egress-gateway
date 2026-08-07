@@ -6,8 +6,8 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/agynio/api/gen/agynio/api/agents/v1;agentsv1";
 
-// AgentsService manages agent resources: agents, volumes, volume attachments,
-// MCP servers, skills, hooks, environment variables, and init scripts.
+// AgentsService manages agent resources: agents, environments, volumes,
+// MCP servers, skills, environment variables, and init scripts.
 //
 // This is a control-plane service. It stores desired state;
 // other services reconcile toward it.
@@ -25,6 +25,43 @@ service AgentsService {
   rpc ListAgentRoles(ListAgentRolesRequest) returns (ListAgentRolesResponse);
   rpc ListMyAgentRoles(ListMyAgentRolesRequest) returns (ListMyAgentRolesResponse);
 
+  // --- Environments ---
+  rpc CreateEnvironment(CreateEnvironmentRequest) returns (CreateEnvironmentResponse);
+  rpc GetEnvironment(GetEnvironmentRequest) returns (GetEnvironmentResponse);
+  rpc UpdateEnvironment(UpdateEnvironmentRequest) returns (UpdateEnvironmentResponse);
+  rpc DeleteEnvironment(DeleteEnvironmentRequest) returns (DeleteEnvironmentResponse);
+  rpc ListEnvironments(ListEnvironmentsRequest) returns (ListEnvironmentsResponse);
+  rpc SetEnvironmentRole(SetEnvironmentRoleRequest) returns (SetEnvironmentRoleResponse);
+  rpc RemoveEnvironmentRole(RemoveEnvironmentRoleRequest) returns (RemoveEnvironmentRoleResponse);
+  rpc ListEnvironmentRoles(ListEnvironmentRolesRequest) returns (ListEnvironmentRolesResponse);
+
+  // --- Sandboxes ---
+  rpc CreateSandbox(CreateSandboxRequest) returns (CreateSandboxResponse);
+  rpc GetSandbox(GetSandboxRequest) returns (GetSandboxResponse);
+  rpc ListSandboxes(ListSandboxesRequest) returns (ListSandboxesResponse);
+  rpc StopSandbox(StopSandboxRequest) returns (StopSandboxResponse);
+  rpc DeleteSandbox(DeleteSandboxRequest) returns (DeleteSandboxResponse);
+  rpc EnsureSandboxRunning(EnsureSandboxRunningRequest) returns (EnsureSandboxRunningResponse);
+  rpc UpdateSandboxRuntimeState(UpdateSandboxRuntimeStateRequest) returns (UpdateSandboxRuntimeStateResponse);
+  rpc UpdateSandboxLastSession(UpdateSandboxLastSessionRequest) returns (UpdateSandboxLastSessionResponse);
+
+  // --- Agent Instances ---
+  rpc CreateInstance(CreateInstanceRequest) returns (CreateInstanceResponse);
+  rpc GetInstance(GetInstanceRequest) returns (GetInstanceResponse);
+  rpc ListInstances(ListInstancesRequest) returns (ListInstancesResponse);
+  rpc PauseInstance(PauseInstanceRequest) returns (PauseInstanceResponse);
+  rpc ResumeInstance(ResumeInstanceRequest) returns (ResumeInstanceResponse);
+  rpc DeleteInstance(DeleteInstanceRequest) returns (DeleteInstanceResponse);
+  rpc SetInstanceDefaultThread(SetInstanceDefaultThreadRequest) returns (SetInstanceDefaultThreadResponse);
+
+  // --- Instance Inbox ---
+  rpc WriteInboxItem(WriteInboxItemRequest) returns (WriteInboxItemResponse);
+  // Internal-only: called by Threads after thread authorization and participant resolution.
+  rpc FanoutInboxItem(FanoutInboxItemRequest) returns (FanoutInboxItemResponse);
+  rpc GetUnackedInboxItems(GetUnackedInboxItemsRequest) returns (GetUnackedInboxItemsResponse);
+  rpc AckInboxItems(AckInboxItemsRequest) returns (AckInboxItemsResponse);
+  rpc GetUnackedInboxCount(GetUnackedInboxCountRequest) returns (GetUnackedInboxCountResponse);
+
   // --- Volumes ---
   rpc CreateVolume(CreateVolumeRequest) returns (CreateVolumeResponse);
   rpc GetVolume(GetVolumeRequest) returns (GetVolumeResponse);
@@ -32,11 +69,19 @@ service AgentsService {
   rpc DeleteVolume(DeleteVolumeRequest) returns (DeleteVolumeResponse);
   rpc ListVolumes(ListVolumesRequest) returns (ListVolumesResponse);
 
-  // --- Volume Attachments (no Update) ---
-  rpc CreateVolumeAttachment(CreateVolumeAttachmentRequest) returns (CreateVolumeAttachmentResponse);
-  rpc GetVolumeAttachment(GetVolumeAttachmentRequest) returns (GetVolumeAttachmentResponse);
-  rpc DeleteVolumeAttachment(DeleteVolumeAttachmentRequest) returns (DeleteVolumeAttachmentResponse);
-  rpc ListVolumeAttachments(ListVolumeAttachmentsRequest) returns (ListVolumeAttachmentsResponse);
+  // --- Volume Attachments (superseded by a volume's own target) ---
+  rpc CreateVolumeAttachment(CreateVolumeAttachmentRequest) returns (CreateVolumeAttachmentResponse) {
+    option deprecated = true;
+  }
+  rpc GetVolumeAttachment(GetVolumeAttachmentRequest) returns (GetVolumeAttachmentResponse) {
+    option deprecated = true;
+  }
+  rpc DeleteVolumeAttachment(DeleteVolumeAttachmentRequest) returns (DeleteVolumeAttachmentResponse) {
+    option deprecated = true;
+  }
+  rpc ListVolumeAttachments(ListVolumeAttachmentsRequest) returns (ListVolumeAttachmentsResponse) {
+    option deprecated = true;
+  }
 
   // --- MCPs ---
   rpc CreateMcp(CreateMcpRequest) returns (CreateMcpResponse);
@@ -53,11 +98,21 @@ service AgentsService {
   rpc ListSkills(ListSkillsRequest) returns (ListSkillsResponse);
 
   // --- Hooks ---
-  rpc CreateHook(CreateHookRequest) returns (CreateHookResponse);
-  rpc GetHook(GetHookRequest) returns (GetHookResponse);
-  rpc UpdateHook(UpdateHookRequest) returns (UpdateHookResponse);
-  rpc DeleteHook(DeleteHookRequest) returns (DeleteHookResponse);
-  rpc ListHooks(ListHooksRequest) returns (ListHooksResponse);
+  rpc CreateHook(CreateHookRequest) returns (CreateHookResponse) {
+    option deprecated = true;
+  }
+  rpc GetHook(GetHookRequest) returns (GetHookResponse) {
+    option deprecated = true;
+  }
+  rpc UpdateHook(UpdateHookRequest) returns (UpdateHookResponse) {
+    option deprecated = true;
+  }
+  rpc DeleteHook(DeleteHookRequest) returns (DeleteHookResponse) {
+    option deprecated = true;
+  }
+  rpc ListHooks(ListHooksRequest) returns (ListHooksResponse) {
+    option deprecated = true;
+  }
 
   // --- Envs ---
   rpc CreateEnv(CreateEnvRequest) returns (CreateEnvResponse);
@@ -74,10 +129,18 @@ service AgentsService {
   rpc ListInitScripts(ListInitScriptsRequest) returns (ListInitScriptsResponse);
 
   // --- Image Pull Secret Attachments (no Update - immutable) ---
-  rpc CreateImagePullSecretAttachment(CreateImagePullSecretAttachmentRequest) returns (CreateImagePullSecretAttachmentResponse);
-  rpc GetImagePullSecretAttachment(GetImagePullSecretAttachmentRequest) returns (GetImagePullSecretAttachmentResponse);
-  rpc DeleteImagePullSecretAttachment(DeleteImagePullSecretAttachmentRequest) returns (DeleteImagePullSecretAttachmentResponse);
-  rpc ListImagePullSecretAttachments(ListImagePullSecretAttachmentsRequest) returns (ListImagePullSecretAttachmentsResponse);
+  rpc CreateImagePullSecretAttachment(CreateImagePullSecretAttachmentRequest) returns (CreateImagePullSecretAttachmentResponse) {
+    option deprecated = true;
+  }
+  rpc GetImagePullSecretAttachment(GetImagePullSecretAttachmentRequest) returns (GetImagePullSecretAttachmentResponse) {
+    option deprecated = true;
+  }
+  rpc DeleteImagePullSecretAttachment(DeleteImagePullSecretAttachmentRequest) returns (DeleteImagePullSecretAttachmentResponse) {
+    option deprecated = true;
+  }
+  rpc ListImagePullSecretAttachments(ListImagePullSecretAttachmentsRequest) returns (ListImagePullSecretAttachmentsResponse) {
+    option deprecated = true;
+  }
 }
 
 // ===========================================================================
@@ -105,11 +168,59 @@ enum AgentAvailability {
   AGENT_AVAILABILITY_PRIVATE = 2;
 }
 
+// Where an instance's default thread comes from when the platform creates it
+// rather than a person naming one.
+enum AgentDefaultThread {
+  AGENT_DEFAULT_THREAD_UNSPECIFIED = 0;
+  // The thread that added the instance becomes its default. Composes for
+  // delegation: sub-threads are created downward, so the origin is the thread
+  // the instance owes an answer to.
+  AGENT_DEFAULT_THREAD_ORIGIN = 1;
+  // Infer nothing. The instance starts with no default; naming one explicitly
+  // still works.
+  AGENT_DEFAULT_THREAD_NONE = 2;
+}
+
+// What becomes of the text an agent CLI produces at the end of a turn.
+enum AgentFinalMessage {
+  AGENT_FINAL_MESSAGE_UNSPECIFIED = 0;
+  // Dropped. Agents that send explicitly would otherwise post twice.
+  AGENT_FINAL_MESSAGE_DISCARD = 1;
+  // Posted to the instance's default thread.
+  AGENT_FINAL_MESSAGE_DEFAULT_THREAD = 2;
+}
+
 enum AgentRole {
   AGENT_ROLE_UNSPECIFIED = 0;
   AGENT_ROLE_OWNER = 1;
   AGENT_ROLE_MAINTAINER = 2;
   AGENT_ROLE_PARTICIPANT = 3;
+}
+
+enum EnvironmentAvailability {
+  ENVIRONMENT_AVAILABILITY_UNSPECIFIED = 0;
+  ENVIRONMENT_AVAILABILITY_INTERNAL = 1;
+  ENVIRONMENT_AVAILABILITY_PRIVATE = 2;
+}
+
+enum EnvironmentRole {
+  ENVIRONMENT_ROLE_UNSPECIFIED = 0;
+  ENVIRONMENT_ROLE_OWNER = 1;
+  ENVIRONMENT_ROLE_MAINTAINER = 2;
+  ENVIRONMENT_ROLE_USER = 3;
+}
+
+enum AgentInstanceState {
+  AGENT_INSTANCE_STATE_UNSPECIFIED = 0;
+  AGENT_INSTANCE_STATE_ACTIVE = 1;
+  AGENT_INSTANCE_STATE_PAUSED = 2;
+  AGENT_INSTANCE_STATE_TERMINATED = 3;
+}
+
+enum InboxItemSourceKind {
+  INBOX_ITEM_SOURCE_KIND_UNSPECIFIED = 0;
+  INBOX_ITEM_SOURCE_KIND_THREAD = 1;
+  INBOX_ITEM_SOURCE_KIND_DIRECT = 2;
 }
 
 // ===========================================================================
@@ -123,8 +234,11 @@ message Agent {
   string model = 4; // UUID
   string description = 5;
   string configuration = 6;
-  string image = 7;
-  ComputeResources resources = 8;
+  // Superseded by environment_id: the image and compute an agent runs with are
+  // an environment's to define, so agents and sandboxes can share one runtime
+  // definition instead of each carrying its own copy.
+  string image = 7 [deprecated = true];
+  ComputeResources resources = 8 [deprecated = true];
   string init_image = 9;
   string organization_id = 10;
   string nickname = 11;
@@ -132,6 +246,18 @@ message Agent {
   // Capabilities supported by this agent. Free-form strings (e.g., "privileged", "dind").
   repeated string capabilities = 13;
   AgentAvailability availability = 14;
+  // The environment this agent runs in, supplying its image and compute.
+  // Empty on agents created before environments existed, which still carry
+  // the deprecated inline image and resources.
+  string environment_id = 15; // UUID
+  // Governs the automatic creation path only; naming a default thread
+  // explicitly is always allowed. Defaults to ORIGIN.
+  AgentDefaultThread default_thread = 16;
+  // Whether the turn's final text is a deliverable or an internal artifact --
+  // a property of how the agent is written, so it lives on the class rather
+  // than the instance. Defaults to DISCARD.
+  AgentFinalMessage final_message = 17;
+  optional string instance_idle_ttl = 18; // Go duration string (e.g., "30m", "6h").
 }
 
 message CreateAgentRequest {
@@ -140,8 +266,8 @@ message CreateAgentRequest {
   string model = 3; // UUID
   string description = 4;
   string configuration = 5;
-  string image = 6;
-  ComputeResources resources = 7;
+  string image = 6 [deprecated = true];
+  ComputeResources resources = 7 [deprecated = true];
   string organization_id = 8;
   string init_image = 9;
   string nickname = 10;
@@ -149,6 +275,11 @@ message CreateAgentRequest {
   // Capabilities supported by this agent. Free-form strings (e.g., "privileged", "dind").
   repeated string capabilities = 12;
   AgentAvailability availability = 13;
+  // Preferred over image and resources, which are deprecated.
+  string environment_id = 14; // UUID
+  AgentDefaultThread default_thread = 15;
+  AgentFinalMessage final_message = 16;
+  optional string instance_idle_ttl = 17; // Go duration string (e.g., "30m", "6h").
 }
 
 message CreateAgentResponse {
@@ -168,8 +299,11 @@ message ResolveAgentIdentityRequest {
 }
 
 message ResolveAgentIdentityResponse {
+  // Agent class ID for class identities and the owning class ID for instance identities.
   string agent_id = 1;
   string organization_id = 2;
+  // Set only when identity_id resolves to an agent_instance identity.
+  optional string agent_instance_id = 3;
 }
 
 message UpdateAgentRequest {
@@ -179,14 +313,18 @@ message UpdateAgentRequest {
   optional string model = 4;
   optional string description = 5;
   optional string configuration = 6;
-  optional string image = 7;
-  optional ComputeResources resources = 8;
+  optional string image = 7 [deprecated = true];
+  optional ComputeResources resources = 8 [deprecated = true];
   optional string init_image = 9;
   optional string nickname = 10;
   optional string idle_timeout = 11; // Go duration string (e.g., "30s", "5m", "1h").
   // Capabilities replace the existing list; an empty list clears all capabilities.
   repeated string capabilities = 12;
   optional AgentAvailability availability = 13;
+  optional string environment_id = 14; // UUID
+  optional AgentDefaultThread default_thread = 15;
+  optional AgentFinalMessage final_message = 16;
+  optional string instance_idle_ttl = 17; // Go duration string (e.g., "30m", "6h").
 }
 
 message UpdateAgentResponse {
@@ -250,6 +388,426 @@ message ListMyAgentRolesResponse {
 }
 
 // ===========================================================================
+// Agent Instance
+// ===========================================================================
+
+message AgentInstance {
+  EntityMeta meta = 1;
+  string agent_id = 2; // UUID of the agent class.
+  string organization_id = 3; // UUID
+  // User-chosen suffix, when explicitly supplied at creation time.
+  optional string label = 4;
+  // Effective handle suffix without leading #. Generated when label is unset.
+  string suffix = 5;
+  AgentInstanceState state = 6;
+  optional string pause_reason = 7;
+  google.protobuf.Timestamp last_activity_at = 8;
+  // Class handle stem without leading @.
+  string nickname = 9;
+  // Full instance handle in @nickname#suffix form.
+  string handle = 10;
+  // Where this instance's untargeted messages go. Unset when the class asked
+  // for no inference and nobody has named one since.
+  optional string default_thread_id = 11; // UUID
+}
+
+// What the caller knows about why an instance is being created. These are
+// facts to report, not instructions: the class policy decides what they mean.
+message CreateInstanceContext {
+  // The thread whose participant list the instance was added to, when that is
+  // what created it.
+  optional string thread_id = 1; // UUID
+}
+
+message CreateInstanceRequest {
+  string agent_id = 1; // UUID of the agent class.
+  // Optional user-chosen handle suffix without leading #.
+  optional string label = 2;
+  // Circumstances of creation, for the class policy to act on.
+  CreateInstanceContext context = 3;
+  // Names the default thread outright, bypassing the class policy. A
+  // deliberate act by a caller who knows the destination.
+  optional string default_thread_id = 4; // UUID
+}
+
+message CreateInstanceResponse {
+  AgentInstance instance = 1;
+}
+
+message GetInstanceRequest {
+  string id = 1; // UUID
+}
+
+message GetInstanceResponse {
+  AgentInstance instance = 1;
+}
+
+message SetInstanceDefaultThreadRequest {
+  string id = 1; // UUID of the agent instance.
+  // Unset clears the default, leaving the instance with no destination for
+  // untargeted messages.
+  optional string default_thread_id = 2; // UUID
+}
+
+message SetInstanceDefaultThreadResponse {
+  AgentInstance instance = 1;
+}
+
+message ListInstancesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string organization_id = 3; // UUID
+  optional string agent_id = 4; // UUID of the agent class.
+  repeated AgentInstanceState state_in = 5;
+  // When set, filters to instances that do or do not have unacked inbox items.
+  optional bool has_unacked = 6;
+}
+
+message ListInstancesResponse {
+  repeated AgentInstance instances = 1;
+  string next_page_token = 2;
+}
+
+message PauseInstanceRequest {
+  string id = 1; // UUID
+  string pause_reason = 2;
+}
+
+message PauseInstanceResponse {
+  AgentInstance instance = 1;
+}
+
+message ResumeInstanceRequest {
+  string id = 1; // UUID
+}
+
+message ResumeInstanceResponse {
+  AgentInstance instance = 1;
+}
+
+message DeleteInstanceRequest {
+  string id = 1; // UUID
+}
+
+message DeleteInstanceResponse {
+  AgentInstance instance = 1;
+}
+
+// ===========================================================================
+// Instance Inbox
+// ===========================================================================
+
+message InboxItem {
+  string id = 1; // UUID
+  string agent_instance_id = 2; // UUID
+  InboxItemSourceKind source_kind = 3;
+  // Set only when source_kind is INBOX_ITEM_SOURCE_KIND_THREAD.
+  optional string thread_id = 4; // UUID
+  // Set only when source_kind is INBOX_ITEM_SOURCE_KIND_THREAD.
+  optional string message_id = 5; // UUID
+  string sender_id = 6; // Identity UUID
+  string body = 7;
+  repeated string file_ids = 8; // UUIDs
+  google.protobuf.Timestamp accepted_at = 9;
+  optional google.protobuf.Timestamp acked_at = 10;
+  optional string sender_handle = 11; // Handle stem without leading @
+}
+
+message WriteInboxItemRequest {
+  string agent_instance_id = 1; // UUID
+  string sender_id = 2; // Identity UUID
+  string body = 3;
+  repeated string file_ids = 4; // UUIDs
+}
+
+message WriteInboxItemResponse {
+  InboxItem item = 1;
+}
+
+message FanoutInboxItemRequest {
+  string agent_instance_id = 1; // UUID
+  string thread_id = 2; // UUID
+  string message_id = 3; // UUID
+  string sender_id = 4; // Identity UUID
+  string body = 5;
+  repeated string file_ids = 6; // UUIDs
+}
+
+message FanoutInboxItemResponse {
+  InboxItem item = 1;
+}
+
+message GetUnackedInboxItemsRequest {
+  string agent_instance_id = 1; // UUID
+  int32 page_size = 2;
+  string page_token = 3;
+}
+
+message GetUnackedInboxItemsResponse {
+  repeated InboxItem items = 1;
+  string next_page_token = 2;
+}
+
+message AckInboxItemsRequest {
+  string agent_instance_id = 1; // UUID
+  repeated string item_ids = 2; // UUIDs
+}
+
+message AckInboxItemsResponse {
+  int32 acked_count = 1;
+}
+
+message GetUnackedInboxCountRequest {
+  string agent_instance_id = 1; // UUID
+  optional string thread_id = 2; // UUID
+}
+
+message GetUnackedInboxCountResponse {
+  int32 count = 1;
+}
+
+// ===========================================================================
+// Environment
+// ===========================================================================
+
+message Environment {
+  EntityMeta meta = 1;
+  string organization_id = 2;
+  string name = 3;
+  // Superseded by runner_id + flavor: placement is now environment to runner
+  // directly, with the flavor named within that runner's catalog.
+  string flavor_id = 4 [deprecated = true];
+  // Superseded by workspace_image_id + workspace_image_tag: an environment
+  // names catalog records rather than holding a registry address.
+  string image = 5 [deprecated = true];
+  string flavor_name = 6 [deprecated = true];
+  // The runner this environment places workloads on.
+  string runner_id = 7;
+  // Catalog entry name, resolved against the runner's reported catalog at
+  // workload start. Empty resolves to the runner's default flavor.
+  // Deliberately not validated here: platform resources and runner
+  // configuration may be applied in either order.
+  string flavor = 8;
+  // The image the workload's main container runs. Must be a visible Image of
+  // type workspace; the tag must be one discovery has seen. Validated on
+  // write and resolved again at each workload start.
+  string workspace_image_id = 9; // UUID
+  string workspace_image_tag = 10;
+  // The image supplying the agent CLI, injected as an init container. Empty
+  // means a workspace-only environment: usable by sandboxes, rejected by
+  // CreateAgent.
+  string agent_runtime_image_id = 11; // UUID
+  string agent_runtime_image_tag = 12;
+  EnvironmentAvailability availability = 13;
+}
+
+message CreateEnvironmentRequest {
+  string organization_id = 1;
+  string name = 2;
+  string flavor_id = 3 [deprecated = true];
+  string image = 4 [deprecated = true];
+  string runner_id = 5;
+  string flavor = 6;
+  string workspace_image_id = 7; // UUID
+  string workspace_image_tag = 8;
+  string agent_runtime_image_id = 9; // UUID
+  string agent_runtime_image_tag = 10;
+  EnvironmentAvailability availability = 11;
+}
+
+message CreateEnvironmentResponse {
+  Environment environment = 1;
+}
+
+message GetEnvironmentRequest {
+  string id = 1; // UUID
+}
+
+message GetEnvironmentResponse {
+  Environment environment = 1;
+}
+
+message UpdateEnvironmentRequest {
+  string id = 1; // UUID
+  optional string name = 2;
+  optional string flavor_id = 3 [deprecated = true];
+  optional string image = 4 [deprecated = true];
+  optional string runner_id = 5;
+  optional string flavor = 6;
+  optional string workspace_image_id = 7; // UUID
+  optional string workspace_image_tag = 8;
+  // Clearing both makes the environment workspace-only.
+  optional string agent_runtime_image_id = 9; // UUID
+  optional string agent_runtime_image_tag = 10;
+  optional EnvironmentAvailability availability = 11;
+}
+
+message UpdateEnvironmentResponse {
+  Environment environment = 1;
+}
+
+message DeleteEnvironmentRequest {
+  string id = 1; // UUID
+}
+
+message DeleteEnvironmentResponse {}
+
+message ListEnvironmentsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string organization_id = 3;
+}
+
+message ListEnvironmentsResponse {
+  repeated Environment environments = 1;
+  string next_page_token = 2;
+}
+
+message EnvironmentRoleAssignment {
+  string environment_id = 1; // UUID
+  string identity_id = 2; // UUID
+  EnvironmentRole role = 3;
+}
+
+message SetEnvironmentRoleRequest {
+  string environment_id = 1; // UUID
+  string identity_id = 2; // UUID
+  EnvironmentRole role = 3;
+}
+
+message SetEnvironmentRoleResponse {
+  EnvironmentRoleAssignment assignment = 1;
+}
+
+message RemoveEnvironmentRoleRequest {
+  string environment_id = 1; // UUID
+  string identity_id = 2; // UUID
+}
+
+message RemoveEnvironmentRoleResponse {}
+
+message ListEnvironmentRolesRequest {
+  string environment_id = 1; // UUID
+}
+
+message ListEnvironmentRolesResponse {
+  repeated EnvironmentRoleAssignment assignments = 1;
+}
+
+// ===========================================================================
+// Sandbox
+// ===========================================================================
+
+enum SandboxStatus {
+  SANDBOX_STATUS_UNSPECIFIED = 0;
+  SANDBOX_STATUS_STARTING = 1;
+  SANDBOX_STATUS_RUNNING = 2;
+  SANDBOX_STATUS_STOPPED = 3;
+  SANDBOX_STATUS_FAILED = 4;
+  SANDBOX_STATUS_TERMINATED = 5;
+}
+
+message Sandbox {
+  EntityMeta meta = 1;
+  string organization_id = 2;
+  string name = 3;
+  string environment_id = 4;
+  string owner_id = 5;
+  SandboxStatus status = 6;
+  string idle_timeout = 7;
+  string ttl = 8;
+  optional google.protobuf.Timestamp last_session_at = 9;
+  string environment_name = 10;
+  optional string workload_id = 11;
+}
+
+message CreateSandboxRequest {
+  string organization_id = 1;
+  optional string name = 2;
+  string environment_id = 3;
+  optional string idle_timeout = 4;
+}
+
+message CreateSandboxResponse {
+  Sandbox sandbox = 1;
+}
+
+message GetSandboxRequest {
+  oneof ref {
+    string id = 1;
+    SandboxNameRef name = 2;
+  }
+}
+
+message SandboxNameRef {
+  string organization_id = 1;
+  string name = 2;
+}
+
+message GetSandboxResponse {
+  Sandbox sandbox = 1;
+}
+
+message ListSandboxesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string organization_id = 3;
+  optional string owner_id = 4;
+  bool include_terminated = 5;
+}
+
+message ListSandboxesResponse {
+  repeated Sandbox sandboxes = 1;
+  string next_page_token = 2;
+}
+
+message StopSandboxRequest {
+  string id = 1;
+}
+
+message StopSandboxResponse {
+  Sandbox sandbox = 1;
+}
+
+message DeleteSandboxRequest {
+  string id = 1;
+}
+
+message DeleteSandboxResponse {
+  Sandbox sandbox = 1;
+}
+
+message EnsureSandboxRunningRequest {
+  string id = 1;
+}
+
+message EnsureSandboxRunningResponse {
+  Sandbox sandbox = 1;
+}
+
+message UpdateSandboxRuntimeStateRequest {
+  string id = 1;
+  optional SandboxStatus status = 2;
+  oneof workload_id_update {
+    string workload_id = 3;
+    bool clear_workload_id = 4;
+  }
+}
+
+message UpdateSandboxRuntimeStateResponse {
+  Sandbox sandbox = 1;
+}
+
+message UpdateSandboxLastSessionRequest {
+  string id = 1;
+  google.protobuf.Timestamp last_session_at = 2;
+}
+
+message UpdateSandboxLastSessionResponse {
+  Sandbox sandbox = 1;
+}
+
+// ===========================================================================
 // Volume
 // ===========================================================================
 
@@ -258,17 +816,29 @@ message Volume {
   bool persistent = 2;
   string mount_path = 3;
   string size = 4;
-  string description = 5;
+  string description = 5 [deprecated = true];
   optional string ttl = 6;
+  string name = 7;
+  optional string storage_class = 8;
+  oneof target {
+    string environment_id = 9; // UUID
+    string mcp_id = 10; // UUID
+  }
 }
 
 message CreateVolumeRequest {
   bool persistent = 1;
   string mount_path = 2;
   string size = 3;
-  string description = 4;
-  string organization_id = 5;
+  string description = 4 [deprecated = true];
+  string organization_id = 5 [deprecated = true];
   optional string ttl = 6;
+  string name = 7;
+  optional string storage_class = 8;
+  oneof target {
+    string environment_id = 9; // UUID
+    string mcp_id = 10; // UUID
+  }
 }
 
 message CreateVolumeResponse {
@@ -288,8 +858,10 @@ message UpdateVolumeRequest {
   optional bool persistent = 2;
   optional string mount_path = 3;
   optional string size = 4;
-  optional string description = 5;
+  optional string description = 5 [deprecated = true];
   optional string ttl = 6;
+  optional string name = 7;
+  optional string storage_class = 8;
 }
 
 message UpdateVolumeResponse {
@@ -305,7 +877,9 @@ message DeleteVolumeResponse {}
 message ListVolumesRequest {
   int32 page_size = 1;
   string page_token = 2;
-  string organization_id = 3;
+  string organization_id = 3 [deprecated = true];
+  string environment_id = 4;
+  string mcp_id = 5;
 }
 
 message ListVolumesResponse {
@@ -318,52 +892,62 @@ message ListVolumesResponse {
 // ===========================================================================
 
 message VolumeAttachment {
+  option deprecated = true;
   EntityMeta meta = 1;
   string volume_id = 2; // UUID
   oneof target {
     string agent_id = 3;
     string mcp_id = 4;
-    string hook_id = 5;
+    string hook_id = 5 [deprecated = true];
   }
 }
 
 message CreateVolumeAttachmentRequest {
+  option deprecated = true;
   string volume_id = 1; // UUID
   oneof target {
     string agent_id = 2;
     string mcp_id = 3;
-    string hook_id = 4;
+    string hook_id = 4 [deprecated = true];
   }
 }
 
 message CreateVolumeAttachmentResponse {
+  option deprecated = true;
   VolumeAttachment volume_attachment = 1;
 }
 
 message GetVolumeAttachmentRequest {
+  option deprecated = true;
   string id = 1; // UUID
 }
 
 message GetVolumeAttachmentResponse {
+  option deprecated = true;
   VolumeAttachment volume_attachment = 1;
 }
 
 message DeleteVolumeAttachmentRequest {
+  option deprecated = true;
   string id = 1; // UUID
 }
 
-message DeleteVolumeAttachmentResponse {}
+message DeleteVolumeAttachmentResponse {
+  option deprecated = true;
+}
 
 message ListVolumeAttachmentsRequest {
+  option deprecated = true;
   int32 page_size = 1;
   string page_token = 2;
   string volume_id = 3;
   string agent_id = 4;
   string mcp_id = 5;
-  string hook_id = 6;
+  string hook_id = 6 [deprecated = true];
 }
 
 message ListVolumeAttachmentsResponse {
+  option deprecated = true;
   repeated VolumeAttachment volume_attachments = 1;
   string next_page_token = 2;
 }
@@ -372,53 +956,77 @@ message ListVolumeAttachmentsResponse {
 // Image Pull Secret Attachment
 // ===========================================================================
 
+// Image pull secret attachments are deprecated and no longer served: the
+// agents service returns Unimplemented. A workload's registry credential is
+// minted per workload by the image proxy, which also removes the conflict
+// these had - two attachments carrying different credentials for one registry
+// hostname. Kept here so generated clients still compile; removed in a
+// follow-up.
+
 message ImagePullSecretAttachment {
+  option deprecated = true;
   EntityMeta meta = 1;
   string image_pull_secret_id = 2; // UUID
   oneof target {
     string agent_id = 3;
     string mcp_id = 4;
-    string hook_id = 5;
+    string hook_id = 5 [deprecated = true];
+    string environment_id = 6;
   }
 }
 
 message CreateImagePullSecretAttachmentRequest {
+  option deprecated = true;
   string image_pull_secret_id = 1; // UUID
   oneof target {
     string agent_id = 2;
     string mcp_id = 3;
-    string hook_id = 4;
+    string hook_id = 4 [deprecated = true];
+    string environment_id = 5;
   }
 }
 
 message CreateImagePullSecretAttachmentResponse {
+  option deprecated = true;
   ImagePullSecretAttachment image_pull_secret_attachment = 1;
 }
 
 message GetImagePullSecretAttachmentRequest {
+  option deprecated = true;
   string id = 1; // UUID
 }
 
 message GetImagePullSecretAttachmentResponse {
+  option deprecated = true;
   ImagePullSecretAttachment image_pull_secret_attachment = 1;
 }
 
 message DeleteImagePullSecretAttachmentRequest {
+  option deprecated = true;
   string id = 1; // UUID
 }
 
-message DeleteImagePullSecretAttachmentResponse {}
+message DeleteImagePullSecretAttachmentResponse {
+  option deprecated = true;
+}
 
 message ListImagePullSecretAttachmentsRequest {
+  option deprecated = true;
   int32 page_size = 1;
   string page_token = 2;
+  // The organization whose image pull secret attachments are listed. Required
+  // of a caller presenting an identity; the remaining ids only narrow the
+  // result within it.
+  string organization_id = 8; // UUID
   string image_pull_secret_id = 3;
   string agent_id = 4;
   string mcp_id = 5;
-  string hook_id = 6;
+  string hook_id = 6 [deprecated = true];
+  string environment_id = 7;
 }
 
 message ListImagePullSecretAttachmentsResponse {
+  option deprecated = true;
   repeated ImagePullSecretAttachment image_pull_secret_attachments = 1;
   string next_page_token = 2;
 }
@@ -430,20 +1038,31 @@ message ListImagePullSecretAttachmentsResponse {
 message Mcp {
   EntityMeta meta = 1;
   string agent_id = 2; // UUID
-  string image = 3;
+  // Superseded by image_id + image_tag.
+  string image = 3 [deprecated = true];
   string command = 4;
   ComputeResources resources = 5;
   string description = 6;
   string name = 7; // MCP server name, unique within agent
+  // An Image of type mcp or workspace: a purpose-built server and a
+  // devcontainer are both legitimate ways to host one.
+  string image_id = 8; // UUID
+  string image_tag = 9;
+  repeated string shared_volumes = 10;
+  string environment_id = 11; // UUID
 }
 
 message CreateMcpRequest {
   string agent_id = 1; // UUID
-  string image = 2;
+  string image = 2 [deprecated = true];
   string command = 3;
   ComputeResources resources = 4;
   string description = 5;
   string name = 6; // MCP server name
+  string image_id = 7; // UUID
+  string image_tag = 8;
+  repeated string shared_volumes = 9;
+  string environment_id = 10; // UUID
 }
 
 message CreateMcpResponse {
@@ -460,10 +1079,13 @@ message GetMcpResponse {
 
 message UpdateMcpRequest {
   string id = 1; // UUID
-  optional string image = 2;
+  optional string image = 2 [deprecated = true];
   optional string command = 3;
   optional ComputeResources resources = 4;
   optional string description = 5;
+  optional string image_id = 6; // UUID
+  optional string image_tag = 7;
+  repeated string shared_volumes = 8;
 }
 
 message UpdateMcpResponse {
@@ -480,6 +1102,7 @@ message ListMcpsRequest {
   int32 page_size = 1;
   string page_token = 2;
   string agent_id = 3;
+  string environment_id = 4;
 }
 
 message ListMcpsResponse {
@@ -550,7 +1173,13 @@ message ListSkillsResponse {
 // Hook
 // ===========================================================================
 
+// Hooks are deprecated and no longer served: the agents service returns
+// Unimplemented. They are the last resource carrying a free-form image
+// reference, which is what the image catalog exists to remove. Kept here so
+// generated clients still compile; removed in a follow-up.
+
 message Hook {
+  option deprecated = true;
   EntityMeta meta = 1;
   string agent_id = 2; // UUID
   string event = 3;
@@ -561,6 +1190,7 @@ message Hook {
 }
 
 message CreateHookRequest {
+  option deprecated = true;
   string agent_id = 1; // UUID
   string event = 2;
   string function = 3;
@@ -570,18 +1200,22 @@ message CreateHookRequest {
 }
 
 message CreateHookResponse {
+  option deprecated = true;
   Hook hook = 1;
 }
 
 message GetHookRequest {
+  option deprecated = true;
   string id = 1; // UUID
 }
 
 message GetHookResponse {
+  option deprecated = true;
   Hook hook = 1;
 }
 
 message UpdateHookRequest {
+  option deprecated = true;
   string id = 1; // UUID
   optional string event = 2;
   optional string function = 3;
@@ -591,22 +1225,28 @@ message UpdateHookRequest {
 }
 
 message UpdateHookResponse {
+  option deprecated = true;
   Hook hook = 1;
 }
 
 message DeleteHookRequest {
+  option deprecated = true;
   string id = 1; // UUID
 }
 
-message DeleteHookResponse {}
+message DeleteHookResponse {
+  option deprecated = true;
+}
 
 message ListHooksRequest {
+  option deprecated = true;
   int32 page_size = 1;
   string page_token = 2;
   string agent_id = 3;
 }
 
 message ListHooksResponse {
+  option deprecated = true;
   repeated Hook hooks = 1;
   string next_page_token = 2;
 }
@@ -622,7 +1262,8 @@ message Env {
   oneof target {
     string agent_id = 4;
     string mcp_id = 5;
-    string hook_id = 6;
+    string hook_id = 6 [deprecated = true];
+    string environment_id = 9;
   }
   oneof source {
     string value = 7;
@@ -636,7 +1277,8 @@ message CreateEnvRequest {
   oneof target {
     string agent_id = 3;
     string mcp_id = 4;
-    string hook_id = 5;
+    string hook_id = 5 [deprecated = true];
+    string environment_id = 8;
   }
   oneof source {
     string value = 6;
@@ -677,9 +1319,13 @@ message DeleteEnvResponse {}
 message ListEnvsRequest {
   int32 page_size = 1;
   string page_token = 2;
+  // The organization whose envs are listed. Required of a caller presenting an
+  // identity; the remaining ids only narrow the result within it.
+  string organization_id = 7; // UUID
   string agent_id = 3;
   string mcp_id = 4;
-  string hook_id = 5;
+  string hook_id = 5 [deprecated = true];
+  string environment_id = 6;
 }
 
 message ListEnvsResponse {
@@ -698,7 +1344,8 @@ message InitScript {
   oneof target {
     string agent_id = 4;
     string mcp_id = 5;
-    string hook_id = 6;
+    string hook_id = 6 [deprecated = true];
+    string environment_id = 7;
   }
 }
 
@@ -708,7 +1355,8 @@ message CreateInitScriptRequest {
   oneof target {
     string agent_id = 3;
     string mcp_id = 4;
-    string hook_id = 5;
+    string hook_id = 5 [deprecated = true];
+    string environment_id = 6;
   }
 }
 
@@ -745,7 +1393,8 @@ message ListInitScriptsRequest {
   string page_token = 2;
   string agent_id = 3;
   string mcp_id = 4;
-  string hook_id = 5;
+  string hook_id = 5 [deprecated = true];
+  string environment_id = 6;
 }
 
 message ListInitScriptsResponse {

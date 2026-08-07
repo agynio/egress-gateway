@@ -493,12 +493,18 @@ func (x *EgressRule) GetEffect() *EgressRuleEffect {
 	return nil
 }
 
-// Attachment binding an egress rule to an agent.
+// Attachment binding an egress rule to an agent or environment.
 type EgressRuleAttachment struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Meta          *EntityMeta            `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
-	RuleId        string                 `protobuf:"bytes,2,opt,name=rule_id,json=ruleId,proto3" json:"rule_id,omitempty"`
-	AgentId       string                 `protobuf:"bytes,3,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Meta   *EntityMeta            `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
+	RuleId string                 `protobuf:"bytes,2,opt,name=rule_id,json=ruleId,proto3" json:"rule_id,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/egress/v1/egress.proto.
+	AgentId string `protobuf:"bytes,3,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	// Types that are valid to be assigned to Target:
+	//
+	//	*EgressRuleAttachment_EnvironmentId
+	//	*EgressRuleAttachment_AgentTargetId
+	Target        isEgressRuleAttachment_Target `protobuf_oneof:"target"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -547,12 +553,54 @@ func (x *EgressRuleAttachment) GetRuleId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/egress/v1/egress.proto.
 func (x *EgressRuleAttachment) GetAgentId() string {
 	if x != nil {
 		return x.AgentId
 	}
 	return ""
 }
+
+func (x *EgressRuleAttachment) GetTarget() isEgressRuleAttachment_Target {
+	if x != nil {
+		return x.Target
+	}
+	return nil
+}
+
+func (x *EgressRuleAttachment) GetEnvironmentId() string {
+	if x != nil {
+		if x, ok := x.Target.(*EgressRuleAttachment_EnvironmentId); ok {
+			return x.EnvironmentId
+		}
+	}
+	return ""
+}
+
+func (x *EgressRuleAttachment) GetAgentTargetId() string {
+	if x != nil {
+		if x, ok := x.Target.(*EgressRuleAttachment_AgentTargetId); ok {
+			return x.AgentTargetId
+		}
+	}
+	return ""
+}
+
+type isEgressRuleAttachment_Target interface {
+	isEgressRuleAttachment_Target()
+}
+
+type EgressRuleAttachment_EnvironmentId struct {
+	EnvironmentId string `protobuf:"bytes,4,opt,name=environment_id,json=environmentId,proto3,oneof"`
+}
+
+type EgressRuleAttachment_AgentTargetId struct {
+	AgentTargetId string `protobuf:"bytes,5,opt,name=agent_target_id,json=agentTargetId,proto3,oneof"`
+}
+
+func (*EgressRuleAttachment_EnvironmentId) isEgressRuleAttachment_Target() {}
+
+func (*EgressRuleAttachment_AgentTargetId) isEgressRuleAttachment_Target() {}
 
 type CreateEgressRuleRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
@@ -1075,9 +1123,15 @@ func (*DeleteEgressRuleResponse) Descriptor() ([]byte, []int) {
 }
 
 type CreateEgressRuleAttachmentRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RuleId        string                 `protobuf:"bytes,1,opt,name=rule_id,json=ruleId,proto3" json:"rule_id,omitempty"`
-	AgentId       string                 `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	RuleId string                 `protobuf:"bytes,1,opt,name=rule_id,json=ruleId,proto3" json:"rule_id,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/egress/v1/egress.proto.
+	AgentId string `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	// Types that are valid to be assigned to Target:
+	//
+	//	*CreateEgressRuleAttachmentRequest_EnvironmentId
+	//	*CreateEgressRuleAttachmentRequest_AgentTargetId
+	Target        isCreateEgressRuleAttachmentRequest_Target `protobuf_oneof:"target"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1119,11 +1173,55 @@ func (x *CreateEgressRuleAttachmentRequest) GetRuleId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/egress/v1/egress.proto.
 func (x *CreateEgressRuleAttachmentRequest) GetAgentId() string {
 	if x != nil {
 		return x.AgentId
 	}
 	return ""
+}
+
+func (x *CreateEgressRuleAttachmentRequest) GetTarget() isCreateEgressRuleAttachmentRequest_Target {
+	if x != nil {
+		return x.Target
+	}
+	return nil
+}
+
+func (x *CreateEgressRuleAttachmentRequest) GetEnvironmentId() string {
+	if x != nil {
+		if x, ok := x.Target.(*CreateEgressRuleAttachmentRequest_EnvironmentId); ok {
+			return x.EnvironmentId
+		}
+	}
+	return ""
+}
+
+func (x *CreateEgressRuleAttachmentRequest) GetAgentTargetId() string {
+	if x != nil {
+		if x, ok := x.Target.(*CreateEgressRuleAttachmentRequest_AgentTargetId); ok {
+			return x.AgentTargetId
+		}
+	}
+	return ""
+}
+
+type isCreateEgressRuleAttachmentRequest_Target interface {
+	isCreateEgressRuleAttachmentRequest_Target()
+}
+
+type CreateEgressRuleAttachmentRequest_EnvironmentId struct {
+	EnvironmentId string `protobuf:"bytes,3,opt,name=environment_id,json=environmentId,proto3,oneof"`
+}
+
+type CreateEgressRuleAttachmentRequest_AgentTargetId struct {
+	AgentTargetId string `protobuf:"bytes,6,opt,name=agent_target_id,json=agentTargetId,proto3,oneof"`
+}
+
+func (*CreateEgressRuleAttachmentRequest_EnvironmentId) isCreateEgressRuleAttachmentRequest_Target() {
+}
+
+func (*CreateEgressRuleAttachmentRequest_AgentTargetId) isCreateEgressRuleAttachmentRequest_Target() {
 }
 
 type CreateEgressRuleAttachmentResponse struct {
@@ -1254,11 +1352,14 @@ type ListEgressRuleAttachmentsRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
 	RuleId         *string                `protobuf:"bytes,2,opt,name=rule_id,json=ruleId,proto3,oneof" json:"rule_id,omitempty"`
-	AgentId        *string                `protobuf:"bytes,3,opt,name=agent_id,json=agentId,proto3,oneof" json:"agent_id,omitempty"`
-	PageSize       int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	PageToken      string                 `protobuf:"bytes,5,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// Deprecated: Marked as deprecated in agynio/api/egress/v1/egress.proto.
+	AgentId       *string `protobuf:"bytes,3,opt,name=agent_id,json=agentId,proto3,oneof" json:"agent_id,omitempty"`
+	PageSize      int32   `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken     string  `protobuf:"bytes,5,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	EnvironmentId *string `protobuf:"bytes,6,opt,name=environment_id,json=environmentId,proto3,oneof" json:"environment_id,omitempty"`
+	AgentTargetId *string `protobuf:"bytes,7,opt,name=agent_target_id,json=agentTargetId,proto3,oneof" json:"agent_target_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListEgressRuleAttachmentsRequest) Reset() {
@@ -1305,6 +1406,7 @@ func (x *ListEgressRuleAttachmentsRequest) GetRuleId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/egress/v1/egress.proto.
 func (x *ListEgressRuleAttachmentsRequest) GetAgentId() string {
 	if x != nil && x.AgentId != nil {
 		return *x.AgentId
@@ -1322,6 +1424,20 @@ func (x *ListEgressRuleAttachmentsRequest) GetPageSize() int32 {
 func (x *ListEgressRuleAttachmentsRequest) GetPageToken() string {
 	if x != nil {
 		return x.PageToken
+	}
+	return ""
+}
+
+func (x *ListEgressRuleAttachmentsRequest) GetEnvironmentId() string {
+	if x != nil && x.EnvironmentId != nil {
+		return *x.EnvironmentId
+	}
+	return ""
+}
+
+func (x *ListEgressRuleAttachmentsRequest) GetAgentTargetId() string {
+	if x != nil && x.AgentTargetId != nil {
+		return *x.AgentTargetId
 	}
 	return ""
 }
@@ -1466,6 +1582,94 @@ func (x *ListEgressRulesByAgentResponse) GetEgressRules() []*EgressRule {
 	return nil
 }
 
+type ListEgressRulesByEnvironmentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EnvironmentId string                 `protobuf:"bytes,1,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListEgressRulesByEnvironmentRequest) Reset() {
+	*x = ListEgressRulesByEnvironmentRequest{}
+	mi := &file_agynio_api_egress_v1_egress_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListEgressRulesByEnvironmentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListEgressRulesByEnvironmentRequest) ProtoMessage() {}
+
+func (x *ListEgressRulesByEnvironmentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_egress_v1_egress_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListEgressRulesByEnvironmentRequest.ProtoReflect.Descriptor instead.
+func (*ListEgressRulesByEnvironmentRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_egress_v1_egress_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *ListEgressRulesByEnvironmentRequest) GetEnvironmentId() string {
+	if x != nil {
+		return x.EnvironmentId
+	}
+	return ""
+}
+
+type ListEgressRulesByEnvironmentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EgressRules   []*EgressRule          `protobuf:"bytes,1,rep,name=egress_rules,json=egressRules,proto3" json:"egress_rules,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListEgressRulesByEnvironmentResponse) Reset() {
+	*x = ListEgressRulesByEnvironmentResponse{}
+	mi := &file_agynio_api_egress_v1_egress_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListEgressRulesByEnvironmentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListEgressRulesByEnvironmentResponse) ProtoMessage() {}
+
+func (x *ListEgressRulesByEnvironmentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_egress_v1_egress_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListEgressRulesByEnvironmentResponse.ProtoReflect.Descriptor instead.
+func (*ListEgressRulesByEnvironmentResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_egress_v1_egress_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *ListEgressRulesByEnvironmentResponse) GetEgressRules() []*EgressRule {
+	if x != nil {
+		return x.EgressRules
+	}
+	return nil
+}
+
 type CountRulesReferencingSecretRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SecretId      string                 `protobuf:"bytes,1,opt,name=secret_id,json=secretId,proto3" json:"secret_id,omitempty"`
@@ -1475,7 +1679,7 @@ type CountRulesReferencingSecretRequest struct {
 
 func (x *CountRulesReferencingSecretRequest) Reset() {
 	*x = CountRulesReferencingSecretRequest{}
-	mi := &file_agynio_api_egress_v1_egress_proto_msgTypes[24]
+	mi := &file_agynio_api_egress_v1_egress_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1487,7 +1691,7 @@ func (x *CountRulesReferencingSecretRequest) String() string {
 func (*CountRulesReferencingSecretRequest) ProtoMessage() {}
 
 func (x *CountRulesReferencingSecretRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_egress_v1_egress_proto_msgTypes[24]
+	mi := &file_agynio_api_egress_v1_egress_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1500,7 +1704,7 @@ func (x *CountRulesReferencingSecretRequest) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use CountRulesReferencingSecretRequest.ProtoReflect.Descriptor instead.
 func (*CountRulesReferencingSecretRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_egress_v1_egress_proto_rawDescGZIP(), []int{24}
+	return file_agynio_api_egress_v1_egress_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *CountRulesReferencingSecretRequest) GetSecretId() string {
@@ -1520,7 +1724,7 @@ type CountRulesReferencingSecretResponse struct {
 
 func (x *CountRulesReferencingSecretResponse) Reset() {
 	*x = CountRulesReferencingSecretResponse{}
-	mi := &file_agynio_api_egress_v1_egress_proto_msgTypes[25]
+	mi := &file_agynio_api_egress_v1_egress_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1532,7 +1736,7 @@ func (x *CountRulesReferencingSecretResponse) String() string {
 func (*CountRulesReferencingSecretResponse) ProtoMessage() {}
 
 func (x *CountRulesReferencingSecretResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_egress_v1_egress_proto_msgTypes[25]
+	mi := &file_agynio_api_egress_v1_egress_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1545,7 +1749,7 @@ func (x *CountRulesReferencingSecretResponse) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use CountRulesReferencingSecretResponse.ProtoReflect.Descriptor instead.
 func (*CountRulesReferencingSecretResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_egress_v1_egress_proto_rawDescGZIP(), []int{25}
+	return file_agynio_api_egress_v1_egress_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *CountRulesReferencingSecretResponse) GetCount() int32 {
@@ -1597,11 +1801,14 @@ const file_agynio_api_egress_v1_egress_proto_rawDesc = "" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x04 \x01(\tR\vdescription\x12A\n" +
 	"\amatcher\x18\x05 \x01(\v2'.agynio.api.egress.v1.EgressRuleMatcherR\amatcher\x12>\n" +
-	"\x06effect\x18\x06 \x01(\v2&.agynio.api.egress.v1.EgressRuleEffectR\x06effect\"\x80\x01\n" +
+	"\x06effect\x18\x06 \x01(\v2&.agynio.api.egress.v1.EgressRuleEffectR\x06effect\"\xe1\x01\n" +
 	"\x14EgressRuleAttachment\x124\n" +
 	"\x04meta\x18\x01 \x01(\v2 .agynio.api.egress.v1.EntityMetaR\x04meta\x12\x17\n" +
-	"\arule_id\x18\x02 \x01(\tR\x06ruleId\x12\x19\n" +
-	"\bagent_id\x18\x03 \x01(\tR\aagentId\"\xfb\x01\n" +
+	"\arule_id\x18\x02 \x01(\tR\x06ruleId\x12\x1d\n" +
+	"\bagent_id\x18\x03 \x01(\tB\x02\x18\x01R\aagentId\x12'\n" +
+	"\x0eenvironment_id\x18\x04 \x01(\tH\x00R\renvironmentId\x12(\n" +
+	"\x0fagent_target_id\x18\x05 \x01(\tH\x00R\ragentTargetIdB\b\n" +
+	"\x06target\"\xfb\x01\n" +
 	"\x17CreateEgressRuleRequest\x12'\n" +
 	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
@@ -1640,31 +1847,42 @@ const file_agynio_api_egress_v1_egress_proto_rawDesc = "" +
 	"egressRule\")\n" +
 	"\x17DeleteEgressRuleRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x1a\n" +
-	"\x18DeleteEgressRuleResponse\"W\n" +
+	"\x18DeleteEgressRuleResponse\"\xb8\x01\n" +
 	"!CreateEgressRuleAttachmentRequest\x12\x17\n" +
-	"\arule_id\x18\x01 \x01(\tR\x06ruleId\x12\x19\n" +
-	"\bagent_id\x18\x02 \x01(\tR\aagentId\"\x86\x01\n" +
+	"\arule_id\x18\x01 \x01(\tR\x06ruleId\x12\x1d\n" +
+	"\bagent_id\x18\x02 \x01(\tB\x02\x18\x01R\aagentId\x12'\n" +
+	"\x0eenvironment_id\x18\x03 \x01(\tH\x00R\renvironmentId\x12(\n" +
+	"\x0fagent_target_id\x18\x06 \x01(\tH\x00R\ragentTargetIdB\b\n" +
+	"\x06target\"\x86\x01\n" +
 	"\"CreateEgressRuleAttachmentResponse\x12`\n" +
 	"\x16egress_rule_attachment\x18\x01 \x01(\v2*.agynio.api.egress.v1.EgressRuleAttachmentR\x14egressRuleAttachment\"3\n" +
 	"!DeleteEgressRuleAttachmentRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"$\n" +
-	"\"DeleteEgressRuleAttachmentResponse\"\xde\x01\n" +
+	"\"DeleteEgressRuleAttachmentResponse\"\xe2\x02\n" +
 	" ListEgressRuleAttachmentsRequest\x12'\n" +
 	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\x12\x1c\n" +
-	"\arule_id\x18\x02 \x01(\tH\x00R\x06ruleId\x88\x01\x01\x12\x1e\n" +
-	"\bagent_id\x18\x03 \x01(\tH\x01R\aagentId\x88\x01\x01\x12\x1b\n" +
+	"\arule_id\x18\x02 \x01(\tH\x00R\x06ruleId\x88\x01\x01\x12\"\n" +
+	"\bagent_id\x18\x03 \x01(\tB\x02\x18\x01H\x01R\aagentId\x88\x01\x01\x12\x1b\n" +
 	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
-	"page_token\x18\x05 \x01(\tR\tpageTokenB\n" +
+	"page_token\x18\x05 \x01(\tR\tpageToken\x12*\n" +
+	"\x0eenvironment_id\x18\x06 \x01(\tH\x02R\renvironmentId\x88\x01\x01\x12+\n" +
+	"\x0fagent_target_id\x18\a \x01(\tH\x03R\ragentTargetId\x88\x01\x01B\n" +
 	"\n" +
 	"\b_rule_idB\v\n" +
-	"\t_agent_id\"\xaf\x01\n" +
+	"\t_agent_idB\x11\n" +
+	"\x0f_environment_idB\x12\n" +
+	"\x10_agent_target_id\"\xaf\x01\n" +
 	"!ListEgressRuleAttachmentsResponse\x12b\n" +
 	"\x17egress_rule_attachments\x18\x01 \x03(\v2*.agynio.api.egress.v1.EgressRuleAttachmentR\x15egressRuleAttachments\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\":\n" +
 	"\x1dListEgressRulesByAgentRequest\x12\x19\n" +
 	"\bagent_id\x18\x01 \x01(\tR\aagentId\"e\n" +
 	"\x1eListEgressRulesByAgentResponse\x12C\n" +
+	"\fegress_rules\x18\x01 \x03(\v2 .agynio.api.egress.v1.EgressRuleR\vegressRules\"L\n" +
+	"#ListEgressRulesByEnvironmentRequest\x12%\n" +
+	"\x0eenvironment_id\x18\x01 \x01(\tR\renvironmentId\"k\n" +
+	"$ListEgressRulesByEnvironmentResponse\x12C\n" +
 	"\fegress_rules\x18\x01 \x03(\v2 .agynio.api.egress.v1.EgressRuleR\vegressRules\"A\n" +
 	"\"CountRulesReferencingSecretRequest\x12\x1b\n" +
 	"\tsecret_id\x18\x01 \x01(\tR\bsecretId\"c\n" +
@@ -1678,8 +1896,7 @@ const file_agynio_api_egress_v1_egress_proto_rawDesc = "" +
 	"\x10HeaderAuthScheme\x12\"\n" +
 	"\x1eHEADER_AUTH_SCHEME_UNSPECIFIED\x10\x00\x12\x1d\n" +
 	"\x19HEADER_AUTH_SCHEME_BEARER\x10\x01\x12\x1c\n" +
-	"\x18HEADER_AUTH_SCHEME_BASIC\x10\x022\x95\n" +
-	"\n" +
+	"\x18HEADER_AUTH_SCHEME_BASIC\x10\x022\xad\v\n" +
 	"\x12EgressRulesService\x12q\n" +
 	"\x10CreateEgressRule\x12-.agynio.api.egress.v1.CreateEgressRuleRequest\x1a..agynio.api.egress.v1.CreateEgressRuleResponse\x12h\n" +
 	"\rGetEgressRule\x12*.agynio.api.egress.v1.GetEgressRuleRequest\x1a+.agynio.api.egress.v1.GetEgressRuleResponse\x12n\n" +
@@ -1689,7 +1906,8 @@ const file_agynio_api_egress_v1_egress_proto_rawDesc = "" +
 	"\x1aCreateEgressRuleAttachment\x127.agynio.api.egress.v1.CreateEgressRuleAttachmentRequest\x1a8.agynio.api.egress.v1.CreateEgressRuleAttachmentResponse\x12\x8f\x01\n" +
 	"\x1aDeleteEgressRuleAttachment\x127.agynio.api.egress.v1.DeleteEgressRuleAttachmentRequest\x1a8.agynio.api.egress.v1.DeleteEgressRuleAttachmentResponse\x12\x8c\x01\n" +
 	"\x19ListEgressRuleAttachments\x126.agynio.api.egress.v1.ListEgressRuleAttachmentsRequest\x1a7.agynio.api.egress.v1.ListEgressRuleAttachmentsResponse\x12\x83\x01\n" +
-	"\x16ListEgressRulesByAgent\x123.agynio.api.egress.v1.ListEgressRulesByAgentRequest\x1a4.agynio.api.egress.v1.ListEgressRulesByAgentResponse\x12\x92\x01\n" +
+	"\x16ListEgressRulesByAgent\x123.agynio.api.egress.v1.ListEgressRulesByAgentRequest\x1a4.agynio.api.egress.v1.ListEgressRulesByAgentResponse\x12\x95\x01\n" +
+	"\x1cListEgressRulesByEnvironment\x129.agynio.api.egress.v1.ListEgressRulesByEnvironmentRequest\x1a:.agynio.api.egress.v1.ListEgressRulesByEnvironmentResponse\x12\x92\x01\n" +
 	"\x1bCountRulesReferencingSecret\x128.agynio.api.egress.v1.CountRulesReferencingSecretRequest\x1a9.agynio.api.egress.v1.CountRulesReferencingSecretResponseB9Z7github.com/agynio/api/gen/agynio/api/egress/v1;egressv1b\x06proto3"
 
 var (
@@ -1705,41 +1923,43 @@ func file_agynio_api_egress_v1_egress_proto_rawDescGZIP() []byte {
 }
 
 var file_agynio_api_egress_v1_egress_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_agynio_api_egress_v1_egress_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
+var file_agynio_api_egress_v1_egress_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
 var file_agynio_api_egress_v1_egress_proto_goTypes = []any{
-	(EgressRuleAction)(0),                       // 0: agynio.api.egress.v1.EgressRuleAction
-	(HeaderAuthScheme)(0),                       // 1: agynio.api.egress.v1.HeaderAuthScheme
-	(*EntityMeta)(nil),                          // 2: agynio.api.egress.v1.EntityMeta
-	(*EgressRuleMatcher)(nil),                   // 3: agynio.api.egress.v1.EgressRuleMatcher
-	(*EgressRuleHeader)(nil),                    // 4: agynio.api.egress.v1.EgressRuleHeader
-	(*EgressRuleEffect)(nil),                    // 5: agynio.api.egress.v1.EgressRuleEffect
-	(*EgressRule)(nil),                          // 6: agynio.api.egress.v1.EgressRule
-	(*EgressRuleAttachment)(nil),                // 7: agynio.api.egress.v1.EgressRuleAttachment
-	(*CreateEgressRuleRequest)(nil),             // 8: agynio.api.egress.v1.CreateEgressRuleRequest
-	(*CreateEgressRuleResponse)(nil),            // 9: agynio.api.egress.v1.CreateEgressRuleResponse
-	(*GetEgressRuleRequest)(nil),                // 10: agynio.api.egress.v1.GetEgressRuleRequest
-	(*GetEgressRuleResponse)(nil),               // 11: agynio.api.egress.v1.GetEgressRuleResponse
-	(*ListEgressRulesRequest)(nil),              // 12: agynio.api.egress.v1.ListEgressRulesRequest
-	(*ListEgressRulesResponse)(nil),             // 13: agynio.api.egress.v1.ListEgressRulesResponse
-	(*UpdateEgressRuleRequest)(nil),             // 14: agynio.api.egress.v1.UpdateEgressRuleRequest
-	(*UpdateEgressRuleResponse)(nil),            // 15: agynio.api.egress.v1.UpdateEgressRuleResponse
-	(*DeleteEgressRuleRequest)(nil),             // 16: agynio.api.egress.v1.DeleteEgressRuleRequest
-	(*DeleteEgressRuleResponse)(nil),            // 17: agynio.api.egress.v1.DeleteEgressRuleResponse
-	(*CreateEgressRuleAttachmentRequest)(nil),   // 18: agynio.api.egress.v1.CreateEgressRuleAttachmentRequest
-	(*CreateEgressRuleAttachmentResponse)(nil),  // 19: agynio.api.egress.v1.CreateEgressRuleAttachmentResponse
-	(*DeleteEgressRuleAttachmentRequest)(nil),   // 20: agynio.api.egress.v1.DeleteEgressRuleAttachmentRequest
-	(*DeleteEgressRuleAttachmentResponse)(nil),  // 21: agynio.api.egress.v1.DeleteEgressRuleAttachmentResponse
-	(*ListEgressRuleAttachmentsRequest)(nil),    // 22: agynio.api.egress.v1.ListEgressRuleAttachmentsRequest
-	(*ListEgressRuleAttachmentsResponse)(nil),   // 23: agynio.api.egress.v1.ListEgressRuleAttachmentsResponse
-	(*ListEgressRulesByAgentRequest)(nil),       // 24: agynio.api.egress.v1.ListEgressRulesByAgentRequest
-	(*ListEgressRulesByAgentResponse)(nil),      // 25: agynio.api.egress.v1.ListEgressRulesByAgentResponse
-	(*CountRulesReferencingSecretRequest)(nil),  // 26: agynio.api.egress.v1.CountRulesReferencingSecretRequest
-	(*CountRulesReferencingSecretResponse)(nil), // 27: agynio.api.egress.v1.CountRulesReferencingSecretResponse
-	(*timestamppb.Timestamp)(nil),               // 28: google.protobuf.Timestamp
+	(EgressRuleAction)(0),                        // 0: agynio.api.egress.v1.EgressRuleAction
+	(HeaderAuthScheme)(0),                        // 1: agynio.api.egress.v1.HeaderAuthScheme
+	(*EntityMeta)(nil),                           // 2: agynio.api.egress.v1.EntityMeta
+	(*EgressRuleMatcher)(nil),                    // 3: agynio.api.egress.v1.EgressRuleMatcher
+	(*EgressRuleHeader)(nil),                     // 4: agynio.api.egress.v1.EgressRuleHeader
+	(*EgressRuleEffect)(nil),                     // 5: agynio.api.egress.v1.EgressRuleEffect
+	(*EgressRule)(nil),                           // 6: agynio.api.egress.v1.EgressRule
+	(*EgressRuleAttachment)(nil),                 // 7: agynio.api.egress.v1.EgressRuleAttachment
+	(*CreateEgressRuleRequest)(nil),              // 8: agynio.api.egress.v1.CreateEgressRuleRequest
+	(*CreateEgressRuleResponse)(nil),             // 9: agynio.api.egress.v1.CreateEgressRuleResponse
+	(*GetEgressRuleRequest)(nil),                 // 10: agynio.api.egress.v1.GetEgressRuleRequest
+	(*GetEgressRuleResponse)(nil),                // 11: agynio.api.egress.v1.GetEgressRuleResponse
+	(*ListEgressRulesRequest)(nil),               // 12: agynio.api.egress.v1.ListEgressRulesRequest
+	(*ListEgressRulesResponse)(nil),              // 13: agynio.api.egress.v1.ListEgressRulesResponse
+	(*UpdateEgressRuleRequest)(nil),              // 14: agynio.api.egress.v1.UpdateEgressRuleRequest
+	(*UpdateEgressRuleResponse)(nil),             // 15: agynio.api.egress.v1.UpdateEgressRuleResponse
+	(*DeleteEgressRuleRequest)(nil),              // 16: agynio.api.egress.v1.DeleteEgressRuleRequest
+	(*DeleteEgressRuleResponse)(nil),             // 17: agynio.api.egress.v1.DeleteEgressRuleResponse
+	(*CreateEgressRuleAttachmentRequest)(nil),    // 18: agynio.api.egress.v1.CreateEgressRuleAttachmentRequest
+	(*CreateEgressRuleAttachmentResponse)(nil),   // 19: agynio.api.egress.v1.CreateEgressRuleAttachmentResponse
+	(*DeleteEgressRuleAttachmentRequest)(nil),    // 20: agynio.api.egress.v1.DeleteEgressRuleAttachmentRequest
+	(*DeleteEgressRuleAttachmentResponse)(nil),   // 21: agynio.api.egress.v1.DeleteEgressRuleAttachmentResponse
+	(*ListEgressRuleAttachmentsRequest)(nil),     // 22: agynio.api.egress.v1.ListEgressRuleAttachmentsRequest
+	(*ListEgressRuleAttachmentsResponse)(nil),    // 23: agynio.api.egress.v1.ListEgressRuleAttachmentsResponse
+	(*ListEgressRulesByAgentRequest)(nil),        // 24: agynio.api.egress.v1.ListEgressRulesByAgentRequest
+	(*ListEgressRulesByAgentResponse)(nil),       // 25: agynio.api.egress.v1.ListEgressRulesByAgentResponse
+	(*ListEgressRulesByEnvironmentRequest)(nil),  // 26: agynio.api.egress.v1.ListEgressRulesByEnvironmentRequest
+	(*ListEgressRulesByEnvironmentResponse)(nil), // 27: agynio.api.egress.v1.ListEgressRulesByEnvironmentResponse
+	(*CountRulesReferencingSecretRequest)(nil),   // 28: agynio.api.egress.v1.CountRulesReferencingSecretRequest
+	(*CountRulesReferencingSecretResponse)(nil),  // 29: agynio.api.egress.v1.CountRulesReferencingSecretResponse
+	(*timestamppb.Timestamp)(nil),                // 30: google.protobuf.Timestamp
 }
 var file_agynio_api_egress_v1_egress_proto_depIdxs = []int32{
-	28, // 0: agynio.api.egress.v1.EntityMeta.created_at:type_name -> google.protobuf.Timestamp
-	28, // 1: agynio.api.egress.v1.EntityMeta.updated_at:type_name -> google.protobuf.Timestamp
+	30, // 0: agynio.api.egress.v1.EntityMeta.created_at:type_name -> google.protobuf.Timestamp
+	30, // 1: agynio.api.egress.v1.EntityMeta.updated_at:type_name -> google.protobuf.Timestamp
 	1,  // 2: agynio.api.egress.v1.EgressRuleHeader.scheme:type_name -> agynio.api.egress.v1.HeaderAuthScheme
 	0,  // 3: agynio.api.egress.v1.EgressRuleEffect.action:type_name -> agynio.api.egress.v1.EgressRuleAction
 	4,  // 4: agynio.api.egress.v1.EgressRuleEffect.inject:type_name -> agynio.api.egress.v1.EgressRuleHeader
@@ -1758,31 +1978,34 @@ var file_agynio_api_egress_v1_egress_proto_depIdxs = []int32{
 	7,  // 17: agynio.api.egress.v1.CreateEgressRuleAttachmentResponse.egress_rule_attachment:type_name -> agynio.api.egress.v1.EgressRuleAttachment
 	7,  // 18: agynio.api.egress.v1.ListEgressRuleAttachmentsResponse.egress_rule_attachments:type_name -> agynio.api.egress.v1.EgressRuleAttachment
 	6,  // 19: agynio.api.egress.v1.ListEgressRulesByAgentResponse.egress_rules:type_name -> agynio.api.egress.v1.EgressRule
-	8,  // 20: agynio.api.egress.v1.EgressRulesService.CreateEgressRule:input_type -> agynio.api.egress.v1.CreateEgressRuleRequest
-	10, // 21: agynio.api.egress.v1.EgressRulesService.GetEgressRule:input_type -> agynio.api.egress.v1.GetEgressRuleRequest
-	12, // 22: agynio.api.egress.v1.EgressRulesService.ListEgressRules:input_type -> agynio.api.egress.v1.ListEgressRulesRequest
-	14, // 23: agynio.api.egress.v1.EgressRulesService.UpdateEgressRule:input_type -> agynio.api.egress.v1.UpdateEgressRuleRequest
-	16, // 24: agynio.api.egress.v1.EgressRulesService.DeleteEgressRule:input_type -> agynio.api.egress.v1.DeleteEgressRuleRequest
-	18, // 25: agynio.api.egress.v1.EgressRulesService.CreateEgressRuleAttachment:input_type -> agynio.api.egress.v1.CreateEgressRuleAttachmentRequest
-	20, // 26: agynio.api.egress.v1.EgressRulesService.DeleteEgressRuleAttachment:input_type -> agynio.api.egress.v1.DeleteEgressRuleAttachmentRequest
-	22, // 27: agynio.api.egress.v1.EgressRulesService.ListEgressRuleAttachments:input_type -> agynio.api.egress.v1.ListEgressRuleAttachmentsRequest
-	24, // 28: agynio.api.egress.v1.EgressRulesService.ListEgressRulesByAgent:input_type -> agynio.api.egress.v1.ListEgressRulesByAgentRequest
-	26, // 29: agynio.api.egress.v1.EgressRulesService.CountRulesReferencingSecret:input_type -> agynio.api.egress.v1.CountRulesReferencingSecretRequest
-	9,  // 30: agynio.api.egress.v1.EgressRulesService.CreateEgressRule:output_type -> agynio.api.egress.v1.CreateEgressRuleResponse
-	11, // 31: agynio.api.egress.v1.EgressRulesService.GetEgressRule:output_type -> agynio.api.egress.v1.GetEgressRuleResponse
-	13, // 32: agynio.api.egress.v1.EgressRulesService.ListEgressRules:output_type -> agynio.api.egress.v1.ListEgressRulesResponse
-	15, // 33: agynio.api.egress.v1.EgressRulesService.UpdateEgressRule:output_type -> agynio.api.egress.v1.UpdateEgressRuleResponse
-	17, // 34: agynio.api.egress.v1.EgressRulesService.DeleteEgressRule:output_type -> agynio.api.egress.v1.DeleteEgressRuleResponse
-	19, // 35: agynio.api.egress.v1.EgressRulesService.CreateEgressRuleAttachment:output_type -> agynio.api.egress.v1.CreateEgressRuleAttachmentResponse
-	21, // 36: agynio.api.egress.v1.EgressRulesService.DeleteEgressRuleAttachment:output_type -> agynio.api.egress.v1.DeleteEgressRuleAttachmentResponse
-	23, // 37: agynio.api.egress.v1.EgressRulesService.ListEgressRuleAttachments:output_type -> agynio.api.egress.v1.ListEgressRuleAttachmentsResponse
-	25, // 38: agynio.api.egress.v1.EgressRulesService.ListEgressRulesByAgent:output_type -> agynio.api.egress.v1.ListEgressRulesByAgentResponse
-	27, // 39: agynio.api.egress.v1.EgressRulesService.CountRulesReferencingSecret:output_type -> agynio.api.egress.v1.CountRulesReferencingSecretResponse
-	30, // [30:40] is the sub-list for method output_type
-	20, // [20:30] is the sub-list for method input_type
-	20, // [20:20] is the sub-list for extension type_name
-	20, // [20:20] is the sub-list for extension extendee
-	0,  // [0:20] is the sub-list for field type_name
+	6,  // 20: agynio.api.egress.v1.ListEgressRulesByEnvironmentResponse.egress_rules:type_name -> agynio.api.egress.v1.EgressRule
+	8,  // 21: agynio.api.egress.v1.EgressRulesService.CreateEgressRule:input_type -> agynio.api.egress.v1.CreateEgressRuleRequest
+	10, // 22: agynio.api.egress.v1.EgressRulesService.GetEgressRule:input_type -> agynio.api.egress.v1.GetEgressRuleRequest
+	12, // 23: agynio.api.egress.v1.EgressRulesService.ListEgressRules:input_type -> agynio.api.egress.v1.ListEgressRulesRequest
+	14, // 24: agynio.api.egress.v1.EgressRulesService.UpdateEgressRule:input_type -> agynio.api.egress.v1.UpdateEgressRuleRequest
+	16, // 25: agynio.api.egress.v1.EgressRulesService.DeleteEgressRule:input_type -> agynio.api.egress.v1.DeleteEgressRuleRequest
+	18, // 26: agynio.api.egress.v1.EgressRulesService.CreateEgressRuleAttachment:input_type -> agynio.api.egress.v1.CreateEgressRuleAttachmentRequest
+	20, // 27: agynio.api.egress.v1.EgressRulesService.DeleteEgressRuleAttachment:input_type -> agynio.api.egress.v1.DeleteEgressRuleAttachmentRequest
+	22, // 28: agynio.api.egress.v1.EgressRulesService.ListEgressRuleAttachments:input_type -> agynio.api.egress.v1.ListEgressRuleAttachmentsRequest
+	24, // 29: agynio.api.egress.v1.EgressRulesService.ListEgressRulesByAgent:input_type -> agynio.api.egress.v1.ListEgressRulesByAgentRequest
+	26, // 30: agynio.api.egress.v1.EgressRulesService.ListEgressRulesByEnvironment:input_type -> agynio.api.egress.v1.ListEgressRulesByEnvironmentRequest
+	28, // 31: agynio.api.egress.v1.EgressRulesService.CountRulesReferencingSecret:input_type -> agynio.api.egress.v1.CountRulesReferencingSecretRequest
+	9,  // 32: agynio.api.egress.v1.EgressRulesService.CreateEgressRule:output_type -> agynio.api.egress.v1.CreateEgressRuleResponse
+	11, // 33: agynio.api.egress.v1.EgressRulesService.GetEgressRule:output_type -> agynio.api.egress.v1.GetEgressRuleResponse
+	13, // 34: agynio.api.egress.v1.EgressRulesService.ListEgressRules:output_type -> agynio.api.egress.v1.ListEgressRulesResponse
+	15, // 35: agynio.api.egress.v1.EgressRulesService.UpdateEgressRule:output_type -> agynio.api.egress.v1.UpdateEgressRuleResponse
+	17, // 36: agynio.api.egress.v1.EgressRulesService.DeleteEgressRule:output_type -> agynio.api.egress.v1.DeleteEgressRuleResponse
+	19, // 37: agynio.api.egress.v1.EgressRulesService.CreateEgressRuleAttachment:output_type -> agynio.api.egress.v1.CreateEgressRuleAttachmentResponse
+	21, // 38: agynio.api.egress.v1.EgressRulesService.DeleteEgressRuleAttachment:output_type -> agynio.api.egress.v1.DeleteEgressRuleAttachmentResponse
+	23, // 39: agynio.api.egress.v1.EgressRulesService.ListEgressRuleAttachments:output_type -> agynio.api.egress.v1.ListEgressRuleAttachmentsResponse
+	25, // 40: agynio.api.egress.v1.EgressRulesService.ListEgressRulesByAgent:output_type -> agynio.api.egress.v1.ListEgressRulesByAgentResponse
+	27, // 41: agynio.api.egress.v1.EgressRulesService.ListEgressRulesByEnvironment:output_type -> agynio.api.egress.v1.ListEgressRulesByEnvironmentResponse
+	29, // 42: agynio.api.egress.v1.EgressRulesService.CountRulesReferencingSecret:output_type -> agynio.api.egress.v1.CountRulesReferencingSecretResponse
+	32, // [32:43] is the sub-list for method output_type
+	21, // [21:32] is the sub-list for method input_type
+	21, // [21:21] is the sub-list for extension type_name
+	21, // [21:21] is the sub-list for extension extendee
+	0,  // [0:21] is the sub-list for field type_name
 }
 
 func init() { file_agynio_api_egress_v1_egress_proto_init() }
@@ -1795,7 +2018,15 @@ func file_agynio_api_egress_v1_egress_proto_init() {
 		(*EgressRuleHeader_SecretId)(nil),
 	}
 	file_agynio_api_egress_v1_egress_proto_msgTypes[3].OneofWrappers = []any{}
+	file_agynio_api_egress_v1_egress_proto_msgTypes[5].OneofWrappers = []any{
+		(*EgressRuleAttachment_EnvironmentId)(nil),
+		(*EgressRuleAttachment_AgentTargetId)(nil),
+	}
 	file_agynio_api_egress_v1_egress_proto_msgTypes[12].OneofWrappers = []any{}
+	file_agynio_api_egress_v1_egress_proto_msgTypes[16].OneofWrappers = []any{
+		(*CreateEgressRuleAttachmentRequest_EnvironmentId)(nil),
+		(*CreateEgressRuleAttachmentRequest_AgentTargetId)(nil),
+	}
 	file_agynio_api_egress_v1_egress_proto_msgTypes[20].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1803,7 +2034,7 @@ func file_agynio_api_egress_v1_egress_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_agynio_api_egress_v1_egress_proto_rawDesc), len(file_agynio_api_egress_v1_egress_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   26,
+			NumMessages:   28,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

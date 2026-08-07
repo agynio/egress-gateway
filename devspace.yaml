@@ -1,0 +1,175 @@
+version: v2beta1
+
+vars:
+  EGRESS_GATEWAY_NAMESPACE: platform
+  EGRESS_GATEWAY_SELECTOR: app.kubernetes.io/name=egress-gateway
+
+functions:
+  patch_deployment: |-
+    echo "Patching egress-gateway deployment for DevSpace..."
+    deployment_name="$(kubectl get deployment -n "${EGRESS_GATEWAY_NAMESPACE}" \
+      -l "${EGRESS_GATEWAY_SELECTOR}" \
+      -o jsonpath='{.items[0].metadata.name}')"
+    if [ -z "$deployment_name" ]; then
+      echo "ERROR: egress-gateway deployment not found for selector ${EGRESS_GATEWAY_SELECTOR}" >&2
+      exit 1
+    fi
+    kubectl patch deployment "$deployment_name" -n "${EGRESS_GATEWAY_NAMESPACE}" --type strategic --patch "$(cat <<'EOF'
+    spec:
+      template:
+        spec:
+          securityContext:
+            runAsUser: 1000
+            fsGroup: 1000
+          initContainers: []
+          volumes:
+            - name: data
+              emptyDir: {}
+          containers:
+            - name: egress-gateway
+              image: ghcr.io/agynio/devcontainer-go:1 # dev container for source deploy
+              workingDir: /opt/app/data
+              livenessProbe: null
+              readinessProbe: null
+              startupProbe: null
+              command:
+                - sh
+                - -c
+                - |
+                  set -eu
+                  elapsed=0
+                  while [ ! -f /opt/app/data/go.mod ]; do
+                    sleep 1; elapsed=$((elapsed + 1))
+                    [ "$elapsed" -ge 120 ] && { echo "ERROR: sync timeout" >&2; exit 1; }
+                  done
+                  make proto
+                  exec go run ./cmd/egress-gateway
+              volumeMounts:
+                - name: data
+                  mountPath: /opt/app/data
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 1Gi
+                limits:
+                  cpu: "2"
+                  memory: 4Gi
+              securityContext:
+                runAsNonRoot: true
+                runAsUser: 1000
+                runAsGroup: 1000
+                readOnlyRootFilesystem: false
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+                seccompProfile:
+                  type: RuntimeDefault
+    EOF
+    )"
+
+pipelines:
+  dev:
+    flags:
+      - name: watch
+        short: w
+        description: "Keep DevSpace running and stream logs"
+    run: |-
+      patch_deployment
+      if [ "$(get_flag "watch")" == "true" ]; then
+        start_dev --disable-pod-replace egress-gateway
+      else
+        start_dev --disable-pod-replace egress-gateway
+        echo "Waiting for egress-gateway to be healthy on :50051..."
+        healthy=false
+        pod_name=""
+        container_name=""
+        for _ in $(seq 1 150); do
+          pod_name="$(kubectl get pod -n "${EGRESS_GATEWAY_NAMESPACE}" \
+            -l "${EGRESS_GATEWAY_SELECTOR}" \
+            --field-selector=status.phase=Running \
+            -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)"
+          if [ -z "$pod_name" ]; then
+            kubectl get pods -n "${EGRESS_GATEWAY_NAMESPACE}" -l "${EGRESS_GATEWAY_SELECTOR}" -o wide || true
+            sleep 2
+            continue
+          fi
+          container_name="$(kubectl get pod -n "${EGRESS_GATEWAY_NAMESPACE}" "$pod_name" \
+            -o jsonpath='{.spec.containers[0].name}' 2>/dev/null || true)"
+          if [ -z "$container_name" ]; then
+            echo "ERROR: Could not resolve container name for pod $pod_name" >&2
+            kubectl get pod -n "${EGRESS_GATEWAY_NAMESPACE}" "$pod_name" -o jsonpath='{range .spec.containers[*]}{.name}{"\n"}{end}' || true
+            sleep 2
+            continue
+          fi
+          if kubectl exec -n "${EGRESS_GATEWAY_NAMESPACE}" "$pod_name" -c "$container_name" -- bash -c 'echo >/dev/tcp/127.0.0.1/50051' >/dev/null 2>&1; then
+            healthy=true
+            break
+          fi
+          echo "Authorization health check failed in pod $pod_name container $container_name; pod containers:" >&2
+          kubectl get pod -n "${EGRESS_GATEWAY_NAMESPACE}" "$pod_name" -o jsonpath='{range .spec.containers[*]}{.name}{"\n"}{end}' || true
+          sleep 2
+        done
+        if [ "$healthy" != "true" ]; then
+          echo "ERROR: Authorization did not become healthy within 300s" >&2
+          if [ -n "$pod_name" ] && [ -n "$container_name" ]; then
+            kubectl logs -n "${EGRESS_GATEWAY_NAMESPACE}" "$pod_name" -c "$container_name" --tail=50 || true
+          fi
+          exit 1
+        fi
+        echo "Dev environment ready. Stopping dev session."
+        stop_dev egress-gateway
+      fi
+
+
+dev:
+  egress-gateway:
+    namespace: ${EGRESS_GATEWAY_NAMESPACE}
+    labelSelector:
+      app.kubernetes.io/name: egress-gateway
+    containers:
+      egress-gateway:
+        container: egress-gateway
+        sync:
+          - path: ./:/opt/app/data
+            excludePaths:
+              - .git/
+              - .github/
+              - .devspace/
+              - /.gen/
+              - /bootstrap/
+              - /bin/
+              - /build/
+              - /coverage/
+              - /dist/
+              - /node_modules/
+              - /vendor/
+              - /tmp/
+            uploadExcludePaths:
+              - .git/
+              - .github/
+              - .devspace/
+              - /.gen/
+              - /bootstrap/
+              - /bin/
+              - /build/
+              - /coverage/
+              - /dist/
+              - /node_modules/
+              - /vendor/
+              - /tmp/
+            downloadExcludePaths:
+              - .git/
+              - .github/
+              - .devspace/
+              - /.gen/
+              - /bootstrap/
+              - /bin/
+              - /build/
+              - /coverage/
+              - /dist/
+              - /node_modules/
+              - /vendor/
+              - /tmp/
+        logs:
+          enabled: true
+          lastLines: 200

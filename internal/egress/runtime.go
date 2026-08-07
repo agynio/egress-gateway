@@ -27,7 +27,7 @@ func NewRuntime(rules *RuleCache, evaluator *Evaluator, forwarder *Forwarder, ob
 }
 
 func (r *Runtime) ServeRequest(ctx context.Context, w http.ResponseWriter, req *http.Request, requestContext RequestContext) error {
-	rules, err := r.rules.Rules(ctx, requestContext.Agent.AgentID)
+	rules, err := r.rules.RulesFor(ctx, requestContext.Agent.AgentID, requestContext.Agent.EnvironmentID)
 	if err != nil {
 		http.Error(w, "egress gateway could not load rules", http.StatusBadGateway)
 		if r.observed != nil {

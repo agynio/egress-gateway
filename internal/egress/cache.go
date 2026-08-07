@@ -2,6 +2,7 @@ package egress
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"time"
 
@@ -20,6 +21,7 @@ func (SystemClock) Now() time.Time { return time.Now() }
 
 type RuleClient interface {
 	ListEgressRulesByAgent(context.Context, *egressv1.ListEgressRulesByAgentRequest, ...grpc.CallOption) (*egressv1.ListEgressRulesByAgentResponse, error)
+	ListEgressRulesByEnvironment(context.Context, *egressv1.ListEgressRulesByEnvironmentRequest, ...grpc.CallOption) (*egressv1.ListEgressRulesByEnvironmentResponse, error)
 }
 
 type SecretClient interface {
@@ -58,10 +60,17 @@ func NewRuleCacheWithStaleIfError(client RuleClient, ttl time.Duration, staleIfE
 	return &RuleCache{client: client, ttl: ttl, staleIfError: staleIfError, clock: clock, failureHandler: failureHandler, items: map[string]ruleCacheEntry{}}
 }
 
+// Rules is the union of what is attached to the agent and to the environment
+// it runs. A sandbox has no agent, so the environment is all it has.
 func (c *RuleCache) Rules(ctx context.Context, agentID string) ([]*egressv1.EgressRule, error) {
+	return c.RulesFor(ctx, agentID, "")
+}
+
+func (c *RuleCache) RulesFor(ctx context.Context, agentID string, environmentID string) ([]*egressv1.EgressRule, error) {
+	key := agentID + "|" + environmentID
 	now := c.clock.Now()
 	c.mu.Lock()
-	entry, ok := c.items[agentID]
+	entry, ok := c.items[key]
 	if ok && now.Before(entry.expiresAt) {
 		rules := cloneRules(entry.rules)
 		c.mu.Unlock()
@@ -69,27 +78,67 @@ func (c *RuleCache) Rules(ctx context.Context, agentID string) ([]*egressv1.Egre
 	}
 	c.mu.Unlock()
 
-	resp, err := c.client.ListEgressRulesByAgent(ctx, &egressv1.ListEgressRulesByAgentRequest{AgentId: agentID})
-	if err != nil {
-		if ok && !now.After(entry.expiresAt.Add(c.staleIfError)) {
-			if c.failureHandler != nil {
-				c.failureHandler(agentID, err)
-			}
-			return cloneRules(entry.rules), nil
+	rules := []*egressv1.EgressRule{}
+	if agentID != "" {
+		resp, err := c.client.ListEgressRulesByAgent(ctx, &egressv1.ListEgressRulesByAgentRequest{AgentId: agentID})
+		if err != nil {
+			return c.staleOrError(key, entry, ok, now, err)
 		}
-		return nil, err
+		rules = append(rules, resp.GetEgressRules()...)
 	}
-	rules := cloneRules(resp.GetEgressRules())
+	if environmentID != "" {
+		resp, err := c.client.ListEgressRulesByEnvironment(ctx, &egressv1.ListEgressRulesByEnvironmentRequest{EnvironmentId: environmentID})
+		if err != nil {
+			return c.staleOrError(key, entry, ok, now, err)
+		}
+		rules = append(rules, resp.GetEgressRules()...)
+	}
+	rules = dedupeRules(rules)
 	c.mu.Lock()
-	c.items[agentID] = ruleCacheEntry{rules: cloneRules(rules), expiresAt: c.clock.Now().Add(c.ttl)}
+	c.items[key] = ruleCacheEntry{rules: cloneRules(rules), expiresAt: c.clock.Now().Add(c.ttl)}
 	c.mu.Unlock()
-	return rules, nil
+	return cloneRules(rules), nil
 }
 
-func (c *RuleCache) Invalidate(agentID string) {
+func (c *RuleCache) staleOrError(key string, entry ruleCacheEntry, ok bool, now time.Time, err error) ([]*egressv1.EgressRule, error) {
+	if ok && !now.After(entry.expiresAt.Add(c.staleIfError)) {
+		if c.failureHandler != nil {
+			c.failureHandler(key, err)
+		}
+		return cloneRules(entry.rules), nil
+	}
+	return nil, err
+}
+
+// A rule attached to both an agent and the environment it runs resolves once.
+func dedupeRules(rules []*egressv1.EgressRule) []*egressv1.EgressRule {
+	seen := map[string]struct{}{}
+	deduped := make([]*egressv1.EgressRule, 0, len(rules))
+	for _, rule := range rules {
+		id := rule.GetMeta().GetId()
+		if _, done := seen[id]; done {
+			continue
+		}
+		seen[id] = struct{}{}
+		deduped = append(deduped, rule)
+	}
+	return deduped
+}
+
+// Invalidate drops every entry the id takes part in: the key pairs an agent
+// with the environment it runs, and a change to either invalidates the union.
+func (c *RuleCache) Invalidate(id string) {
+	if id == "" {
+		return
+	}
 	c.mu.Lock()
-	delete(c.items, agentID)
-	c.mu.Unlock()
+	defer c.mu.Unlock()
+	for key := range c.items {
+		agentID, environmentID, _ := strings.Cut(key, "|")
+		if agentID == id || environmentID == id {
+			delete(c.items, key)
+		}
+	}
 }
 
 func (c *RuleCache) InvalidateAll() {
