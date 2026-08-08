@@ -90,15 +90,53 @@ func (s *DataPlaneServer) handleConn(ctx context.Context, conn DataPlaneConn) {
 		log.Printf("resolve egress destination: %v", err)
 		return
 	}
-	if destination.Scheme == "https" {
-		if err := s.serveHTTPS(ctx, conn, agent, destination); err != nil {
+	// The wire decides the scheme, not the reported port: a rule covering both
+	// 80 and 443 collapses to one tunneler listener, and every connection
+	// through it arrives claiming the lower port.
+	sniffed, isTLS, err := sniffTLSClientHello(conn)
+	if err != nil {
+		log.Printf("sniff egress connection: %v", err)
+		return
+	}
+	if isTLS {
+		destination.Scheme = "https"
+		// Nothing speaks TLS to port 80, so a reported 80 here is the collapsed
+		// listener's lower port rather than the one the client dialled.
+		if destination.Port == 80 {
+			destination.Port = 443
+		}
+		if err := s.serveHTTPS(ctx, sniffed, agent, destination); err != nil {
 			log.Printf("serve ziti https egress: %v", err)
 		}
 		return
 	}
-	if err := s.serveHTTP(ctx, conn, agent, destination); err != nil {
+	destination.Scheme = "http"
+	if err := s.serveHTTP(ctx, sniffed, agent, destination); err != nil {
 		log.Printf("serve ziti http egress: %v", err)
 	}
+}
+
+// peekConn replays the bytes consumed while sniffing.
+type peekConn struct {
+	net.Conn
+	reader io.Reader
+}
+
+func (c *peekConn) Read(p []byte) (int, error) { return c.reader.Read(p) }
+
+// sniffTLSClientHello reports whether the connection opens with a TLS record:
+// handshake content type followed by a 3.x major version. Everything the
+// gateway proxies is either that or a plaintext HTTP request line.
+func sniffTLSClientHello(conn net.Conn) (net.Conn, bool, error) {
+	reader := bufio.NewReader(conn)
+	prefix, err := reader.Peek(2)
+	if err != nil {
+		if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
+			return &peekConn{Conn: conn, reader: reader}, false, nil
+		}
+		return nil, false, err
+	}
+	return &peekConn{Conn: conn, reader: reader}, prefix[0] == 0x16 && prefix[1] == 0x03, nil
 }
 
 func (s *DataPlaneServer) serveHTTPS(ctx context.Context, conn net.Conn, agent AgentContext, destination Destination) error {
