@@ -24,11 +24,13 @@ const (
 type IdentityType int32
 
 const (
-	IdentityType_IDENTITY_TYPE_UNSPECIFIED IdentityType = 0
-	IdentityType_IDENTITY_TYPE_AGENT       IdentityType = 1
-	IdentityType_IDENTITY_TYPE_RUNNER      IdentityType = 2
-	IdentityType_IDENTITY_TYPE_USER        IdentityType = 4
-	IdentityType_IDENTITY_TYPE_APP         IdentityType = 5
+	IdentityType_IDENTITY_TYPE_UNSPECIFIED    IdentityType = 0
+	IdentityType_IDENTITY_TYPE_AGENT          IdentityType = 1
+	IdentityType_IDENTITY_TYPE_RUNNER         IdentityType = 2
+	IdentityType_IDENTITY_TYPE_USER           IdentityType = 4
+	IdentityType_IDENTITY_TYPE_APP            IdentityType = 5
+	IdentityType_IDENTITY_TYPE_AGENT_INSTANCE IdentityType = 6
+	IdentityType_IDENTITY_TYPE_SANDBOX        IdentityType = 7
 )
 
 // Enum value maps for IdentityType.
@@ -39,13 +41,17 @@ var (
 		2: "IDENTITY_TYPE_RUNNER",
 		4: "IDENTITY_TYPE_USER",
 		5: "IDENTITY_TYPE_APP",
+		6: "IDENTITY_TYPE_AGENT_INSTANCE",
+		7: "IDENTITY_TYPE_SANDBOX",
 	}
 	IdentityType_value = map[string]int32{
-		"IDENTITY_TYPE_UNSPECIFIED": 0,
-		"IDENTITY_TYPE_AGENT":       1,
-		"IDENTITY_TYPE_RUNNER":      2,
-		"IDENTITY_TYPE_USER":        4,
-		"IDENTITY_TYPE_APP":         5,
+		"IDENTITY_TYPE_UNSPECIFIED":    0,
+		"IDENTITY_TYPE_AGENT":          1,
+		"IDENTITY_TYPE_RUNNER":         2,
+		"IDENTITY_TYPE_USER":           4,
+		"IDENTITY_TYPE_APP":            5,
+		"IDENTITY_TYPE_AGENT_INSTANCE": 6,
+		"IDENTITY_TYPE_SANDBOX":        7,
 	}
 )
 
@@ -396,9 +402,13 @@ type SetNicknameRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
 	IdentityId     string                 `protobuf:"bytes,2,opt,name=identity_id,json=identityId,proto3" json:"identity_id,omitempty"`
-	Nickname       string                 `protobuf:"bytes,3,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	// Handle stem without leading @. Pattern: ^[a-z0-9_-]+$, max 32 chars.
+	Nickname string `protobuf:"bytes,3,opt,name=nickname,proto3" json:"nickname,omitempty"`
 	// Optional app installation ID; required for app installation nicknames.
 	InstallationId *string `protobuf:"bytes,4,opt,name=installation_id,json=installationId,proto3,oneof" json:"installation_id,omitempty"`
+	// Optional agent instance handle suffix without leading #. Set only for agent_instance identities.
+	// Pattern: ^[a-z0-9_-]+$, max 32 chars.
+	InstanceSuffix *string `protobuf:"bytes,5,opt,name=instance_suffix,json=instanceSuffix,proto3,oneof" json:"instance_suffix,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -457,6 +467,13 @@ func (x *SetNicknameRequest) GetNickname() string {
 func (x *SetNicknameRequest) GetInstallationId() string {
 	if x != nil && x.InstallationId != nil {
 		return *x.InstallationId
+	}
+	return ""
+}
+
+func (x *SetNicknameRequest) GetInstanceSuffix() string {
+	if x != nil && x.InstanceSuffix != nil {
+		return *x.InstanceSuffix
 	}
 	return ""
 }
@@ -597,7 +614,10 @@ func (*RemoveNicknameResponse) Descriptor() ([]byte, []int) {
 type ResolveNicknameRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	Nickname       string                 `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	// Handle stem, optionally prefixed with @. May include #instance_suffix.
+	Nickname string `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	// Optional agent instance handle suffix without leading #. When set, nickname must not include #.
+	InstanceSuffix *string `protobuf:"bytes,3,opt,name=instance_suffix,json=instanceSuffix,proto3,oneof" json:"instance_suffix,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -646,11 +666,20 @@ func (x *ResolveNicknameRequest) GetNickname() string {
 	return ""
 }
 
+func (x *ResolveNicknameRequest) GetInstanceSuffix() string {
+	if x != nil && x.InstanceSuffix != nil {
+		return *x.InstanceSuffix
+	}
+	return ""
+}
+
 type ResolveNicknameResponse struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	IdentityId     string                 `protobuf:"bytes,1,opt,name=identity_id,json=identityId,proto3" json:"identity_id,omitempty"`
 	IdentityType   IdentityType           `protobuf:"varint,2,opt,name=identity_type,json=identityType,proto3,enum=agynio.api.identity.v1.IdentityType" json:"identity_type,omitempty"`
 	InstallationId *string                `protobuf:"bytes,3,opt,name=installation_id,json=installationId,proto3,oneof" json:"installation_id,omitempty"`
+	// Agent instance handle suffix when identity_type is IDENTITY_TYPE_AGENT_INSTANCE.
+	InstanceSuffix *string `protobuf:"bytes,4,opt,name=instance_suffix,json=instanceSuffix,proto3,oneof" json:"instance_suffix,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -702,6 +731,13 @@ func (x *ResolveNicknameResponse) GetIdentityType() IdentityType {
 func (x *ResolveNicknameResponse) GetInstallationId() string {
 	if x != nil && x.InstallationId != nil {
 		return *x.InstallationId
+	}
+	return ""
+}
+
+func (x *ResolveNicknameResponse) GetInstanceSuffix() string {
+	if x != nil && x.InstanceSuffix != nil {
+		return *x.InstanceSuffix
 	}
 	return ""
 }
@@ -759,11 +795,14 @@ func (x *BatchGetNicknamesRequest) GetIdentityIds() []string {
 }
 
 type NicknameEntry struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	IdentityId    string                 `protobuf:"bytes,1,opt,name=identity_id,json=identityId,proto3" json:"identity_id,omitempty"`
-	Nickname      string                 `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	IdentityId string                 `protobuf:"bytes,1,opt,name=identity_id,json=identityId,proto3" json:"identity_id,omitempty"`
+	// Handle stem without leading @.
+	Nickname string `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	// Agent instance handle suffix without leading #.
+	InstanceSuffix *string `protobuf:"bytes,3,opt,name=instance_suffix,json=instanceSuffix,proto3,oneof" json:"instance_suffix,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *NicknameEntry) Reset() {
@@ -806,6 +845,13 @@ func (x *NicknameEntry) GetIdentityId() string {
 func (x *NicknameEntry) GetNickname() string {
 	if x != nil {
 		return x.Nickname
+	}
+	return ""
+}
+
+func (x *NicknameEntry) GetInstanceSuffix() string {
+	if x != nil && x.InstanceSuffix != nil {
+		return *x.InstanceSuffix
 	}
 	return ""
 }
@@ -876,14 +922,16 @@ const file_agynio_api_identity_v1_identity_proto_rawDesc = "" +
 	"identityId\x12I\n" +
 	"\ridentity_type\x18\x02 \x01(\x0e2$.agynio.api.identity.v1.IdentityTypeR\fidentityType\"d\n" +
 	"\x1dBatchGetIdentityTypesResponse\x12C\n" +
-	"\aentries\x18\x01 \x03(\v2).agynio.api.identity.v1.IdentityTypeEntryR\aentries\"\xbc\x01\n" +
+	"\aentries\x18\x01 \x03(\v2).agynio.api.identity.v1.IdentityTypeEntryR\aentries\"\xfe\x01\n" +
 	"\x12SetNicknameRequest\x12'\n" +
 	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\x12\x1f\n" +
 	"\videntity_id\x18\x02 \x01(\tR\n" +
 	"identityId\x12\x1a\n" +
 	"\bnickname\x18\x03 \x01(\tR\bnickname\x12,\n" +
-	"\x0finstallation_id\x18\x04 \x01(\tH\x00R\x0einstallationId\x88\x01\x01B\x12\n" +
-	"\x10_installation_id\"\x15\n" +
+	"\x0finstallation_id\x18\x04 \x01(\tH\x00R\x0einstallationId\x88\x01\x01\x12,\n" +
+	"\x0finstance_suffix\x18\x05 \x01(\tH\x01R\x0einstanceSuffix\x88\x01\x01B\x12\n" +
+	"\x10_installation_idB\x12\n" +
+	"\x10_instance_suffix\"\x15\n" +
 	"\x13SetNicknameResponse\"\xa3\x01\n" +
 	"\x15RemoveNicknameRequest\x12'\n" +
 	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\x12\x1f\n" +
@@ -891,31 +939,39 @@ const file_agynio_api_identity_v1_identity_proto_rawDesc = "" +
 	"identityId\x12,\n" +
 	"\x0finstallation_id\x18\x03 \x01(\tH\x00R\x0einstallationId\x88\x01\x01B\x12\n" +
 	"\x10_installation_id\"\x18\n" +
-	"\x16RemoveNicknameResponse\"]\n" +
+	"\x16RemoveNicknameResponse\"\x9f\x01\n" +
 	"\x16ResolveNicknameRequest\x12'\n" +
 	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\x12\x1a\n" +
-	"\bnickname\x18\x02 \x01(\tR\bnickname\"\xc7\x01\n" +
+	"\bnickname\x18\x02 \x01(\tR\bnickname\x12,\n" +
+	"\x0finstance_suffix\x18\x03 \x01(\tH\x00R\x0einstanceSuffix\x88\x01\x01B\x12\n" +
+	"\x10_instance_suffix\"\x89\x02\n" +
 	"\x17ResolveNicknameResponse\x12\x1f\n" +
 	"\videntity_id\x18\x01 \x01(\tR\n" +
 	"identityId\x12I\n" +
 	"\ridentity_type\x18\x02 \x01(\x0e2$.agynio.api.identity.v1.IdentityTypeR\fidentityType\x12,\n" +
-	"\x0finstallation_id\x18\x03 \x01(\tH\x00R\x0einstallationId\x88\x01\x01B\x12\n" +
-	"\x10_installation_id\"f\n" +
+	"\x0finstallation_id\x18\x03 \x01(\tH\x00R\x0einstallationId\x88\x01\x01\x12,\n" +
+	"\x0finstance_suffix\x18\x04 \x01(\tH\x01R\x0einstanceSuffix\x88\x01\x01B\x12\n" +
+	"\x10_installation_idB\x12\n" +
+	"\x10_instance_suffix\"f\n" +
 	"\x18BatchGetNicknamesRequest\x12'\n" +
 	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\x12!\n" +
-	"\fidentity_ids\x18\x02 \x03(\tR\videntityIds\"L\n" +
+	"\fidentity_ids\x18\x02 \x03(\tR\videntityIds\"\x8e\x01\n" +
 	"\rNicknameEntry\x12\x1f\n" +
 	"\videntity_id\x18\x01 \x01(\tR\n" +
 	"identityId\x12\x1a\n" +
-	"\bnickname\x18\x02 \x01(\tR\bnickname\"\\\n" +
+	"\bnickname\x18\x02 \x01(\tR\bnickname\x12,\n" +
+	"\x0finstance_suffix\x18\x03 \x01(\tH\x00R\x0einstanceSuffix\x88\x01\x01B\x12\n" +
+	"\x10_instance_suffix\"\\\n" +
 	"\x19BatchGetNicknamesResponse\x12?\n" +
-	"\aentries\x18\x01 \x03(\v2%.agynio.api.identity.v1.NicknameEntryR\aentries*\xac\x01\n" +
+	"\aentries\x18\x01 \x03(\v2%.agynio.api.identity.v1.NicknameEntryR\aentries*\xe9\x01\n" +
 	"\fIdentityType\x12\x1d\n" +
 	"\x19IDENTITY_TYPE_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13IDENTITY_TYPE_AGENT\x10\x01\x12\x18\n" +
 	"\x14IDENTITY_TYPE_RUNNER\x10\x02\x12\x16\n" +
 	"\x12IDENTITY_TYPE_USER\x10\x04\x12\x15\n" +
-	"\x11IDENTITY_TYPE_APP\x10\x05\"\x04\b\x03\x10\x03*\x15IDENTITY_TYPE_CHANNEL2\xca\x06\n" +
+	"\x11IDENTITY_TYPE_APP\x10\x05\x12 \n" +
+	"\x1cIDENTITY_TYPE_AGENT_INSTANCE\x10\x06\x12\x19\n" +
+	"\x15IDENTITY_TYPE_SANDBOX\x10\a\"\x04\b\x03\x10\x03*\x15IDENTITY_TYPE_CHANNEL2\xca\x06\n" +
 	"\x0fIdentityService\x12u\n" +
 	"\x10RegisterIdentity\x12/.agynio.api.identity.v1.RegisterIdentityRequest\x1a0.agynio.api.identity.v1.RegisterIdentityResponse\x12r\n" +
 	"\x0fGetIdentityType\x12..agynio.api.identity.v1.GetIdentityTypeRequest\x1a/.agynio.api.identity.v1.GetIdentityTypeResponse\x12\x84\x01\n" +
@@ -993,7 +1049,9 @@ func file_agynio_api_identity_v1_identity_proto_init() {
 	}
 	file_agynio_api_identity_v1_identity_proto_msgTypes[7].OneofWrappers = []any{}
 	file_agynio_api_identity_v1_identity_proto_msgTypes[9].OneofWrappers = []any{}
+	file_agynio_api_identity_v1_identity_proto_msgTypes[11].OneofWrappers = []any{}
 	file_agynio_api_identity_v1_identity_proto_msgTypes[12].OneofWrappers = []any{}
+	file_agynio_api_identity_v1_identity_proto_msgTypes[14].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

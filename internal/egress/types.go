@@ -7,8 +7,11 @@ import (
 	egressv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/egress/v1"
 )
 
+// AgentContext describes whatever runs behind an overlay identity. A sandbox
+// has no agent, so AgentID is empty and only the environment identifies it.
 type AgentContext struct {
 	AgentID        string
+	EnvironmentID  string
 	WorkloadID     string
 	OrganizationID string
 }

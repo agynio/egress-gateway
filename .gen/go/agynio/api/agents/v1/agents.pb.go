@@ -71,6 +71,114 @@ func (AgentAvailability) EnumDescriptor() ([]byte, []int) {
 	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{0}
 }
 
+// Where an instance's default thread comes from when the platform creates it
+// rather than a person naming one.
+type AgentDefaultThread int32
+
+const (
+	AgentDefaultThread_AGENT_DEFAULT_THREAD_UNSPECIFIED AgentDefaultThread = 0
+	// The thread that added the instance becomes its default. Composes for
+	// delegation: sub-threads are created downward, so the origin is the thread
+	// the instance owes an answer to.
+	AgentDefaultThread_AGENT_DEFAULT_THREAD_ORIGIN AgentDefaultThread = 1
+	// Infer nothing. The instance starts with no default; naming one explicitly
+	// still works.
+	AgentDefaultThread_AGENT_DEFAULT_THREAD_NONE AgentDefaultThread = 2
+)
+
+// Enum value maps for AgentDefaultThread.
+var (
+	AgentDefaultThread_name = map[int32]string{
+		0: "AGENT_DEFAULT_THREAD_UNSPECIFIED",
+		1: "AGENT_DEFAULT_THREAD_ORIGIN",
+		2: "AGENT_DEFAULT_THREAD_NONE",
+	}
+	AgentDefaultThread_value = map[string]int32{
+		"AGENT_DEFAULT_THREAD_UNSPECIFIED": 0,
+		"AGENT_DEFAULT_THREAD_ORIGIN":      1,
+		"AGENT_DEFAULT_THREAD_NONE":        2,
+	}
+)
+
+func (x AgentDefaultThread) Enum() *AgentDefaultThread {
+	p := new(AgentDefaultThread)
+	*p = x
+	return p
+}
+
+func (x AgentDefaultThread) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (AgentDefaultThread) Descriptor() protoreflect.EnumDescriptor {
+	return file_agynio_api_agents_v1_agents_proto_enumTypes[1].Descriptor()
+}
+
+func (AgentDefaultThread) Type() protoreflect.EnumType {
+	return &file_agynio_api_agents_v1_agents_proto_enumTypes[1]
+}
+
+func (x AgentDefaultThread) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use AgentDefaultThread.Descriptor instead.
+func (AgentDefaultThread) EnumDescriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{1}
+}
+
+// What becomes of the text an agent CLI produces at the end of a turn.
+type AgentFinalMessage int32
+
+const (
+	AgentFinalMessage_AGENT_FINAL_MESSAGE_UNSPECIFIED AgentFinalMessage = 0
+	// Dropped. Agents that send explicitly would otherwise post twice.
+	AgentFinalMessage_AGENT_FINAL_MESSAGE_DISCARD AgentFinalMessage = 1
+	// Posted to the instance's default thread.
+	AgentFinalMessage_AGENT_FINAL_MESSAGE_DEFAULT_THREAD AgentFinalMessage = 2
+)
+
+// Enum value maps for AgentFinalMessage.
+var (
+	AgentFinalMessage_name = map[int32]string{
+		0: "AGENT_FINAL_MESSAGE_UNSPECIFIED",
+		1: "AGENT_FINAL_MESSAGE_DISCARD",
+		2: "AGENT_FINAL_MESSAGE_DEFAULT_THREAD",
+	}
+	AgentFinalMessage_value = map[string]int32{
+		"AGENT_FINAL_MESSAGE_UNSPECIFIED":    0,
+		"AGENT_FINAL_MESSAGE_DISCARD":        1,
+		"AGENT_FINAL_MESSAGE_DEFAULT_THREAD": 2,
+	}
+)
+
+func (x AgentFinalMessage) Enum() *AgentFinalMessage {
+	p := new(AgentFinalMessage)
+	*p = x
+	return p
+}
+
+func (x AgentFinalMessage) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (AgentFinalMessage) Descriptor() protoreflect.EnumDescriptor {
+	return file_agynio_api_agents_v1_agents_proto_enumTypes[2].Descriptor()
+}
+
+func (AgentFinalMessage) Type() protoreflect.EnumType {
+	return &file_agynio_api_agents_v1_agents_proto_enumTypes[2]
+}
+
+func (x AgentFinalMessage) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use AgentFinalMessage.Descriptor instead.
+func (AgentFinalMessage) EnumDescriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{2}
+}
+
 type AgentRole int32
 
 const (
@@ -107,11 +215,11 @@ func (x AgentRole) String() string {
 }
 
 func (AgentRole) Descriptor() protoreflect.EnumDescriptor {
-	return file_agynio_api_agents_v1_agents_proto_enumTypes[1].Descriptor()
+	return file_agynio_api_agents_v1_agents_proto_enumTypes[3].Descriptor()
 }
 
 func (AgentRole) Type() protoreflect.EnumType {
-	return &file_agynio_api_agents_v1_agents_proto_enumTypes[1]
+	return &file_agynio_api_agents_v1_agents_proto_enumTypes[3]
 }
 
 func (x AgentRole) Number() protoreflect.EnumNumber {
@@ -120,7 +228,267 @@ func (x AgentRole) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use AgentRole.Descriptor instead.
 func (AgentRole) EnumDescriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{1}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{3}
+}
+
+type EnvironmentAvailability int32
+
+const (
+	EnvironmentAvailability_ENVIRONMENT_AVAILABILITY_UNSPECIFIED EnvironmentAvailability = 0
+	EnvironmentAvailability_ENVIRONMENT_AVAILABILITY_INTERNAL    EnvironmentAvailability = 1
+	EnvironmentAvailability_ENVIRONMENT_AVAILABILITY_PRIVATE     EnvironmentAvailability = 2
+)
+
+// Enum value maps for EnvironmentAvailability.
+var (
+	EnvironmentAvailability_name = map[int32]string{
+		0: "ENVIRONMENT_AVAILABILITY_UNSPECIFIED",
+		1: "ENVIRONMENT_AVAILABILITY_INTERNAL",
+		2: "ENVIRONMENT_AVAILABILITY_PRIVATE",
+	}
+	EnvironmentAvailability_value = map[string]int32{
+		"ENVIRONMENT_AVAILABILITY_UNSPECIFIED": 0,
+		"ENVIRONMENT_AVAILABILITY_INTERNAL":    1,
+		"ENVIRONMENT_AVAILABILITY_PRIVATE":     2,
+	}
+)
+
+func (x EnvironmentAvailability) Enum() *EnvironmentAvailability {
+	p := new(EnvironmentAvailability)
+	*p = x
+	return p
+}
+
+func (x EnvironmentAvailability) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (EnvironmentAvailability) Descriptor() protoreflect.EnumDescriptor {
+	return file_agynio_api_agents_v1_agents_proto_enumTypes[4].Descriptor()
+}
+
+func (EnvironmentAvailability) Type() protoreflect.EnumType {
+	return &file_agynio_api_agents_v1_agents_proto_enumTypes[4]
+}
+
+func (x EnvironmentAvailability) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use EnvironmentAvailability.Descriptor instead.
+func (EnvironmentAvailability) EnumDescriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{4}
+}
+
+type EnvironmentRole int32
+
+const (
+	EnvironmentRole_ENVIRONMENT_ROLE_UNSPECIFIED EnvironmentRole = 0
+	EnvironmentRole_ENVIRONMENT_ROLE_OWNER       EnvironmentRole = 1
+	EnvironmentRole_ENVIRONMENT_ROLE_MAINTAINER  EnvironmentRole = 2
+	EnvironmentRole_ENVIRONMENT_ROLE_USER        EnvironmentRole = 3
+)
+
+// Enum value maps for EnvironmentRole.
+var (
+	EnvironmentRole_name = map[int32]string{
+		0: "ENVIRONMENT_ROLE_UNSPECIFIED",
+		1: "ENVIRONMENT_ROLE_OWNER",
+		2: "ENVIRONMENT_ROLE_MAINTAINER",
+		3: "ENVIRONMENT_ROLE_USER",
+	}
+	EnvironmentRole_value = map[string]int32{
+		"ENVIRONMENT_ROLE_UNSPECIFIED": 0,
+		"ENVIRONMENT_ROLE_OWNER":       1,
+		"ENVIRONMENT_ROLE_MAINTAINER":  2,
+		"ENVIRONMENT_ROLE_USER":        3,
+	}
+)
+
+func (x EnvironmentRole) Enum() *EnvironmentRole {
+	p := new(EnvironmentRole)
+	*p = x
+	return p
+}
+
+func (x EnvironmentRole) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (EnvironmentRole) Descriptor() protoreflect.EnumDescriptor {
+	return file_agynio_api_agents_v1_agents_proto_enumTypes[5].Descriptor()
+}
+
+func (EnvironmentRole) Type() protoreflect.EnumType {
+	return &file_agynio_api_agents_v1_agents_proto_enumTypes[5]
+}
+
+func (x EnvironmentRole) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use EnvironmentRole.Descriptor instead.
+func (EnvironmentRole) EnumDescriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{5}
+}
+
+type AgentInstanceState int32
+
+const (
+	AgentInstanceState_AGENT_INSTANCE_STATE_UNSPECIFIED AgentInstanceState = 0
+	AgentInstanceState_AGENT_INSTANCE_STATE_ACTIVE      AgentInstanceState = 1
+	AgentInstanceState_AGENT_INSTANCE_STATE_PAUSED      AgentInstanceState = 2
+	AgentInstanceState_AGENT_INSTANCE_STATE_TERMINATED  AgentInstanceState = 3
+)
+
+// Enum value maps for AgentInstanceState.
+var (
+	AgentInstanceState_name = map[int32]string{
+		0: "AGENT_INSTANCE_STATE_UNSPECIFIED",
+		1: "AGENT_INSTANCE_STATE_ACTIVE",
+		2: "AGENT_INSTANCE_STATE_PAUSED",
+		3: "AGENT_INSTANCE_STATE_TERMINATED",
+	}
+	AgentInstanceState_value = map[string]int32{
+		"AGENT_INSTANCE_STATE_UNSPECIFIED": 0,
+		"AGENT_INSTANCE_STATE_ACTIVE":      1,
+		"AGENT_INSTANCE_STATE_PAUSED":      2,
+		"AGENT_INSTANCE_STATE_TERMINATED":  3,
+	}
+)
+
+func (x AgentInstanceState) Enum() *AgentInstanceState {
+	p := new(AgentInstanceState)
+	*p = x
+	return p
+}
+
+func (x AgentInstanceState) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (AgentInstanceState) Descriptor() protoreflect.EnumDescriptor {
+	return file_agynio_api_agents_v1_agents_proto_enumTypes[6].Descriptor()
+}
+
+func (AgentInstanceState) Type() protoreflect.EnumType {
+	return &file_agynio_api_agents_v1_agents_proto_enumTypes[6]
+}
+
+func (x AgentInstanceState) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use AgentInstanceState.Descriptor instead.
+func (AgentInstanceState) EnumDescriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{6}
+}
+
+type InboxItemSourceKind int32
+
+const (
+	InboxItemSourceKind_INBOX_ITEM_SOURCE_KIND_UNSPECIFIED InboxItemSourceKind = 0
+	InboxItemSourceKind_INBOX_ITEM_SOURCE_KIND_THREAD      InboxItemSourceKind = 1
+	InboxItemSourceKind_INBOX_ITEM_SOURCE_KIND_DIRECT      InboxItemSourceKind = 2
+)
+
+// Enum value maps for InboxItemSourceKind.
+var (
+	InboxItemSourceKind_name = map[int32]string{
+		0: "INBOX_ITEM_SOURCE_KIND_UNSPECIFIED",
+		1: "INBOX_ITEM_SOURCE_KIND_THREAD",
+		2: "INBOX_ITEM_SOURCE_KIND_DIRECT",
+	}
+	InboxItemSourceKind_value = map[string]int32{
+		"INBOX_ITEM_SOURCE_KIND_UNSPECIFIED": 0,
+		"INBOX_ITEM_SOURCE_KIND_THREAD":      1,
+		"INBOX_ITEM_SOURCE_KIND_DIRECT":      2,
+	}
+)
+
+func (x InboxItemSourceKind) Enum() *InboxItemSourceKind {
+	p := new(InboxItemSourceKind)
+	*p = x
+	return p
+}
+
+func (x InboxItemSourceKind) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (InboxItemSourceKind) Descriptor() protoreflect.EnumDescriptor {
+	return file_agynio_api_agents_v1_agents_proto_enumTypes[7].Descriptor()
+}
+
+func (InboxItemSourceKind) Type() protoreflect.EnumType {
+	return &file_agynio_api_agents_v1_agents_proto_enumTypes[7]
+}
+
+func (x InboxItemSourceKind) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use InboxItemSourceKind.Descriptor instead.
+func (InboxItemSourceKind) EnumDescriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{7}
+}
+
+type SandboxStatus int32
+
+const (
+	SandboxStatus_SANDBOX_STATUS_UNSPECIFIED SandboxStatus = 0
+	SandboxStatus_SANDBOX_STATUS_STARTING    SandboxStatus = 1
+	SandboxStatus_SANDBOX_STATUS_RUNNING     SandboxStatus = 2
+	SandboxStatus_SANDBOX_STATUS_STOPPED     SandboxStatus = 3
+	SandboxStatus_SANDBOX_STATUS_FAILED      SandboxStatus = 4
+	SandboxStatus_SANDBOX_STATUS_TERMINATED  SandboxStatus = 5
+)
+
+// Enum value maps for SandboxStatus.
+var (
+	SandboxStatus_name = map[int32]string{
+		0: "SANDBOX_STATUS_UNSPECIFIED",
+		1: "SANDBOX_STATUS_STARTING",
+		2: "SANDBOX_STATUS_RUNNING",
+		3: "SANDBOX_STATUS_STOPPED",
+		4: "SANDBOX_STATUS_FAILED",
+		5: "SANDBOX_STATUS_TERMINATED",
+	}
+	SandboxStatus_value = map[string]int32{
+		"SANDBOX_STATUS_UNSPECIFIED": 0,
+		"SANDBOX_STATUS_STARTING":    1,
+		"SANDBOX_STATUS_RUNNING":     2,
+		"SANDBOX_STATUS_STOPPED":     3,
+		"SANDBOX_STATUS_FAILED":      4,
+		"SANDBOX_STATUS_TERMINATED":  5,
+	}
+)
+
+func (x SandboxStatus) Enum() *SandboxStatus {
+	p := new(SandboxStatus)
+	*p = x
+	return p
+}
+
+func (x SandboxStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SandboxStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_agynio_api_agents_v1_agents_proto_enumTypes[8].Descriptor()
+}
+
+func (SandboxStatus) Type() protoreflect.EnumType {
+	return &file_agynio_api_agents_v1_agents_proto_enumTypes[8]
+}
+
+func (x SandboxStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use SandboxStatus.Descriptor instead.
+func (SandboxStatus) EnumDescriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{8}
 }
 
 // Metadata shared by every agent resource.
@@ -254,24 +622,42 @@ func (x *ComputeResources) GetLimitsMemory() string {
 }
 
 type Agent struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Meta           *EntityMeta            `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
-	Name           string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Role           string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
-	Model          string                 `protobuf:"bytes,4,opt,name=model,proto3" json:"model,omitempty"` // UUID
-	Description    string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
-	Configuration  string                 `protobuf:"bytes,6,opt,name=configuration,proto3" json:"configuration,omitempty"`
-	Image          string                 `protobuf:"bytes,7,opt,name=image,proto3" json:"image,omitempty"`
-	Resources      *ComputeResources      `protobuf:"bytes,8,opt,name=resources,proto3" json:"resources,omitempty"`
-	InitImage      string                 `protobuf:"bytes,9,opt,name=init_image,json=initImage,proto3" json:"init_image,omitempty"`
-	OrganizationId string                 `protobuf:"bytes,10,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	Nickname       string                 `protobuf:"bytes,11,opt,name=nickname,proto3" json:"nickname,omitempty"`
-	IdleTimeout    *string                `protobuf:"bytes,12,opt,name=idle_timeout,json=idleTimeout,proto3,oneof" json:"idle_timeout,omitempty"` // Go duration string (e.g., "30s", "5m", "1h").
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Meta          *EntityMeta            `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Role          string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
+	Model         string                 `protobuf:"bytes,4,opt,name=model,proto3" json:"model,omitempty"` // UUID
+	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	Configuration string                 `protobuf:"bytes,6,opt,name=configuration,proto3" json:"configuration,omitempty"`
+	// Superseded by environment_id: the image and compute an agent runs with are
+	// an environment's to define, so agents and sandboxes can share one runtime
+	// definition instead of each carrying its own copy.
+	//
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	Image string `protobuf:"bytes,7,opt,name=image,proto3" json:"image,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	Resources      *ComputeResources `protobuf:"bytes,8,opt,name=resources,proto3" json:"resources,omitempty"`
+	InitImage      string            `protobuf:"bytes,9,opt,name=init_image,json=initImage,proto3" json:"init_image,omitempty"`
+	OrganizationId string            `protobuf:"bytes,10,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	Nickname       string            `protobuf:"bytes,11,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	IdleTimeout    *string           `protobuf:"bytes,12,opt,name=idle_timeout,json=idleTimeout,proto3,oneof" json:"idle_timeout,omitempty"` // Go duration string (e.g., "30s", "5m", "1h").
 	// Capabilities supported by this agent. Free-form strings (e.g., "privileged", "dind").
-	Capabilities  []string          `protobuf:"bytes,13,rep,name=capabilities,proto3" json:"capabilities,omitempty"`
-	Availability  AgentAvailability `protobuf:"varint,14,opt,name=availability,proto3,enum=agynio.api.agents.v1.AgentAvailability" json:"availability,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Capabilities []string          `protobuf:"bytes,13,rep,name=capabilities,proto3" json:"capabilities,omitempty"`
+	Availability AgentAvailability `protobuf:"varint,14,opt,name=availability,proto3,enum=agynio.api.agents.v1.AgentAvailability" json:"availability,omitempty"`
+	// The environment this agent runs in, supplying its image and compute.
+	// Empty on agents created before environments existed, which still carry
+	// the deprecated inline image and resources.
+	EnvironmentId string `protobuf:"bytes,15,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"` // UUID
+	// Governs the automatic creation path only; naming a default thread
+	// explicitly is always allowed. Defaults to ORIGIN.
+	DefaultThread AgentDefaultThread `protobuf:"varint,16,opt,name=default_thread,json=defaultThread,proto3,enum=agynio.api.agents.v1.AgentDefaultThread" json:"default_thread,omitempty"`
+	// Whether the turn's final text is a deliverable or an internal artifact --
+	// a property of how the agent is written, so it lives on the class rather
+	// than the instance. Defaults to DISCARD.
+	FinalMessage    AgentFinalMessage `protobuf:"varint,17,opt,name=final_message,json=finalMessage,proto3,enum=agynio.api.agents.v1.AgentFinalMessage" json:"final_message,omitempty"`
+	InstanceIdleTtl *string           `protobuf:"bytes,18,opt,name=instance_idle_ttl,json=instanceIdleTtl,proto3,oneof" json:"instance_idle_ttl,omitempty"` // Go duration string (e.g., "30m", "6h").
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *Agent) Reset() {
@@ -346,6 +732,7 @@ func (x *Agent) GetConfiguration() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *Agent) GetImage() string {
 	if x != nil {
 		return x.Image
@@ -353,6 +740,7 @@ func (x *Agent) GetImage() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *Agent) GetResources() *ComputeResources {
 	if x != nil {
 		return x.Resources
@@ -402,24 +790,59 @@ func (x *Agent) GetAvailability() AgentAvailability {
 	return AgentAvailability_AGENT_AVAILABILITY_UNSPECIFIED
 }
 
+func (x *Agent) GetEnvironmentId() string {
+	if x != nil {
+		return x.EnvironmentId
+	}
+	return ""
+}
+
+func (x *Agent) GetDefaultThread() AgentDefaultThread {
+	if x != nil {
+		return x.DefaultThread
+	}
+	return AgentDefaultThread_AGENT_DEFAULT_THREAD_UNSPECIFIED
+}
+
+func (x *Agent) GetFinalMessage() AgentFinalMessage {
+	if x != nil {
+		return x.FinalMessage
+	}
+	return AgentFinalMessage_AGENT_FINAL_MESSAGE_UNSPECIFIED
+}
+
+func (x *Agent) GetInstanceIdleTtl() string {
+	if x != nil && x.InstanceIdleTtl != nil {
+		return *x.InstanceIdleTtl
+	}
+	return ""
+}
+
 type CreateAgentRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Name           string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Role           string                 `protobuf:"bytes,2,opt,name=role,proto3" json:"role,omitempty"`
-	Model          string                 `protobuf:"bytes,3,opt,name=model,proto3" json:"model,omitempty"` // UUID
-	Description    string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
-	Configuration  string                 `protobuf:"bytes,5,opt,name=configuration,proto3" json:"configuration,omitempty"`
-	Image          string                 `protobuf:"bytes,6,opt,name=image,proto3" json:"image,omitempty"`
-	Resources      *ComputeResources      `protobuf:"bytes,7,opt,name=resources,proto3" json:"resources,omitempty"`
-	OrganizationId string                 `protobuf:"bytes,8,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	InitImage      string                 `protobuf:"bytes,9,opt,name=init_image,json=initImage,proto3" json:"init_image,omitempty"`
-	Nickname       string                 `protobuf:"bytes,10,opt,name=nickname,proto3" json:"nickname,omitempty"`
-	IdleTimeout    *string                `protobuf:"bytes,11,opt,name=idle_timeout,json=idleTimeout,proto3,oneof" json:"idle_timeout,omitempty"` // Go duration string (e.g., "30s", "5m", "1h").
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Role          string                 `protobuf:"bytes,2,opt,name=role,proto3" json:"role,omitempty"`
+	Model         string                 `protobuf:"bytes,3,opt,name=model,proto3" json:"model,omitempty"` // UUID
+	Description   string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	Configuration string                 `protobuf:"bytes,5,opt,name=configuration,proto3" json:"configuration,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	Image string `protobuf:"bytes,6,opt,name=image,proto3" json:"image,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	Resources      *ComputeResources `protobuf:"bytes,7,opt,name=resources,proto3" json:"resources,omitempty"`
+	OrganizationId string            `protobuf:"bytes,8,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	InitImage      string            `protobuf:"bytes,9,opt,name=init_image,json=initImage,proto3" json:"init_image,omitempty"`
+	Nickname       string            `protobuf:"bytes,10,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	IdleTimeout    *string           `protobuf:"bytes,11,opt,name=idle_timeout,json=idleTimeout,proto3,oneof" json:"idle_timeout,omitempty"` // Go duration string (e.g., "30s", "5m", "1h").
 	// Capabilities supported by this agent. Free-form strings (e.g., "privileged", "dind").
-	Capabilities  []string          `protobuf:"bytes,12,rep,name=capabilities,proto3" json:"capabilities,omitempty"`
-	Availability  AgentAvailability `protobuf:"varint,13,opt,name=availability,proto3,enum=agynio.api.agents.v1.AgentAvailability" json:"availability,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Capabilities []string          `protobuf:"bytes,12,rep,name=capabilities,proto3" json:"capabilities,omitempty"`
+	Availability AgentAvailability `protobuf:"varint,13,opt,name=availability,proto3,enum=agynio.api.agents.v1.AgentAvailability" json:"availability,omitempty"`
+	// Preferred over image and resources, which are deprecated.
+	EnvironmentId   string             `protobuf:"bytes,14,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"` // UUID
+	DefaultThread   AgentDefaultThread `protobuf:"varint,15,opt,name=default_thread,json=defaultThread,proto3,enum=agynio.api.agents.v1.AgentDefaultThread" json:"default_thread,omitempty"`
+	FinalMessage    AgentFinalMessage  `protobuf:"varint,16,opt,name=final_message,json=finalMessage,proto3,enum=agynio.api.agents.v1.AgentFinalMessage" json:"final_message,omitempty"`
+	InstanceIdleTtl *string            `protobuf:"bytes,17,opt,name=instance_idle_ttl,json=instanceIdleTtl,proto3,oneof" json:"instance_idle_ttl,omitempty"` // Go duration string (e.g., "30m", "6h").
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *CreateAgentRequest) Reset() {
@@ -487,6 +910,7 @@ func (x *CreateAgentRequest) GetConfiguration() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *CreateAgentRequest) GetImage() string {
 	if x != nil {
 		return x.Image
@@ -494,6 +918,7 @@ func (x *CreateAgentRequest) GetImage() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *CreateAgentRequest) GetResources() *ComputeResources {
 	if x != nil {
 		return x.Resources
@@ -541,6 +966,34 @@ func (x *CreateAgentRequest) GetAvailability() AgentAvailability {
 		return x.Availability
 	}
 	return AgentAvailability_AGENT_AVAILABILITY_UNSPECIFIED
+}
+
+func (x *CreateAgentRequest) GetEnvironmentId() string {
+	if x != nil {
+		return x.EnvironmentId
+	}
+	return ""
+}
+
+func (x *CreateAgentRequest) GetDefaultThread() AgentDefaultThread {
+	if x != nil {
+		return x.DefaultThread
+	}
+	return AgentDefaultThread_AGENT_DEFAULT_THREAD_UNSPECIFIED
+}
+
+func (x *CreateAgentRequest) GetFinalMessage() AgentFinalMessage {
+	if x != nil {
+		return x.FinalMessage
+	}
+	return AgentFinalMessage_AGENT_FINAL_MESSAGE_UNSPECIFIED
+}
+
+func (x *CreateAgentRequest) GetInstanceIdleTtl() string {
+	if x != nil && x.InstanceIdleTtl != nil {
+		return *x.InstanceIdleTtl
+	}
+	return ""
 }
 
 type CreateAgentResponse struct {
@@ -720,11 +1173,14 @@ func (x *ResolveAgentIdentityRequest) GetIdentityId() string {
 }
 
 type ResolveAgentIdentityResponse struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	AgentId        string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
-	OrganizationId string                 `protobuf:"bytes,2,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Agent class ID for class identities and the owning class ID for instance identities.
+	AgentId        string `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	OrganizationId string `protobuf:"bytes,2,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	// Set only when identity_id resolves to an agent_instance identity.
+	AgentInstanceId *string `protobuf:"bytes,3,opt,name=agent_instance_id,json=agentInstanceId,proto3,oneof" json:"agent_instance_id,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *ResolveAgentIdentityResponse) Reset() {
@@ -771,6 +1227,13 @@ func (x *ResolveAgentIdentityResponse) GetOrganizationId() string {
 	return ""
 }
 
+func (x *ResolveAgentIdentityResponse) GetAgentInstanceId() string {
+	if x != nil && x.AgentInstanceId != nil {
+		return *x.AgentInstanceId
+	}
+	return ""
+}
+
 type UpdateAgentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
@@ -779,16 +1242,22 @@ type UpdateAgentRequest struct {
 	Model         *string                `protobuf:"bytes,4,opt,name=model,proto3,oneof" json:"model,omitempty"`
 	Description   *string                `protobuf:"bytes,5,opt,name=description,proto3,oneof" json:"description,omitempty"`
 	Configuration *string                `protobuf:"bytes,6,opt,name=configuration,proto3,oneof" json:"configuration,omitempty"`
-	Image         *string                `protobuf:"bytes,7,opt,name=image,proto3,oneof" json:"image,omitempty"`
-	Resources     *ComputeResources      `protobuf:"bytes,8,opt,name=resources,proto3,oneof" json:"resources,omitempty"`
-	InitImage     *string                `protobuf:"bytes,9,opt,name=init_image,json=initImage,proto3,oneof" json:"init_image,omitempty"`
-	Nickname      *string                `protobuf:"bytes,10,opt,name=nickname,proto3,oneof" json:"nickname,omitempty"`
-	IdleTimeout   *string                `protobuf:"bytes,11,opt,name=idle_timeout,json=idleTimeout,proto3,oneof" json:"idle_timeout,omitempty"` // Go duration string (e.g., "30s", "5m", "1h").
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	Image *string `protobuf:"bytes,7,opt,name=image,proto3,oneof" json:"image,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	Resources   *ComputeResources `protobuf:"bytes,8,opt,name=resources,proto3,oneof" json:"resources,omitempty"`
+	InitImage   *string           `protobuf:"bytes,9,opt,name=init_image,json=initImage,proto3,oneof" json:"init_image,omitempty"`
+	Nickname    *string           `protobuf:"bytes,10,opt,name=nickname,proto3,oneof" json:"nickname,omitempty"`
+	IdleTimeout *string           `protobuf:"bytes,11,opt,name=idle_timeout,json=idleTimeout,proto3,oneof" json:"idle_timeout,omitempty"` // Go duration string (e.g., "30s", "5m", "1h").
 	// Capabilities replace the existing list; an empty list clears all capabilities.
-	Capabilities  []string           `protobuf:"bytes,12,rep,name=capabilities,proto3" json:"capabilities,omitempty"`
-	Availability  *AgentAvailability `protobuf:"varint,13,opt,name=availability,proto3,enum=agynio.api.agents.v1.AgentAvailability,oneof" json:"availability,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Capabilities    []string            `protobuf:"bytes,12,rep,name=capabilities,proto3" json:"capabilities,omitempty"`
+	Availability    *AgentAvailability  `protobuf:"varint,13,opt,name=availability,proto3,enum=agynio.api.agents.v1.AgentAvailability,oneof" json:"availability,omitempty"`
+	EnvironmentId   *string             `protobuf:"bytes,14,opt,name=environment_id,json=environmentId,proto3,oneof" json:"environment_id,omitempty"` // UUID
+	DefaultThread   *AgentDefaultThread `protobuf:"varint,15,opt,name=default_thread,json=defaultThread,proto3,enum=agynio.api.agents.v1.AgentDefaultThread,oneof" json:"default_thread,omitempty"`
+	FinalMessage    *AgentFinalMessage  `protobuf:"varint,16,opt,name=final_message,json=finalMessage,proto3,enum=agynio.api.agents.v1.AgentFinalMessage,oneof" json:"final_message,omitempty"`
+	InstanceIdleTtl *string             `protobuf:"bytes,17,opt,name=instance_idle_ttl,json=instanceIdleTtl,proto3,oneof" json:"instance_idle_ttl,omitempty"` // Go duration string (e.g., "30m", "6h").
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *UpdateAgentRequest) Reset() {
@@ -863,6 +1332,7 @@ func (x *UpdateAgentRequest) GetConfiguration() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *UpdateAgentRequest) GetImage() string {
 	if x != nil && x.Image != nil {
 		return *x.Image
@@ -870,6 +1340,7 @@ func (x *UpdateAgentRequest) GetImage() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *UpdateAgentRequest) GetResources() *ComputeResources {
 	if x != nil {
 		return x.Resources
@@ -910,6 +1381,34 @@ func (x *UpdateAgentRequest) GetAvailability() AgentAvailability {
 		return *x.Availability
 	}
 	return AgentAvailability_AGENT_AVAILABILITY_UNSPECIFIED
+}
+
+func (x *UpdateAgentRequest) GetEnvironmentId() string {
+	if x != nil && x.EnvironmentId != nil {
+		return *x.EnvironmentId
+	}
+	return ""
+}
+
+func (x *UpdateAgentRequest) GetDefaultThread() AgentDefaultThread {
+	if x != nil && x.DefaultThread != nil {
+		return *x.DefaultThread
+	}
+	return AgentDefaultThread_AGENT_DEFAULT_THREAD_UNSPECIFIED
+}
+
+func (x *UpdateAgentRequest) GetFinalMessage() AgentFinalMessage {
+	if x != nil && x.FinalMessage != nil {
+		return *x.FinalMessage
+	}
+	return AgentFinalMessage_AGENT_FINAL_MESSAGE_UNSPECIFIED
+}
+
+func (x *UpdateAgentRequest) GetInstanceIdleTtl() string {
+	if x != nil && x.InstanceIdleTtl != nil {
+		return *x.InstanceIdleTtl
+	}
+	return ""
 }
 
 type UpdateAgentResponse struct {
@@ -1576,21 +2075,3762 @@ func (x *ListMyAgentRolesResponse) GetAssignments() []*AgentRoleAssignment {
 	return nil
 }
 
-type Volume struct {
+type AgentInstance struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Meta           *EntityMeta            `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
+	AgentId        string                 `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`                      // UUID of the agent class.
+	OrganizationId string                 `protobuf:"bytes,3,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"` // UUID
+	// User-chosen suffix, when explicitly supplied at creation time.
+	Label *string `protobuf:"bytes,4,opt,name=label,proto3,oneof" json:"label,omitempty"`
+	// Effective handle suffix without leading #. Generated when label is unset.
+	Suffix         string                 `protobuf:"bytes,5,opt,name=suffix,proto3" json:"suffix,omitempty"`
+	State          AgentInstanceState     `protobuf:"varint,6,opt,name=state,proto3,enum=agynio.api.agents.v1.AgentInstanceState" json:"state,omitempty"`
+	PauseReason    *string                `protobuf:"bytes,7,opt,name=pause_reason,json=pauseReason,proto3,oneof" json:"pause_reason,omitempty"`
+	LastActivityAt *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=last_activity_at,json=lastActivityAt,proto3" json:"last_activity_at,omitempty"`
+	// Class handle stem without leading @.
+	Nickname string `protobuf:"bytes,9,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	// Full instance handle in @nickname#suffix form.
+	Handle string `protobuf:"bytes,10,opt,name=handle,proto3" json:"handle,omitempty"`
+	// Where this instance's untargeted messages go. Unset when the class asked
+	// for no inference and nobody has named one since.
+	DefaultThreadId *string `protobuf:"bytes,11,opt,name=default_thread_id,json=defaultThreadId,proto3,oneof" json:"default_thread_id,omitempty"` // UUID
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *AgentInstance) Reset() {
+	*x = AgentInstance{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AgentInstance) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AgentInstance) ProtoMessage() {}
+
+func (x *AgentInstance) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AgentInstance.ProtoReflect.Descriptor instead.
+func (*AgentInstance) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *AgentInstance) GetMeta() *EntityMeta {
+	if x != nil {
+		return x.Meta
+	}
+	return nil
+}
+
+func (x *AgentInstance) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+func (x *AgentInstance) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+func (x *AgentInstance) GetLabel() string {
+	if x != nil && x.Label != nil {
+		return *x.Label
+	}
+	return ""
+}
+
+func (x *AgentInstance) GetSuffix() string {
+	if x != nil {
+		return x.Suffix
+	}
+	return ""
+}
+
+func (x *AgentInstance) GetState() AgentInstanceState {
+	if x != nil {
+		return x.State
+	}
+	return AgentInstanceState_AGENT_INSTANCE_STATE_UNSPECIFIED
+}
+
+func (x *AgentInstance) GetPauseReason() string {
+	if x != nil && x.PauseReason != nil {
+		return *x.PauseReason
+	}
+	return ""
+}
+
+func (x *AgentInstance) GetLastActivityAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LastActivityAt
+	}
+	return nil
+}
+
+func (x *AgentInstance) GetNickname() string {
+	if x != nil {
+		return x.Nickname
+	}
+	return ""
+}
+
+func (x *AgentInstance) GetHandle() string {
+	if x != nil {
+		return x.Handle
+	}
+	return ""
+}
+
+func (x *AgentInstance) GetDefaultThreadId() string {
+	if x != nil && x.DefaultThreadId != nil {
+		return *x.DefaultThreadId
+	}
+	return ""
+}
+
+// What the caller knows about why an instance is being created. These are
+// facts to report, not instructions: the class policy decides what they mean.
+type CreateInstanceContext struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The thread whose participant list the instance was added to, when that is
+	// what created it.
+	ThreadId      *string `protobuf:"bytes,1,opt,name=thread_id,json=threadId,proto3,oneof" json:"thread_id,omitempty"` // UUID
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateInstanceContext) Reset() {
+	*x = CreateInstanceContext{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateInstanceContext) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateInstanceContext) ProtoMessage() {}
+
+func (x *CreateInstanceContext) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateInstanceContext.ProtoReflect.Descriptor instead.
+func (*CreateInstanceContext) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *CreateInstanceContext) GetThreadId() string {
+	if x != nil && x.ThreadId != nil {
+		return *x.ThreadId
+	}
+	return ""
+}
+
+type CreateInstanceRequest struct {
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	AgentId string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"` // UUID of the agent class.
+	// Optional user-chosen handle suffix without leading #.
+	Label *string `protobuf:"bytes,2,opt,name=label,proto3,oneof" json:"label,omitempty"`
+	// Circumstances of creation, for the class policy to act on.
+	Context *CreateInstanceContext `protobuf:"bytes,3,opt,name=context,proto3" json:"context,omitempty"`
+	// Names the default thread outright, bypassing the class policy. A
+	// deliberate act by a caller who knows the destination.
+	DefaultThreadId *string `protobuf:"bytes,4,opt,name=default_thread_id,json=defaultThreadId,proto3,oneof" json:"default_thread_id,omitempty"` // UUID
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *CreateInstanceRequest) Reset() {
+	*x = CreateInstanceRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateInstanceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateInstanceRequest) ProtoMessage() {}
+
+func (x *CreateInstanceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateInstanceRequest.ProtoReflect.Descriptor instead.
+func (*CreateInstanceRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *CreateInstanceRequest) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+func (x *CreateInstanceRequest) GetLabel() string {
+	if x != nil && x.Label != nil {
+		return *x.Label
+	}
+	return ""
+}
+
+func (x *CreateInstanceRequest) GetContext() *CreateInstanceContext {
+	if x != nil {
+		return x.Context
+	}
+	return nil
+}
+
+func (x *CreateInstanceRequest) GetDefaultThreadId() string {
+	if x != nil && x.DefaultThreadId != nil {
+		return *x.DefaultThreadId
+	}
+	return ""
+}
+
+type CreateInstanceResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Meta          *EntityMeta            `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
-	Persistent    bool                   `protobuf:"varint,2,opt,name=persistent,proto3" json:"persistent,omitempty"`
-	MountPath     string                 `protobuf:"bytes,3,opt,name=mount_path,json=mountPath,proto3" json:"mount_path,omitempty"`
-	Size          string                 `protobuf:"bytes,4,opt,name=size,proto3" json:"size,omitempty"`
-	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
-	Ttl           *string                `protobuf:"bytes,6,opt,name=ttl,proto3,oneof" json:"ttl,omitempty"`
+	Instance      *AgentInstance         `protobuf:"bytes,1,opt,name=instance,proto3" json:"instance,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateInstanceResponse) Reset() {
+	*x = CreateInstanceResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateInstanceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateInstanceResponse) ProtoMessage() {}
+
+func (x *CreateInstanceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateInstanceResponse.ProtoReflect.Descriptor instead.
+func (*CreateInstanceResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *CreateInstanceResponse) GetInstance() *AgentInstance {
+	if x != nil {
+		return x.Instance
+	}
+	return nil
+}
+
+type GetInstanceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetInstanceRequest) Reset() {
+	*x = GetInstanceRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetInstanceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetInstanceRequest) ProtoMessage() {}
+
+func (x *GetInstanceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetInstanceRequest.ProtoReflect.Descriptor instead.
+func (*GetInstanceRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *GetInstanceRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type GetInstanceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Instance      *AgentInstance         `protobuf:"bytes,1,opt,name=instance,proto3" json:"instance,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetInstanceResponse) Reset() {
+	*x = GetInstanceResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetInstanceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetInstanceResponse) ProtoMessage() {}
+
+func (x *GetInstanceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetInstanceResponse.ProtoReflect.Descriptor instead.
+func (*GetInstanceResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *GetInstanceResponse) GetInstance() *AgentInstance {
+	if x != nil {
+		return x.Instance
+	}
+	return nil
+}
+
+type SetInstanceDefaultThreadRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID of the agent instance.
+	// Unset clears the default, leaving the instance with no destination for
+	// untargeted messages.
+	DefaultThreadId *string `protobuf:"bytes,2,opt,name=default_thread_id,json=defaultThreadId,proto3,oneof" json:"default_thread_id,omitempty"` // UUID
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *SetInstanceDefaultThreadRequest) Reset() {
+	*x = SetInstanceDefaultThreadRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetInstanceDefaultThreadRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetInstanceDefaultThreadRequest) ProtoMessage() {}
+
+func (x *SetInstanceDefaultThreadRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetInstanceDefaultThreadRequest.ProtoReflect.Descriptor instead.
+func (*SetInstanceDefaultThreadRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *SetInstanceDefaultThreadRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *SetInstanceDefaultThreadRequest) GetDefaultThreadId() string {
+	if x != nil && x.DefaultThreadId != nil {
+		return *x.DefaultThreadId
+	}
+	return ""
+}
+
+type SetInstanceDefaultThreadResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Instance      *AgentInstance         `protobuf:"bytes,1,opt,name=instance,proto3" json:"instance,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetInstanceDefaultThreadResponse) Reset() {
+	*x = SetInstanceDefaultThreadResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetInstanceDefaultThreadResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetInstanceDefaultThreadResponse) ProtoMessage() {}
+
+func (x *SetInstanceDefaultThreadResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetInstanceDefaultThreadResponse.ProtoReflect.Descriptor instead.
+func (*SetInstanceDefaultThreadResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *SetInstanceDefaultThreadResponse) GetInstance() *AgentInstance {
+	if x != nil {
+		return x.Instance
+	}
+	return nil
+}
+
+type ListInstancesRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	PageSize       int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken      string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	OrganizationId string                 `protobuf:"bytes,3,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"` // UUID
+	AgentId        *string                `protobuf:"bytes,4,opt,name=agent_id,json=agentId,proto3,oneof" json:"agent_id,omitempty"`                // UUID of the agent class.
+	StateIn        []AgentInstanceState   `protobuf:"varint,5,rep,packed,name=state_in,json=stateIn,proto3,enum=agynio.api.agents.v1.AgentInstanceState" json:"state_in,omitempty"`
+	// When set, filters to instances that do or do not have unacked inbox items.
+	HasUnacked    *bool `protobuf:"varint,6,opt,name=has_unacked,json=hasUnacked,proto3,oneof" json:"has_unacked,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListInstancesRequest) Reset() {
+	*x = ListInstancesRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListInstancesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListInstancesRequest) ProtoMessage() {}
+
+func (x *ListInstancesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListInstancesRequest.ProtoReflect.Descriptor instead.
+func (*ListInstancesRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *ListInstancesRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListInstancesRequest) GetPageToken() string {
+	if x != nil {
+		return x.PageToken
+	}
+	return ""
+}
+
+func (x *ListInstancesRequest) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+func (x *ListInstancesRequest) GetAgentId() string {
+	if x != nil && x.AgentId != nil {
+		return *x.AgentId
+	}
+	return ""
+}
+
+func (x *ListInstancesRequest) GetStateIn() []AgentInstanceState {
+	if x != nil {
+		return x.StateIn
+	}
+	return nil
+}
+
+func (x *ListInstancesRequest) GetHasUnacked() bool {
+	if x != nil && x.HasUnacked != nil {
+		return *x.HasUnacked
+	}
+	return false
+}
+
+type ListInstancesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Instances     []*AgentInstance       `protobuf:"bytes,1,rep,name=instances,proto3" json:"instances,omitempty"`
+	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListInstancesResponse) Reset() {
+	*x = ListInstancesResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListInstancesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListInstancesResponse) ProtoMessage() {}
+
+func (x *ListInstancesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListInstancesResponse.ProtoReflect.Descriptor instead.
+func (*ListInstancesResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *ListInstancesResponse) GetInstances() []*AgentInstance {
+	if x != nil {
+		return x.Instances
+	}
+	return nil
+}
+
+func (x *ListInstancesResponse) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
+}
+
+type PauseInstanceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
+	PauseReason   string                 `protobuf:"bytes,2,opt,name=pause_reason,json=pauseReason,proto3" json:"pause_reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PauseInstanceRequest) Reset() {
+	*x = PauseInstanceRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PauseInstanceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PauseInstanceRequest) ProtoMessage() {}
+
+func (x *PauseInstanceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PauseInstanceRequest.ProtoReflect.Descriptor instead.
+func (*PauseInstanceRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *PauseInstanceRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *PauseInstanceRequest) GetPauseReason() string {
+	if x != nil {
+		return x.PauseReason
+	}
+	return ""
+}
+
+type PauseInstanceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Instance      *AgentInstance         `protobuf:"bytes,1,opt,name=instance,proto3" json:"instance,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PauseInstanceResponse) Reset() {
+	*x = PauseInstanceResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PauseInstanceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PauseInstanceResponse) ProtoMessage() {}
+
+func (x *PauseInstanceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PauseInstanceResponse.ProtoReflect.Descriptor instead.
+func (*PauseInstanceResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *PauseInstanceResponse) GetInstance() *AgentInstance {
+	if x != nil {
+		return x.Instance
+	}
+	return nil
+}
+
+type ResumeInstanceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResumeInstanceRequest) Reset() {
+	*x = ResumeInstanceRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResumeInstanceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResumeInstanceRequest) ProtoMessage() {}
+
+func (x *ResumeInstanceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResumeInstanceRequest.ProtoReflect.Descriptor instead.
+func (*ResumeInstanceRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *ResumeInstanceRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type ResumeInstanceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Instance      *AgentInstance         `protobuf:"bytes,1,opt,name=instance,proto3" json:"instance,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResumeInstanceResponse) Reset() {
+	*x = ResumeInstanceResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResumeInstanceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResumeInstanceResponse) ProtoMessage() {}
+
+func (x *ResumeInstanceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResumeInstanceResponse.ProtoReflect.Descriptor instead.
+func (*ResumeInstanceResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *ResumeInstanceResponse) GetInstance() *AgentInstance {
+	if x != nil {
+		return x.Instance
+	}
+	return nil
+}
+
+type DeleteInstanceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteInstanceRequest) Reset() {
+	*x = DeleteInstanceRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[38]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteInstanceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteInstanceRequest) ProtoMessage() {}
+
+func (x *DeleteInstanceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[38]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteInstanceRequest.ProtoReflect.Descriptor instead.
+func (*DeleteInstanceRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *DeleteInstanceRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type DeleteInstanceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Instance      *AgentInstance         `protobuf:"bytes,1,opt,name=instance,proto3" json:"instance,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteInstanceResponse) Reset() {
+	*x = DeleteInstanceResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteInstanceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteInstanceResponse) ProtoMessage() {}
+
+func (x *DeleteInstanceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteInstanceResponse.ProtoReflect.Descriptor instead.
+func (*DeleteInstanceResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *DeleteInstanceResponse) GetInstance() *AgentInstance {
+	if x != nil {
+		return x.Instance
+	}
+	return nil
+}
+
+type InboxItem struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`                                                    // UUID
+	AgentInstanceId string                 `protobuf:"bytes,2,opt,name=agent_instance_id,json=agentInstanceId,proto3" json:"agent_instance_id,omitempty"` // UUID
+	SourceKind      InboxItemSourceKind    `protobuf:"varint,3,opt,name=source_kind,json=sourceKind,proto3,enum=agynio.api.agents.v1.InboxItemSourceKind" json:"source_kind,omitempty"`
+	// Set only when source_kind is INBOX_ITEM_SOURCE_KIND_THREAD.
+	ThreadId *string `protobuf:"bytes,4,opt,name=thread_id,json=threadId,proto3,oneof" json:"thread_id,omitempty"` // UUID
+	// Set only when source_kind is INBOX_ITEM_SOURCE_KIND_THREAD.
+	MessageId     *string                `protobuf:"bytes,5,opt,name=message_id,json=messageId,proto3,oneof" json:"message_id,omitempty"` // UUID
+	SenderId      string                 `protobuf:"bytes,6,opt,name=sender_id,json=senderId,proto3" json:"sender_id,omitempty"`          // Identity UUID
+	Body          string                 `protobuf:"bytes,7,opt,name=body,proto3" json:"body,omitempty"`
+	FileIds       []string               `protobuf:"bytes,8,rep,name=file_ids,json=fileIds,proto3" json:"file_ids,omitempty"` // UUIDs
+	AcceptedAt    *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=accepted_at,json=acceptedAt,proto3" json:"accepted_at,omitempty"`
+	AckedAt       *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=acked_at,json=ackedAt,proto3,oneof" json:"acked_at,omitempty"`
+	SenderHandle  *string                `protobuf:"bytes,11,opt,name=sender_handle,json=senderHandle,proto3,oneof" json:"sender_handle,omitempty"` // Handle stem without leading @
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *InboxItem) Reset() {
+	*x = InboxItem{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *InboxItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*InboxItem) ProtoMessage() {}
+
+func (x *InboxItem) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use InboxItem.ProtoReflect.Descriptor instead.
+func (*InboxItem) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *InboxItem) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *InboxItem) GetAgentInstanceId() string {
+	if x != nil {
+		return x.AgentInstanceId
+	}
+	return ""
+}
+
+func (x *InboxItem) GetSourceKind() InboxItemSourceKind {
+	if x != nil {
+		return x.SourceKind
+	}
+	return InboxItemSourceKind_INBOX_ITEM_SOURCE_KIND_UNSPECIFIED
+}
+
+func (x *InboxItem) GetThreadId() string {
+	if x != nil && x.ThreadId != nil {
+		return *x.ThreadId
+	}
+	return ""
+}
+
+func (x *InboxItem) GetMessageId() string {
+	if x != nil && x.MessageId != nil {
+		return *x.MessageId
+	}
+	return ""
+}
+
+func (x *InboxItem) GetSenderId() string {
+	if x != nil {
+		return x.SenderId
+	}
+	return ""
+}
+
+func (x *InboxItem) GetBody() string {
+	if x != nil {
+		return x.Body
+	}
+	return ""
+}
+
+func (x *InboxItem) GetFileIds() []string {
+	if x != nil {
+		return x.FileIds
+	}
+	return nil
+}
+
+func (x *InboxItem) GetAcceptedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.AcceptedAt
+	}
+	return nil
+}
+
+func (x *InboxItem) GetAckedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.AckedAt
+	}
+	return nil
+}
+
+func (x *InboxItem) GetSenderHandle() string {
+	if x != nil && x.SenderHandle != nil {
+		return *x.SenderHandle
+	}
+	return ""
+}
+
+type WriteInboxItemRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	AgentInstanceId string                 `protobuf:"bytes,1,opt,name=agent_instance_id,json=agentInstanceId,proto3" json:"agent_instance_id,omitempty"` // UUID
+	SenderId        string                 `protobuf:"bytes,2,opt,name=sender_id,json=senderId,proto3" json:"sender_id,omitempty"`                        // Identity UUID
+	Body            string                 `protobuf:"bytes,3,opt,name=body,proto3" json:"body,omitempty"`
+	FileIds         []string               `protobuf:"bytes,4,rep,name=file_ids,json=fileIds,proto3" json:"file_ids,omitempty"` // UUIDs
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *WriteInboxItemRequest) Reset() {
+	*x = WriteInboxItemRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WriteInboxItemRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WriteInboxItemRequest) ProtoMessage() {}
+
+func (x *WriteInboxItemRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WriteInboxItemRequest.ProtoReflect.Descriptor instead.
+func (*WriteInboxItemRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *WriteInboxItemRequest) GetAgentInstanceId() string {
+	if x != nil {
+		return x.AgentInstanceId
+	}
+	return ""
+}
+
+func (x *WriteInboxItemRequest) GetSenderId() string {
+	if x != nil {
+		return x.SenderId
+	}
+	return ""
+}
+
+func (x *WriteInboxItemRequest) GetBody() string {
+	if x != nil {
+		return x.Body
+	}
+	return ""
+}
+
+func (x *WriteInboxItemRequest) GetFileIds() []string {
+	if x != nil {
+		return x.FileIds
+	}
+	return nil
+}
+
+type WriteInboxItemResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Item          *InboxItem             `protobuf:"bytes,1,opt,name=item,proto3" json:"item,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WriteInboxItemResponse) Reset() {
+	*x = WriteInboxItemResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[42]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WriteInboxItemResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WriteInboxItemResponse) ProtoMessage() {}
+
+func (x *WriteInboxItemResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[42]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WriteInboxItemResponse.ProtoReflect.Descriptor instead.
+func (*WriteInboxItemResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{42}
+}
+
+func (x *WriteInboxItemResponse) GetItem() *InboxItem {
+	if x != nil {
+		return x.Item
+	}
+	return nil
+}
+
+type FanoutInboxItemRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	AgentInstanceId string                 `protobuf:"bytes,1,opt,name=agent_instance_id,json=agentInstanceId,proto3" json:"agent_instance_id,omitempty"` // UUID
+	ThreadId        string                 `protobuf:"bytes,2,opt,name=thread_id,json=threadId,proto3" json:"thread_id,omitempty"`                        // UUID
+	MessageId       string                 `protobuf:"bytes,3,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`                     // UUID
+	SenderId        string                 `protobuf:"bytes,4,opt,name=sender_id,json=senderId,proto3" json:"sender_id,omitempty"`                        // Identity UUID
+	Body            string                 `protobuf:"bytes,5,opt,name=body,proto3" json:"body,omitempty"`
+	FileIds         []string               `protobuf:"bytes,6,rep,name=file_ids,json=fileIds,proto3" json:"file_ids,omitempty"` // UUIDs
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *FanoutInboxItemRequest) Reset() {
+	*x = FanoutInboxItemRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[43]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FanoutInboxItemRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FanoutInboxItemRequest) ProtoMessage() {}
+
+func (x *FanoutInboxItemRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[43]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FanoutInboxItemRequest.ProtoReflect.Descriptor instead.
+func (*FanoutInboxItemRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{43}
+}
+
+func (x *FanoutInboxItemRequest) GetAgentInstanceId() string {
+	if x != nil {
+		return x.AgentInstanceId
+	}
+	return ""
+}
+
+func (x *FanoutInboxItemRequest) GetThreadId() string {
+	if x != nil {
+		return x.ThreadId
+	}
+	return ""
+}
+
+func (x *FanoutInboxItemRequest) GetMessageId() string {
+	if x != nil {
+		return x.MessageId
+	}
+	return ""
+}
+
+func (x *FanoutInboxItemRequest) GetSenderId() string {
+	if x != nil {
+		return x.SenderId
+	}
+	return ""
+}
+
+func (x *FanoutInboxItemRequest) GetBody() string {
+	if x != nil {
+		return x.Body
+	}
+	return ""
+}
+
+func (x *FanoutInboxItemRequest) GetFileIds() []string {
+	if x != nil {
+		return x.FileIds
+	}
+	return nil
+}
+
+type FanoutInboxItemResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Item          *InboxItem             `protobuf:"bytes,1,opt,name=item,proto3" json:"item,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FanoutInboxItemResponse) Reset() {
+	*x = FanoutInboxItemResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[44]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FanoutInboxItemResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FanoutInboxItemResponse) ProtoMessage() {}
+
+func (x *FanoutInboxItemResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[44]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FanoutInboxItemResponse.ProtoReflect.Descriptor instead.
+func (*FanoutInboxItemResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{44}
+}
+
+func (x *FanoutInboxItemResponse) GetItem() *InboxItem {
+	if x != nil {
+		return x.Item
+	}
+	return nil
+}
+
+type GetUnackedInboxItemsRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	AgentInstanceId string                 `protobuf:"bytes,1,opt,name=agent_instance_id,json=agentInstanceId,proto3" json:"agent_instance_id,omitempty"` // UUID
+	PageSize        int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken       string                 `protobuf:"bytes,3,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *GetUnackedInboxItemsRequest) Reset() {
+	*x = GetUnackedInboxItemsRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[45]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUnackedInboxItemsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUnackedInboxItemsRequest) ProtoMessage() {}
+
+func (x *GetUnackedInboxItemsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[45]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUnackedInboxItemsRequest.ProtoReflect.Descriptor instead.
+func (*GetUnackedInboxItemsRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{45}
+}
+
+func (x *GetUnackedInboxItemsRequest) GetAgentInstanceId() string {
+	if x != nil {
+		return x.AgentInstanceId
+	}
+	return ""
+}
+
+func (x *GetUnackedInboxItemsRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *GetUnackedInboxItemsRequest) GetPageToken() string {
+	if x != nil {
+		return x.PageToken
+	}
+	return ""
+}
+
+type GetUnackedInboxItemsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*InboxItem           `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUnackedInboxItemsResponse) Reset() {
+	*x = GetUnackedInboxItemsResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[46]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUnackedInboxItemsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUnackedInboxItemsResponse) ProtoMessage() {}
+
+func (x *GetUnackedInboxItemsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[46]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUnackedInboxItemsResponse.ProtoReflect.Descriptor instead.
+func (*GetUnackedInboxItemsResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{46}
+}
+
+func (x *GetUnackedInboxItemsResponse) GetItems() []*InboxItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *GetUnackedInboxItemsResponse) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
+}
+
+type AckInboxItemsRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	AgentInstanceId string                 `protobuf:"bytes,1,opt,name=agent_instance_id,json=agentInstanceId,proto3" json:"agent_instance_id,omitempty"` // UUID
+	ItemIds         []string               `protobuf:"bytes,2,rep,name=item_ids,json=itemIds,proto3" json:"item_ids,omitempty"`                           // UUIDs
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *AckInboxItemsRequest) Reset() {
+	*x = AckInboxItemsRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[47]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AckInboxItemsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AckInboxItemsRequest) ProtoMessage() {}
+
+func (x *AckInboxItemsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[47]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AckInboxItemsRequest.ProtoReflect.Descriptor instead.
+func (*AckInboxItemsRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{47}
+}
+
+func (x *AckInboxItemsRequest) GetAgentInstanceId() string {
+	if x != nil {
+		return x.AgentInstanceId
+	}
+	return ""
+}
+
+func (x *AckInboxItemsRequest) GetItemIds() []string {
+	if x != nil {
+		return x.ItemIds
+	}
+	return nil
+}
+
+type AckInboxItemsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AckedCount    int32                  `protobuf:"varint,1,opt,name=acked_count,json=ackedCount,proto3" json:"acked_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AckInboxItemsResponse) Reset() {
+	*x = AckInboxItemsResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[48]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AckInboxItemsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AckInboxItemsResponse) ProtoMessage() {}
+
+func (x *AckInboxItemsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[48]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AckInboxItemsResponse.ProtoReflect.Descriptor instead.
+func (*AckInboxItemsResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{48}
+}
+
+func (x *AckInboxItemsResponse) GetAckedCount() int32 {
+	if x != nil {
+		return x.AckedCount
+	}
+	return 0
+}
+
+type GetUnackedInboxCountRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	AgentInstanceId string                 `protobuf:"bytes,1,opt,name=agent_instance_id,json=agentInstanceId,proto3" json:"agent_instance_id,omitempty"` // UUID
+	ThreadId        *string                `protobuf:"bytes,2,opt,name=thread_id,json=threadId,proto3,oneof" json:"thread_id,omitempty"`                  // UUID
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *GetUnackedInboxCountRequest) Reset() {
+	*x = GetUnackedInboxCountRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[49]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUnackedInboxCountRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUnackedInboxCountRequest) ProtoMessage() {}
+
+func (x *GetUnackedInboxCountRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[49]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUnackedInboxCountRequest.ProtoReflect.Descriptor instead.
+func (*GetUnackedInboxCountRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{49}
+}
+
+func (x *GetUnackedInboxCountRequest) GetAgentInstanceId() string {
+	if x != nil {
+		return x.AgentInstanceId
+	}
+	return ""
+}
+
+func (x *GetUnackedInboxCountRequest) GetThreadId() string {
+	if x != nil && x.ThreadId != nil {
+		return *x.ThreadId
+	}
+	return ""
+}
+
+type GetUnackedInboxCountResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Count         int32                  `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUnackedInboxCountResponse) Reset() {
+	*x = GetUnackedInboxCountResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[50]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUnackedInboxCountResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUnackedInboxCountResponse) ProtoMessage() {}
+
+func (x *GetUnackedInboxCountResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[50]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUnackedInboxCountResponse.ProtoReflect.Descriptor instead.
+func (*GetUnackedInboxCountResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{50}
+}
+
+func (x *GetUnackedInboxCountResponse) GetCount() int32 {
+	if x != nil {
+		return x.Count
+	}
+	return 0
+}
+
+type Environment struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Meta           *EntityMeta            `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
+	OrganizationId string                 `protobuf:"bytes,2,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	Name           string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	// Superseded by runner_id + flavor: placement is now environment to runner
+	// directly, with the flavor named within that runner's catalog.
+	//
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	FlavorId string `protobuf:"bytes,4,opt,name=flavor_id,json=flavorId,proto3" json:"flavor_id,omitempty"`
+	// Superseded by workspace_image_id + workspace_image_tag: an environment
+	// names catalog records rather than holding a registry address.
+	//
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	Image string `protobuf:"bytes,5,opt,name=image,proto3" json:"image,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	FlavorName string `protobuf:"bytes,6,opt,name=flavor_name,json=flavorName,proto3" json:"flavor_name,omitempty"`
+	// The runner this environment places workloads on.
+	RunnerId string `protobuf:"bytes,7,opt,name=runner_id,json=runnerId,proto3" json:"runner_id,omitempty"`
+	// Catalog entry name, resolved against the runner's reported catalog at
+	// workload start. Empty resolves to the runner's default flavor.
+	// Deliberately not validated here: platform resources and runner
+	// configuration may be applied in either order.
+	Flavor string `protobuf:"bytes,8,opt,name=flavor,proto3" json:"flavor,omitempty"`
+	// The image the workload's main container runs. Must be a visible Image of
+	// type workspace; the tag must be one discovery has seen. Validated on
+	// write and resolved again at each workload start.
+	WorkspaceImageId  string `protobuf:"bytes,9,opt,name=workspace_image_id,json=workspaceImageId,proto3" json:"workspace_image_id,omitempty"` // UUID
+	WorkspaceImageTag string `protobuf:"bytes,10,opt,name=workspace_image_tag,json=workspaceImageTag,proto3" json:"workspace_image_tag,omitempty"`
+	// The image supplying the agent CLI, injected as an init container. Empty
+	// means a workspace-only environment: usable by sandboxes, rejected by
+	// CreateAgent.
+	AgentRuntimeImageId  string                  `protobuf:"bytes,11,opt,name=agent_runtime_image_id,json=agentRuntimeImageId,proto3" json:"agent_runtime_image_id,omitempty"` // UUID
+	AgentRuntimeImageTag string                  `protobuf:"bytes,12,opt,name=agent_runtime_image_tag,json=agentRuntimeImageTag,proto3" json:"agent_runtime_image_tag,omitempty"`
+	Availability         EnvironmentAvailability `protobuf:"varint,13,opt,name=availability,proto3,enum=agynio.api.agents.v1.EnvironmentAvailability" json:"availability,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
+}
+
+func (x *Environment) Reset() {
+	*x = Environment{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[51]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Environment) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Environment) ProtoMessage() {}
+
+func (x *Environment) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[51]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Environment.ProtoReflect.Descriptor instead.
+func (*Environment) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{51}
+}
+
+func (x *Environment) GetMeta() *EntityMeta {
+	if x != nil {
+		return x.Meta
+	}
+	return nil
+}
+
+func (x *Environment) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+func (x *Environment) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+func (x *Environment) GetFlavorId() string {
+	if x != nil {
+		return x.FlavorId
+	}
+	return ""
+}
+
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+func (x *Environment) GetImage() string {
+	if x != nil {
+		return x.Image
+	}
+	return ""
+}
+
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+func (x *Environment) GetFlavorName() string {
+	if x != nil {
+		return x.FlavorName
+	}
+	return ""
+}
+
+func (x *Environment) GetRunnerId() string {
+	if x != nil {
+		return x.RunnerId
+	}
+	return ""
+}
+
+func (x *Environment) GetFlavor() string {
+	if x != nil {
+		return x.Flavor
+	}
+	return ""
+}
+
+func (x *Environment) GetWorkspaceImageId() string {
+	if x != nil {
+		return x.WorkspaceImageId
+	}
+	return ""
+}
+
+func (x *Environment) GetWorkspaceImageTag() string {
+	if x != nil {
+		return x.WorkspaceImageTag
+	}
+	return ""
+}
+
+func (x *Environment) GetAgentRuntimeImageId() string {
+	if x != nil {
+		return x.AgentRuntimeImageId
+	}
+	return ""
+}
+
+func (x *Environment) GetAgentRuntimeImageTag() string {
+	if x != nil {
+		return x.AgentRuntimeImageTag
+	}
+	return ""
+}
+
+func (x *Environment) GetAvailability() EnvironmentAvailability {
+	if x != nil {
+		return x.Availability
+	}
+	return EnvironmentAvailability_ENVIRONMENT_AVAILABILITY_UNSPECIFIED
+}
+
+type CreateEnvironmentRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	Name           string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	FlavorId string `protobuf:"bytes,3,opt,name=flavor_id,json=flavorId,proto3" json:"flavor_id,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	Image                string                  `protobuf:"bytes,4,opt,name=image,proto3" json:"image,omitempty"`
+	RunnerId             string                  `protobuf:"bytes,5,opt,name=runner_id,json=runnerId,proto3" json:"runner_id,omitempty"`
+	Flavor               string                  `protobuf:"bytes,6,opt,name=flavor,proto3" json:"flavor,omitempty"`
+	WorkspaceImageId     string                  `protobuf:"bytes,7,opt,name=workspace_image_id,json=workspaceImageId,proto3" json:"workspace_image_id,omitempty"` // UUID
+	WorkspaceImageTag    string                  `protobuf:"bytes,8,opt,name=workspace_image_tag,json=workspaceImageTag,proto3" json:"workspace_image_tag,omitempty"`
+	AgentRuntimeImageId  string                  `protobuf:"bytes,9,opt,name=agent_runtime_image_id,json=agentRuntimeImageId,proto3" json:"agent_runtime_image_id,omitempty"` // UUID
+	AgentRuntimeImageTag string                  `protobuf:"bytes,10,opt,name=agent_runtime_image_tag,json=agentRuntimeImageTag,proto3" json:"agent_runtime_image_tag,omitempty"`
+	Availability         EnvironmentAvailability `protobuf:"varint,11,opt,name=availability,proto3,enum=agynio.api.agents.v1.EnvironmentAvailability" json:"availability,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
+}
+
+func (x *CreateEnvironmentRequest) Reset() {
+	*x = CreateEnvironmentRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[52]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateEnvironmentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateEnvironmentRequest) ProtoMessage() {}
+
+func (x *CreateEnvironmentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[52]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateEnvironmentRequest.ProtoReflect.Descriptor instead.
+func (*CreateEnvironmentRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{52}
+}
+
+func (x *CreateEnvironmentRequest) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+func (x *CreateEnvironmentRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+func (x *CreateEnvironmentRequest) GetFlavorId() string {
+	if x != nil {
+		return x.FlavorId
+	}
+	return ""
+}
+
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+func (x *CreateEnvironmentRequest) GetImage() string {
+	if x != nil {
+		return x.Image
+	}
+	return ""
+}
+
+func (x *CreateEnvironmentRequest) GetRunnerId() string {
+	if x != nil {
+		return x.RunnerId
+	}
+	return ""
+}
+
+func (x *CreateEnvironmentRequest) GetFlavor() string {
+	if x != nil {
+		return x.Flavor
+	}
+	return ""
+}
+
+func (x *CreateEnvironmentRequest) GetWorkspaceImageId() string {
+	if x != nil {
+		return x.WorkspaceImageId
+	}
+	return ""
+}
+
+func (x *CreateEnvironmentRequest) GetWorkspaceImageTag() string {
+	if x != nil {
+		return x.WorkspaceImageTag
+	}
+	return ""
+}
+
+func (x *CreateEnvironmentRequest) GetAgentRuntimeImageId() string {
+	if x != nil {
+		return x.AgentRuntimeImageId
+	}
+	return ""
+}
+
+func (x *CreateEnvironmentRequest) GetAgentRuntimeImageTag() string {
+	if x != nil {
+		return x.AgentRuntimeImageTag
+	}
+	return ""
+}
+
+func (x *CreateEnvironmentRequest) GetAvailability() EnvironmentAvailability {
+	if x != nil {
+		return x.Availability
+	}
+	return EnvironmentAvailability_ENVIRONMENT_AVAILABILITY_UNSPECIFIED
+}
+
+type CreateEnvironmentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Environment   *Environment           `protobuf:"bytes,1,opt,name=environment,proto3" json:"environment,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateEnvironmentResponse) Reset() {
+	*x = CreateEnvironmentResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[53]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateEnvironmentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateEnvironmentResponse) ProtoMessage() {}
+
+func (x *CreateEnvironmentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[53]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateEnvironmentResponse.ProtoReflect.Descriptor instead.
+func (*CreateEnvironmentResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{53}
+}
+
+func (x *CreateEnvironmentResponse) GetEnvironment() *Environment {
+	if x != nil {
+		return x.Environment
+	}
+	return nil
+}
+
+type GetEnvironmentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEnvironmentRequest) Reset() {
+	*x = GetEnvironmentRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[54]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEnvironmentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEnvironmentRequest) ProtoMessage() {}
+
+func (x *GetEnvironmentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[54]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEnvironmentRequest.ProtoReflect.Descriptor instead.
+func (*GetEnvironmentRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{54}
+}
+
+func (x *GetEnvironmentRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type GetEnvironmentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Environment   *Environment           `protobuf:"bytes,1,opt,name=environment,proto3" json:"environment,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEnvironmentResponse) Reset() {
+	*x = GetEnvironmentResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[55]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEnvironmentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEnvironmentResponse) ProtoMessage() {}
+
+func (x *GetEnvironmentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[55]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEnvironmentResponse.ProtoReflect.Descriptor instead.
+func (*GetEnvironmentResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{55}
+}
+
+func (x *GetEnvironmentResponse) GetEnvironment() *Environment {
+	if x != nil {
+		return x.Environment
+	}
+	return nil
+}
+
+type UpdateEnvironmentRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
+	Name  *string                `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	FlavorId *string `protobuf:"bytes,3,opt,name=flavor_id,json=flavorId,proto3,oneof" json:"flavor_id,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	Image             *string `protobuf:"bytes,4,opt,name=image,proto3,oneof" json:"image,omitempty"`
+	RunnerId          *string `protobuf:"bytes,5,opt,name=runner_id,json=runnerId,proto3,oneof" json:"runner_id,omitempty"`
+	Flavor            *string `protobuf:"bytes,6,opt,name=flavor,proto3,oneof" json:"flavor,omitempty"`
+	WorkspaceImageId  *string `protobuf:"bytes,7,opt,name=workspace_image_id,json=workspaceImageId,proto3,oneof" json:"workspace_image_id,omitempty"` // UUID
+	WorkspaceImageTag *string `protobuf:"bytes,8,opt,name=workspace_image_tag,json=workspaceImageTag,proto3,oneof" json:"workspace_image_tag,omitempty"`
+	// Clearing both makes the environment workspace-only.
+	AgentRuntimeImageId  *string                  `protobuf:"bytes,9,opt,name=agent_runtime_image_id,json=agentRuntimeImageId,proto3,oneof" json:"agent_runtime_image_id,omitempty"` // UUID
+	AgentRuntimeImageTag *string                  `protobuf:"bytes,10,opt,name=agent_runtime_image_tag,json=agentRuntimeImageTag,proto3,oneof" json:"agent_runtime_image_tag,omitempty"`
+	Availability         *EnvironmentAvailability `protobuf:"varint,11,opt,name=availability,proto3,enum=agynio.api.agents.v1.EnvironmentAvailability,oneof" json:"availability,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
+}
+
+func (x *UpdateEnvironmentRequest) Reset() {
+	*x = UpdateEnvironmentRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[56]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateEnvironmentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateEnvironmentRequest) ProtoMessage() {}
+
+func (x *UpdateEnvironmentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[56]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateEnvironmentRequest.ProtoReflect.Descriptor instead.
+func (*UpdateEnvironmentRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{56}
+}
+
+func (x *UpdateEnvironmentRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UpdateEnvironmentRequest) GetName() string {
+	if x != nil && x.Name != nil {
+		return *x.Name
+	}
+	return ""
+}
+
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+func (x *UpdateEnvironmentRequest) GetFlavorId() string {
+	if x != nil && x.FlavorId != nil {
+		return *x.FlavorId
+	}
+	return ""
+}
+
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+func (x *UpdateEnvironmentRequest) GetImage() string {
+	if x != nil && x.Image != nil {
+		return *x.Image
+	}
+	return ""
+}
+
+func (x *UpdateEnvironmentRequest) GetRunnerId() string {
+	if x != nil && x.RunnerId != nil {
+		return *x.RunnerId
+	}
+	return ""
+}
+
+func (x *UpdateEnvironmentRequest) GetFlavor() string {
+	if x != nil && x.Flavor != nil {
+		return *x.Flavor
+	}
+	return ""
+}
+
+func (x *UpdateEnvironmentRequest) GetWorkspaceImageId() string {
+	if x != nil && x.WorkspaceImageId != nil {
+		return *x.WorkspaceImageId
+	}
+	return ""
+}
+
+func (x *UpdateEnvironmentRequest) GetWorkspaceImageTag() string {
+	if x != nil && x.WorkspaceImageTag != nil {
+		return *x.WorkspaceImageTag
+	}
+	return ""
+}
+
+func (x *UpdateEnvironmentRequest) GetAgentRuntimeImageId() string {
+	if x != nil && x.AgentRuntimeImageId != nil {
+		return *x.AgentRuntimeImageId
+	}
+	return ""
+}
+
+func (x *UpdateEnvironmentRequest) GetAgentRuntimeImageTag() string {
+	if x != nil && x.AgentRuntimeImageTag != nil {
+		return *x.AgentRuntimeImageTag
+	}
+	return ""
+}
+
+func (x *UpdateEnvironmentRequest) GetAvailability() EnvironmentAvailability {
+	if x != nil && x.Availability != nil {
+		return *x.Availability
+	}
+	return EnvironmentAvailability_ENVIRONMENT_AVAILABILITY_UNSPECIFIED
+}
+
+type UpdateEnvironmentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Environment   *Environment           `protobuf:"bytes,1,opt,name=environment,proto3" json:"environment,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateEnvironmentResponse) Reset() {
+	*x = UpdateEnvironmentResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[57]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateEnvironmentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateEnvironmentResponse) ProtoMessage() {}
+
+func (x *UpdateEnvironmentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[57]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateEnvironmentResponse.ProtoReflect.Descriptor instead.
+func (*UpdateEnvironmentResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{57}
+}
+
+func (x *UpdateEnvironmentResponse) GetEnvironment() *Environment {
+	if x != nil {
+		return x.Environment
+	}
+	return nil
+}
+
+type DeleteEnvironmentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteEnvironmentRequest) Reset() {
+	*x = DeleteEnvironmentRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[58]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteEnvironmentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteEnvironmentRequest) ProtoMessage() {}
+
+func (x *DeleteEnvironmentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[58]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteEnvironmentRequest.ProtoReflect.Descriptor instead.
+func (*DeleteEnvironmentRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{58}
+}
+
+func (x *DeleteEnvironmentRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type DeleteEnvironmentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteEnvironmentResponse) Reset() {
+	*x = DeleteEnvironmentResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[59]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteEnvironmentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteEnvironmentResponse) ProtoMessage() {}
+
+func (x *DeleteEnvironmentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[59]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteEnvironmentResponse.ProtoReflect.Descriptor instead.
+func (*DeleteEnvironmentResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{59}
+}
+
+type ListEnvironmentsRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	PageSize       int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken      string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	OrganizationId string                 `protobuf:"bytes,3,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ListEnvironmentsRequest) Reset() {
+	*x = ListEnvironmentsRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[60]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListEnvironmentsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListEnvironmentsRequest) ProtoMessage() {}
+
+func (x *ListEnvironmentsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[60]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListEnvironmentsRequest.ProtoReflect.Descriptor instead.
+func (*ListEnvironmentsRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{60}
+}
+
+func (x *ListEnvironmentsRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListEnvironmentsRequest) GetPageToken() string {
+	if x != nil {
+		return x.PageToken
+	}
+	return ""
+}
+
+func (x *ListEnvironmentsRequest) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+type ListEnvironmentsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Environments  []*Environment         `protobuf:"bytes,1,rep,name=environments,proto3" json:"environments,omitempty"`
+	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListEnvironmentsResponse) Reset() {
+	*x = ListEnvironmentsResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[61]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListEnvironmentsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListEnvironmentsResponse) ProtoMessage() {}
+
+func (x *ListEnvironmentsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[61]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListEnvironmentsResponse.ProtoReflect.Descriptor instead.
+func (*ListEnvironmentsResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{61}
+}
+
+func (x *ListEnvironmentsResponse) GetEnvironments() []*Environment {
+	if x != nil {
+		return x.Environments
+	}
+	return nil
+}
+
+func (x *ListEnvironmentsResponse) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
+}
+
+type EnvironmentRoleAssignment struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EnvironmentId string                 `protobuf:"bytes,1,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"` // UUID
+	IdentityId    string                 `protobuf:"bytes,2,opt,name=identity_id,json=identityId,proto3" json:"identity_id,omitempty"`          // UUID
+	Role          EnvironmentRole        `protobuf:"varint,3,opt,name=role,proto3,enum=agynio.api.agents.v1.EnvironmentRole" json:"role,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EnvironmentRoleAssignment) Reset() {
+	*x = EnvironmentRoleAssignment{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[62]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EnvironmentRoleAssignment) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EnvironmentRoleAssignment) ProtoMessage() {}
+
+func (x *EnvironmentRoleAssignment) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[62]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EnvironmentRoleAssignment.ProtoReflect.Descriptor instead.
+func (*EnvironmentRoleAssignment) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{62}
+}
+
+func (x *EnvironmentRoleAssignment) GetEnvironmentId() string {
+	if x != nil {
+		return x.EnvironmentId
+	}
+	return ""
+}
+
+func (x *EnvironmentRoleAssignment) GetIdentityId() string {
+	if x != nil {
+		return x.IdentityId
+	}
+	return ""
+}
+
+func (x *EnvironmentRoleAssignment) GetRole() EnvironmentRole {
+	if x != nil {
+		return x.Role
+	}
+	return EnvironmentRole_ENVIRONMENT_ROLE_UNSPECIFIED
+}
+
+type SetEnvironmentRoleRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EnvironmentId string                 `protobuf:"bytes,1,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"` // UUID
+	IdentityId    string                 `protobuf:"bytes,2,opt,name=identity_id,json=identityId,proto3" json:"identity_id,omitempty"`          // UUID
+	Role          EnvironmentRole        `protobuf:"varint,3,opt,name=role,proto3,enum=agynio.api.agents.v1.EnvironmentRole" json:"role,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetEnvironmentRoleRequest) Reset() {
+	*x = SetEnvironmentRoleRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[63]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetEnvironmentRoleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetEnvironmentRoleRequest) ProtoMessage() {}
+
+func (x *SetEnvironmentRoleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[63]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetEnvironmentRoleRequest.ProtoReflect.Descriptor instead.
+func (*SetEnvironmentRoleRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{63}
+}
+
+func (x *SetEnvironmentRoleRequest) GetEnvironmentId() string {
+	if x != nil {
+		return x.EnvironmentId
+	}
+	return ""
+}
+
+func (x *SetEnvironmentRoleRequest) GetIdentityId() string {
+	if x != nil {
+		return x.IdentityId
+	}
+	return ""
+}
+
+func (x *SetEnvironmentRoleRequest) GetRole() EnvironmentRole {
+	if x != nil {
+		return x.Role
+	}
+	return EnvironmentRole_ENVIRONMENT_ROLE_UNSPECIFIED
+}
+
+type SetEnvironmentRoleResponse struct {
+	state         protoimpl.MessageState     `protogen:"open.v1"`
+	Assignment    *EnvironmentRoleAssignment `protobuf:"bytes,1,opt,name=assignment,proto3" json:"assignment,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetEnvironmentRoleResponse) Reset() {
+	*x = SetEnvironmentRoleResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[64]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetEnvironmentRoleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetEnvironmentRoleResponse) ProtoMessage() {}
+
+func (x *SetEnvironmentRoleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[64]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetEnvironmentRoleResponse.ProtoReflect.Descriptor instead.
+func (*SetEnvironmentRoleResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{64}
+}
+
+func (x *SetEnvironmentRoleResponse) GetAssignment() *EnvironmentRoleAssignment {
+	if x != nil {
+		return x.Assignment
+	}
+	return nil
+}
+
+type RemoveEnvironmentRoleRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EnvironmentId string                 `protobuf:"bytes,1,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"` // UUID
+	IdentityId    string                 `protobuf:"bytes,2,opt,name=identity_id,json=identityId,proto3" json:"identity_id,omitempty"`          // UUID
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveEnvironmentRoleRequest) Reset() {
+	*x = RemoveEnvironmentRoleRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[65]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveEnvironmentRoleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveEnvironmentRoleRequest) ProtoMessage() {}
+
+func (x *RemoveEnvironmentRoleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[65]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveEnvironmentRoleRequest.ProtoReflect.Descriptor instead.
+func (*RemoveEnvironmentRoleRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{65}
+}
+
+func (x *RemoveEnvironmentRoleRequest) GetEnvironmentId() string {
+	if x != nil {
+		return x.EnvironmentId
+	}
+	return ""
+}
+
+func (x *RemoveEnvironmentRoleRequest) GetIdentityId() string {
+	if x != nil {
+		return x.IdentityId
+	}
+	return ""
+}
+
+type RemoveEnvironmentRoleResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveEnvironmentRoleResponse) Reset() {
+	*x = RemoveEnvironmentRoleResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[66]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveEnvironmentRoleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveEnvironmentRoleResponse) ProtoMessage() {}
+
+func (x *RemoveEnvironmentRoleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[66]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveEnvironmentRoleResponse.ProtoReflect.Descriptor instead.
+func (*RemoveEnvironmentRoleResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{66}
+}
+
+type ListEnvironmentRolesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EnvironmentId string                 `protobuf:"bytes,1,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"` // UUID
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListEnvironmentRolesRequest) Reset() {
+	*x = ListEnvironmentRolesRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[67]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListEnvironmentRolesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListEnvironmentRolesRequest) ProtoMessage() {}
+
+func (x *ListEnvironmentRolesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[67]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListEnvironmentRolesRequest.ProtoReflect.Descriptor instead.
+func (*ListEnvironmentRolesRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{67}
+}
+
+func (x *ListEnvironmentRolesRequest) GetEnvironmentId() string {
+	if x != nil {
+		return x.EnvironmentId
+	}
+	return ""
+}
+
+type ListEnvironmentRolesResponse struct {
+	state         protoimpl.MessageState       `protogen:"open.v1"`
+	Assignments   []*EnvironmentRoleAssignment `protobuf:"bytes,1,rep,name=assignments,proto3" json:"assignments,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListEnvironmentRolesResponse) Reset() {
+	*x = ListEnvironmentRolesResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[68]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListEnvironmentRolesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListEnvironmentRolesResponse) ProtoMessage() {}
+
+func (x *ListEnvironmentRolesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[68]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListEnvironmentRolesResponse.ProtoReflect.Descriptor instead.
+func (*ListEnvironmentRolesResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{68}
+}
+
+func (x *ListEnvironmentRolesResponse) GetAssignments() []*EnvironmentRoleAssignment {
+	if x != nil {
+		return x.Assignments
+	}
+	return nil
+}
+
+type Sandbox struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Meta            *EntityMeta            `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
+	OrganizationId  string                 `protobuf:"bytes,2,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	Name            string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	EnvironmentId   string                 `protobuf:"bytes,4,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"`
+	OwnerId         string                 `protobuf:"bytes,5,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`
+	Status          SandboxStatus          `protobuf:"varint,6,opt,name=status,proto3,enum=agynio.api.agents.v1.SandboxStatus" json:"status,omitempty"`
+	IdleTimeout     string                 `protobuf:"bytes,7,opt,name=idle_timeout,json=idleTimeout,proto3" json:"idle_timeout,omitempty"`
+	Ttl             string                 `protobuf:"bytes,8,opt,name=ttl,proto3" json:"ttl,omitempty"`
+	LastSessionAt   *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=last_session_at,json=lastSessionAt,proto3,oneof" json:"last_session_at,omitempty"`
+	EnvironmentName string                 `protobuf:"bytes,10,opt,name=environment_name,json=environmentName,proto3" json:"environment_name,omitempty"`
+	WorkloadId      *string                `protobuf:"bytes,11,opt,name=workload_id,json=workloadId,proto3,oneof" json:"workload_id,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *Sandbox) Reset() {
+	*x = Sandbox{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[69]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Sandbox) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Sandbox) ProtoMessage() {}
+
+func (x *Sandbox) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[69]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Sandbox.ProtoReflect.Descriptor instead.
+func (*Sandbox) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{69}
+}
+
+func (x *Sandbox) GetMeta() *EntityMeta {
+	if x != nil {
+		return x.Meta
+	}
+	return nil
+}
+
+func (x *Sandbox) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+func (x *Sandbox) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Sandbox) GetEnvironmentId() string {
+	if x != nil {
+		return x.EnvironmentId
+	}
+	return ""
+}
+
+func (x *Sandbox) GetOwnerId() string {
+	if x != nil {
+		return x.OwnerId
+	}
+	return ""
+}
+
+func (x *Sandbox) GetStatus() SandboxStatus {
+	if x != nil {
+		return x.Status
+	}
+	return SandboxStatus_SANDBOX_STATUS_UNSPECIFIED
+}
+
+func (x *Sandbox) GetIdleTimeout() string {
+	if x != nil {
+		return x.IdleTimeout
+	}
+	return ""
+}
+
+func (x *Sandbox) GetTtl() string {
+	if x != nil {
+		return x.Ttl
+	}
+	return ""
+}
+
+func (x *Sandbox) GetLastSessionAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LastSessionAt
+	}
+	return nil
+}
+
+func (x *Sandbox) GetEnvironmentName() string {
+	if x != nil {
+		return x.EnvironmentName
+	}
+	return ""
+}
+
+func (x *Sandbox) GetWorkloadId() string {
+	if x != nil && x.WorkloadId != nil {
+		return *x.WorkloadId
+	}
+	return ""
+}
+
+type CreateSandboxRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	Name           *string                `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
+	EnvironmentId  string                 `protobuf:"bytes,3,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"`
+	IdleTimeout    *string                `protobuf:"bytes,4,opt,name=idle_timeout,json=idleTimeout,proto3,oneof" json:"idle_timeout,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *CreateSandboxRequest) Reset() {
+	*x = CreateSandboxRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[70]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateSandboxRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateSandboxRequest) ProtoMessage() {}
+
+func (x *CreateSandboxRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[70]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateSandboxRequest.ProtoReflect.Descriptor instead.
+func (*CreateSandboxRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{70}
+}
+
+func (x *CreateSandboxRequest) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+func (x *CreateSandboxRequest) GetName() string {
+	if x != nil && x.Name != nil {
+		return *x.Name
+	}
+	return ""
+}
+
+func (x *CreateSandboxRequest) GetEnvironmentId() string {
+	if x != nil {
+		return x.EnvironmentId
+	}
+	return ""
+}
+
+func (x *CreateSandboxRequest) GetIdleTimeout() string {
+	if x != nil && x.IdleTimeout != nil {
+		return *x.IdleTimeout
+	}
+	return ""
+}
+
+type CreateSandboxResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Sandbox       *Sandbox               `protobuf:"bytes,1,opt,name=sandbox,proto3" json:"sandbox,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateSandboxResponse) Reset() {
+	*x = CreateSandboxResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[71]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateSandboxResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateSandboxResponse) ProtoMessage() {}
+
+func (x *CreateSandboxResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[71]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateSandboxResponse.ProtoReflect.Descriptor instead.
+func (*CreateSandboxResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{71}
+}
+
+func (x *CreateSandboxResponse) GetSandbox() *Sandbox {
+	if x != nil {
+		return x.Sandbox
+	}
+	return nil
+}
+
+type GetSandboxRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Ref:
+	//
+	//	*GetSandboxRequest_Id
+	//	*GetSandboxRequest_Name
+	Ref           isGetSandboxRequest_Ref `protobuf_oneof:"ref"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSandboxRequest) Reset() {
+	*x = GetSandboxRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[72]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSandboxRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSandboxRequest) ProtoMessage() {}
+
+func (x *GetSandboxRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[72]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSandboxRequest.ProtoReflect.Descriptor instead.
+func (*GetSandboxRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{72}
+}
+
+func (x *GetSandboxRequest) GetRef() isGetSandboxRequest_Ref {
+	if x != nil {
+		return x.Ref
+	}
+	return nil
+}
+
+func (x *GetSandboxRequest) GetId() string {
+	if x != nil {
+		if x, ok := x.Ref.(*GetSandboxRequest_Id); ok {
+			return x.Id
+		}
+	}
+	return ""
+}
+
+func (x *GetSandboxRequest) GetName() *SandboxNameRef {
+	if x != nil {
+		if x, ok := x.Ref.(*GetSandboxRequest_Name); ok {
+			return x.Name
+		}
+	}
+	return nil
+}
+
+type isGetSandboxRequest_Ref interface {
+	isGetSandboxRequest_Ref()
+}
+
+type GetSandboxRequest_Id struct {
+	Id string `protobuf:"bytes,1,opt,name=id,proto3,oneof"`
+}
+
+type GetSandboxRequest_Name struct {
+	Name *SandboxNameRef `protobuf:"bytes,2,opt,name=name,proto3,oneof"`
+}
+
+func (*GetSandboxRequest_Id) isGetSandboxRequest_Ref() {}
+
+func (*GetSandboxRequest_Name) isGetSandboxRequest_Ref() {}
+
+type SandboxNameRef struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	Name           string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *SandboxNameRef) Reset() {
+	*x = SandboxNameRef{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[73]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SandboxNameRef) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SandboxNameRef) ProtoMessage() {}
+
+func (x *SandboxNameRef) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[73]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SandboxNameRef.ProtoReflect.Descriptor instead.
+func (*SandboxNameRef) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{73}
+}
+
+func (x *SandboxNameRef) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+func (x *SandboxNameRef) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type GetSandboxResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Sandbox       *Sandbox               `protobuf:"bytes,1,opt,name=sandbox,proto3" json:"sandbox,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSandboxResponse) Reset() {
+	*x = GetSandboxResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[74]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSandboxResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSandboxResponse) ProtoMessage() {}
+
+func (x *GetSandboxResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[74]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSandboxResponse.ProtoReflect.Descriptor instead.
+func (*GetSandboxResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{74}
+}
+
+func (x *GetSandboxResponse) GetSandbox() *Sandbox {
+	if x != nil {
+		return x.Sandbox
+	}
+	return nil
+}
+
+type ListSandboxesRequest struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	PageSize          int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken         string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	OrganizationId    string                 `protobuf:"bytes,3,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	OwnerId           *string                `protobuf:"bytes,4,opt,name=owner_id,json=ownerId,proto3,oneof" json:"owner_id,omitempty"`
+	IncludeTerminated bool                   `protobuf:"varint,5,opt,name=include_terminated,json=includeTerminated,proto3" json:"include_terminated,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *ListSandboxesRequest) Reset() {
+	*x = ListSandboxesRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[75]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListSandboxesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListSandboxesRequest) ProtoMessage() {}
+
+func (x *ListSandboxesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[75]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListSandboxesRequest.ProtoReflect.Descriptor instead.
+func (*ListSandboxesRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{75}
+}
+
+func (x *ListSandboxesRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListSandboxesRequest) GetPageToken() string {
+	if x != nil {
+		return x.PageToken
+	}
+	return ""
+}
+
+func (x *ListSandboxesRequest) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+func (x *ListSandboxesRequest) GetOwnerId() string {
+	if x != nil && x.OwnerId != nil {
+		return *x.OwnerId
+	}
+	return ""
+}
+
+func (x *ListSandboxesRequest) GetIncludeTerminated() bool {
+	if x != nil {
+		return x.IncludeTerminated
+	}
+	return false
+}
+
+type ListSandboxesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Sandboxes     []*Sandbox             `protobuf:"bytes,1,rep,name=sandboxes,proto3" json:"sandboxes,omitempty"`
+	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListSandboxesResponse) Reset() {
+	*x = ListSandboxesResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[76]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListSandboxesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListSandboxesResponse) ProtoMessage() {}
+
+func (x *ListSandboxesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[76]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListSandboxesResponse.ProtoReflect.Descriptor instead.
+func (*ListSandboxesResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{76}
+}
+
+func (x *ListSandboxesResponse) GetSandboxes() []*Sandbox {
+	if x != nil {
+		return x.Sandboxes
+	}
+	return nil
+}
+
+func (x *ListSandboxesResponse) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
+}
+
+type StopSandboxRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StopSandboxRequest) Reset() {
+	*x = StopSandboxRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[77]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StopSandboxRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StopSandboxRequest) ProtoMessage() {}
+
+func (x *StopSandboxRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[77]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StopSandboxRequest.ProtoReflect.Descriptor instead.
+func (*StopSandboxRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{77}
+}
+
+func (x *StopSandboxRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type StopSandboxResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Sandbox       *Sandbox               `protobuf:"bytes,1,opt,name=sandbox,proto3" json:"sandbox,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StopSandboxResponse) Reset() {
+	*x = StopSandboxResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[78]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StopSandboxResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StopSandboxResponse) ProtoMessage() {}
+
+func (x *StopSandboxResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[78]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StopSandboxResponse.ProtoReflect.Descriptor instead.
+func (*StopSandboxResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{78}
+}
+
+func (x *StopSandboxResponse) GetSandbox() *Sandbox {
+	if x != nil {
+		return x.Sandbox
+	}
+	return nil
+}
+
+type DeleteSandboxRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteSandboxRequest) Reset() {
+	*x = DeleteSandboxRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[79]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteSandboxRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteSandboxRequest) ProtoMessage() {}
+
+func (x *DeleteSandboxRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[79]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteSandboxRequest.ProtoReflect.Descriptor instead.
+func (*DeleteSandboxRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{79}
+}
+
+func (x *DeleteSandboxRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type DeleteSandboxResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Sandbox       *Sandbox               `protobuf:"bytes,1,opt,name=sandbox,proto3" json:"sandbox,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteSandboxResponse) Reset() {
+	*x = DeleteSandboxResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[80]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteSandboxResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteSandboxResponse) ProtoMessage() {}
+
+func (x *DeleteSandboxResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[80]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteSandboxResponse.ProtoReflect.Descriptor instead.
+func (*DeleteSandboxResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{80}
+}
+
+func (x *DeleteSandboxResponse) GetSandbox() *Sandbox {
+	if x != nil {
+		return x.Sandbox
+	}
+	return nil
+}
+
+type EnsureSandboxRunningRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EnsureSandboxRunningRequest) Reset() {
+	*x = EnsureSandboxRunningRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[81]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EnsureSandboxRunningRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EnsureSandboxRunningRequest) ProtoMessage() {}
+
+func (x *EnsureSandboxRunningRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[81]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EnsureSandboxRunningRequest.ProtoReflect.Descriptor instead.
+func (*EnsureSandboxRunningRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{81}
+}
+
+func (x *EnsureSandboxRunningRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type EnsureSandboxRunningResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Sandbox       *Sandbox               `protobuf:"bytes,1,opt,name=sandbox,proto3" json:"sandbox,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EnsureSandboxRunningResponse) Reset() {
+	*x = EnsureSandboxRunningResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[82]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EnsureSandboxRunningResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EnsureSandboxRunningResponse) ProtoMessage() {}
+
+func (x *EnsureSandboxRunningResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[82]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EnsureSandboxRunningResponse.ProtoReflect.Descriptor instead.
+func (*EnsureSandboxRunningResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{82}
+}
+
+func (x *EnsureSandboxRunningResponse) GetSandbox() *Sandbox {
+	if x != nil {
+		return x.Sandbox
+	}
+	return nil
+}
+
+type UpdateSandboxRuntimeStateRequest struct {
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Id     string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Status *SandboxStatus         `protobuf:"varint,2,opt,name=status,proto3,enum=agynio.api.agents.v1.SandboxStatus,oneof" json:"status,omitempty"`
+	// Types that are valid to be assigned to WorkloadIdUpdate:
+	//
+	//	*UpdateSandboxRuntimeStateRequest_WorkloadId
+	//	*UpdateSandboxRuntimeStateRequest_ClearWorkloadId
+	WorkloadIdUpdate isUpdateSandboxRuntimeStateRequest_WorkloadIdUpdate `protobuf_oneof:"workload_id_update"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *UpdateSandboxRuntimeStateRequest) Reset() {
+	*x = UpdateSandboxRuntimeStateRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[83]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateSandboxRuntimeStateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateSandboxRuntimeStateRequest) ProtoMessage() {}
+
+func (x *UpdateSandboxRuntimeStateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[83]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateSandboxRuntimeStateRequest.ProtoReflect.Descriptor instead.
+func (*UpdateSandboxRuntimeStateRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{83}
+}
+
+func (x *UpdateSandboxRuntimeStateRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UpdateSandboxRuntimeStateRequest) GetStatus() SandboxStatus {
+	if x != nil && x.Status != nil {
+		return *x.Status
+	}
+	return SandboxStatus_SANDBOX_STATUS_UNSPECIFIED
+}
+
+func (x *UpdateSandboxRuntimeStateRequest) GetWorkloadIdUpdate() isUpdateSandboxRuntimeStateRequest_WorkloadIdUpdate {
+	if x != nil {
+		return x.WorkloadIdUpdate
+	}
+	return nil
+}
+
+func (x *UpdateSandboxRuntimeStateRequest) GetWorkloadId() string {
+	if x != nil {
+		if x, ok := x.WorkloadIdUpdate.(*UpdateSandboxRuntimeStateRequest_WorkloadId); ok {
+			return x.WorkloadId
+		}
+	}
+	return ""
+}
+
+func (x *UpdateSandboxRuntimeStateRequest) GetClearWorkloadId() bool {
+	if x != nil {
+		if x, ok := x.WorkloadIdUpdate.(*UpdateSandboxRuntimeStateRequest_ClearWorkloadId); ok {
+			return x.ClearWorkloadId
+		}
+	}
+	return false
+}
+
+type isUpdateSandboxRuntimeStateRequest_WorkloadIdUpdate interface {
+	isUpdateSandboxRuntimeStateRequest_WorkloadIdUpdate()
+}
+
+type UpdateSandboxRuntimeStateRequest_WorkloadId struct {
+	WorkloadId string `protobuf:"bytes,3,opt,name=workload_id,json=workloadId,proto3,oneof"`
+}
+
+type UpdateSandboxRuntimeStateRequest_ClearWorkloadId struct {
+	ClearWorkloadId bool `protobuf:"varint,4,opt,name=clear_workload_id,json=clearWorkloadId,proto3,oneof"`
+}
+
+func (*UpdateSandboxRuntimeStateRequest_WorkloadId) isUpdateSandboxRuntimeStateRequest_WorkloadIdUpdate() {
+}
+
+func (*UpdateSandboxRuntimeStateRequest_ClearWorkloadId) isUpdateSandboxRuntimeStateRequest_WorkloadIdUpdate() {
+}
+
+type UpdateSandboxRuntimeStateResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Sandbox       *Sandbox               `protobuf:"bytes,1,opt,name=sandbox,proto3" json:"sandbox,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateSandboxRuntimeStateResponse) Reset() {
+	*x = UpdateSandboxRuntimeStateResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[84]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateSandboxRuntimeStateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateSandboxRuntimeStateResponse) ProtoMessage() {}
+
+func (x *UpdateSandboxRuntimeStateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[84]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateSandboxRuntimeStateResponse.ProtoReflect.Descriptor instead.
+func (*UpdateSandboxRuntimeStateResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{84}
+}
+
+func (x *UpdateSandboxRuntimeStateResponse) GetSandbox() *Sandbox {
+	if x != nil {
+		return x.Sandbox
+	}
+	return nil
+}
+
+type UpdateSandboxLastSessionRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	LastSessionAt *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=last_session_at,json=lastSessionAt,proto3" json:"last_session_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateSandboxLastSessionRequest) Reset() {
+	*x = UpdateSandboxLastSessionRequest{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[85]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateSandboxLastSessionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateSandboxLastSessionRequest) ProtoMessage() {}
+
+func (x *UpdateSandboxLastSessionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[85]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateSandboxLastSessionRequest.ProtoReflect.Descriptor instead.
+func (*UpdateSandboxLastSessionRequest) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{85}
+}
+
+func (x *UpdateSandboxLastSessionRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UpdateSandboxLastSessionRequest) GetLastSessionAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LastSessionAt
+	}
+	return nil
+}
+
+type UpdateSandboxLastSessionResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Sandbox       *Sandbox               `protobuf:"bytes,1,opt,name=sandbox,proto3" json:"sandbox,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateSandboxLastSessionResponse) Reset() {
+	*x = UpdateSandboxLastSessionResponse{}
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[86]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateSandboxLastSessionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateSandboxLastSessionResponse) ProtoMessage() {}
+
+func (x *UpdateSandboxLastSessionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[86]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateSandboxLastSessionResponse.ProtoReflect.Descriptor instead.
+func (*UpdateSandboxLastSessionResponse) Descriptor() ([]byte, []int) {
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{86}
+}
+
+func (x *UpdateSandboxLastSessionResponse) GetSandbox() *Sandbox {
+	if x != nil {
+		return x.Sandbox
+	}
+	return nil
+}
+
+type Volume struct {
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	Meta       *EntityMeta            `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
+	Persistent bool                   `protobuf:"varint,2,opt,name=persistent,proto3" json:"persistent,omitempty"`
+	MountPath  string                 `protobuf:"bytes,3,opt,name=mount_path,json=mountPath,proto3" json:"mount_path,omitempty"`
+	Size       string                 `protobuf:"bytes,4,opt,name=size,proto3" json:"size,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	Description  string  `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	Ttl          *string `protobuf:"bytes,6,opt,name=ttl,proto3,oneof" json:"ttl,omitempty"`
+	Name         string  `protobuf:"bytes,7,opt,name=name,proto3" json:"name,omitempty"`
+	StorageClass *string `protobuf:"bytes,8,opt,name=storage_class,json=storageClass,proto3,oneof" json:"storage_class,omitempty"`
+	// Types that are valid to be assigned to Target:
+	//
+	//	*Volume_EnvironmentId
+	//	*Volume_McpId
+	Target        isVolume_Target `protobuf_oneof:"target"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Volume) Reset() {
 	*x = Volume{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[24]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[87]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1602,7 +5842,7 @@ func (x *Volume) String() string {
 func (*Volume) ProtoMessage() {}
 
 func (x *Volume) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[24]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[87]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1615,7 +5855,7 @@ func (x *Volume) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Volume.ProtoReflect.Descriptor instead.
 func (*Volume) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{24}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{87}
 }
 
 func (x *Volume) GetMeta() *EntityMeta {
@@ -1646,6 +5886,7 @@ func (x *Volume) GetSize() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *Volume) GetDescription() string {
 	if x != nil {
 		return x.Description
@@ -1660,21 +5901,85 @@ func (x *Volume) GetTtl() string {
 	return ""
 }
 
+func (x *Volume) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Volume) GetStorageClass() string {
+	if x != nil && x.StorageClass != nil {
+		return *x.StorageClass
+	}
+	return ""
+}
+
+func (x *Volume) GetTarget() isVolume_Target {
+	if x != nil {
+		return x.Target
+	}
+	return nil
+}
+
+func (x *Volume) GetEnvironmentId() string {
+	if x != nil {
+		if x, ok := x.Target.(*Volume_EnvironmentId); ok {
+			return x.EnvironmentId
+		}
+	}
+	return ""
+}
+
+func (x *Volume) GetMcpId() string {
+	if x != nil {
+		if x, ok := x.Target.(*Volume_McpId); ok {
+			return x.McpId
+		}
+	}
+	return ""
+}
+
+type isVolume_Target interface {
+	isVolume_Target()
+}
+
+type Volume_EnvironmentId struct {
+	EnvironmentId string `protobuf:"bytes,9,opt,name=environment_id,json=environmentId,proto3,oneof"` // UUID
+}
+
+type Volume_McpId struct {
+	McpId string `protobuf:"bytes,10,opt,name=mcp_id,json=mcpId,proto3,oneof"` // UUID
+}
+
+func (*Volume_EnvironmentId) isVolume_Target() {}
+
+func (*Volume_McpId) isVolume_Target() {}
+
 type CreateVolumeRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Persistent     bool                   `protobuf:"varint,1,opt,name=persistent,proto3" json:"persistent,omitempty"`
-	MountPath      string                 `protobuf:"bytes,2,opt,name=mount_path,json=mountPath,proto3" json:"mount_path,omitempty"`
-	Size           string                 `protobuf:"bytes,3,opt,name=size,proto3" json:"size,omitempty"`
-	Description    string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
-	OrganizationId string                 `protobuf:"bytes,5,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	Ttl            *string                `protobuf:"bytes,6,opt,name=ttl,proto3,oneof" json:"ttl,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	Persistent bool                   `protobuf:"varint,1,opt,name=persistent,proto3" json:"persistent,omitempty"`
+	MountPath  string                 `protobuf:"bytes,2,opt,name=mount_path,json=mountPath,proto3" json:"mount_path,omitempty"`
+	Size       string                 `protobuf:"bytes,3,opt,name=size,proto3" json:"size,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	Description string `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	OrganizationId string  `protobuf:"bytes,5,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	Ttl            *string `protobuf:"bytes,6,opt,name=ttl,proto3,oneof" json:"ttl,omitempty"`
+	Name           string  `protobuf:"bytes,7,opt,name=name,proto3" json:"name,omitempty"`
+	StorageClass   *string `protobuf:"bytes,8,opt,name=storage_class,json=storageClass,proto3,oneof" json:"storage_class,omitempty"`
+	// Types that are valid to be assigned to Target:
+	//
+	//	*CreateVolumeRequest_EnvironmentId
+	//	*CreateVolumeRequest_McpId
+	Target        isCreateVolumeRequest_Target `protobuf_oneof:"target"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreateVolumeRequest) Reset() {
 	*x = CreateVolumeRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[25]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[88]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1686,7 +5991,7 @@ func (x *CreateVolumeRequest) String() string {
 func (*CreateVolumeRequest) ProtoMessage() {}
 
 func (x *CreateVolumeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[25]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[88]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1699,7 +6004,7 @@ func (x *CreateVolumeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateVolumeRequest.ProtoReflect.Descriptor instead.
 func (*CreateVolumeRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{25}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{88}
 }
 
 func (x *CreateVolumeRequest) GetPersistent() bool {
@@ -1723,6 +6028,7 @@ func (x *CreateVolumeRequest) GetSize() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *CreateVolumeRequest) GetDescription() string {
 	if x != nil {
 		return x.Description
@@ -1730,6 +6036,7 @@ func (x *CreateVolumeRequest) GetDescription() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *CreateVolumeRequest) GetOrganizationId() string {
 	if x != nil {
 		return x.OrganizationId
@@ -1744,6 +6051,61 @@ func (x *CreateVolumeRequest) GetTtl() string {
 	return ""
 }
 
+func (x *CreateVolumeRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateVolumeRequest) GetStorageClass() string {
+	if x != nil && x.StorageClass != nil {
+		return *x.StorageClass
+	}
+	return ""
+}
+
+func (x *CreateVolumeRequest) GetTarget() isCreateVolumeRequest_Target {
+	if x != nil {
+		return x.Target
+	}
+	return nil
+}
+
+func (x *CreateVolumeRequest) GetEnvironmentId() string {
+	if x != nil {
+		if x, ok := x.Target.(*CreateVolumeRequest_EnvironmentId); ok {
+			return x.EnvironmentId
+		}
+	}
+	return ""
+}
+
+func (x *CreateVolumeRequest) GetMcpId() string {
+	if x != nil {
+		if x, ok := x.Target.(*CreateVolumeRequest_McpId); ok {
+			return x.McpId
+		}
+	}
+	return ""
+}
+
+type isCreateVolumeRequest_Target interface {
+	isCreateVolumeRequest_Target()
+}
+
+type CreateVolumeRequest_EnvironmentId struct {
+	EnvironmentId string `protobuf:"bytes,9,opt,name=environment_id,json=environmentId,proto3,oneof"` // UUID
+}
+
+type CreateVolumeRequest_McpId struct {
+	McpId string `protobuf:"bytes,10,opt,name=mcp_id,json=mcpId,proto3,oneof"` // UUID
+}
+
+func (*CreateVolumeRequest_EnvironmentId) isCreateVolumeRequest_Target() {}
+
+func (*CreateVolumeRequest_McpId) isCreateVolumeRequest_Target() {}
+
 type CreateVolumeResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Volume        *Volume                `protobuf:"bytes,1,opt,name=volume,proto3" json:"volume,omitempty"`
@@ -1753,7 +6115,7 @@ type CreateVolumeResponse struct {
 
 func (x *CreateVolumeResponse) Reset() {
 	*x = CreateVolumeResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[26]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[89]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1765,7 +6127,7 @@ func (x *CreateVolumeResponse) String() string {
 func (*CreateVolumeResponse) ProtoMessage() {}
 
 func (x *CreateVolumeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[26]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[89]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1778,7 +6140,7 @@ func (x *CreateVolumeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateVolumeResponse.ProtoReflect.Descriptor instead.
 func (*CreateVolumeResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{26}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{89}
 }
 
 func (x *CreateVolumeResponse) GetVolume() *Volume {
@@ -1797,7 +6159,7 @@ type GetVolumeRequest struct {
 
 func (x *GetVolumeRequest) Reset() {
 	*x = GetVolumeRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[27]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[90]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1809,7 +6171,7 @@ func (x *GetVolumeRequest) String() string {
 func (*GetVolumeRequest) ProtoMessage() {}
 
 func (x *GetVolumeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[27]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[90]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1822,7 +6184,7 @@ func (x *GetVolumeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetVolumeRequest.ProtoReflect.Descriptor instead.
 func (*GetVolumeRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{27}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{90}
 }
 
 func (x *GetVolumeRequest) GetId() string {
@@ -1841,7 +6203,7 @@ type GetVolumeResponse struct {
 
 func (x *GetVolumeResponse) Reset() {
 	*x = GetVolumeResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[28]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[91]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1853,7 +6215,7 @@ func (x *GetVolumeResponse) String() string {
 func (*GetVolumeResponse) ProtoMessage() {}
 
 func (x *GetVolumeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[28]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[91]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1866,7 +6228,7 @@ func (x *GetVolumeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetVolumeResponse.ProtoReflect.Descriptor instead.
 func (*GetVolumeResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{28}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{91}
 }
 
 func (x *GetVolumeResponse) GetVolume() *Volume {
@@ -1877,20 +6239,23 @@ func (x *GetVolumeResponse) GetVolume() *Volume {
 }
 
 type UpdateVolumeRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
-	Persistent    *bool                  `protobuf:"varint,2,opt,name=persistent,proto3,oneof" json:"persistent,omitempty"`
-	MountPath     *string                `protobuf:"bytes,3,opt,name=mount_path,json=mountPath,proto3,oneof" json:"mount_path,omitempty"`
-	Size          *string                `protobuf:"bytes,4,opt,name=size,proto3,oneof" json:"size,omitempty"`
-	Description   *string                `protobuf:"bytes,5,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	Ttl           *string                `protobuf:"bytes,6,opt,name=ttl,proto3,oneof" json:"ttl,omitempty"`
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	Id         string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
+	Persistent *bool                  `protobuf:"varint,2,opt,name=persistent,proto3,oneof" json:"persistent,omitempty"`
+	MountPath  *string                `protobuf:"bytes,3,opt,name=mount_path,json=mountPath,proto3,oneof" json:"mount_path,omitempty"`
+	Size       *string                `protobuf:"bytes,4,opt,name=size,proto3,oneof" json:"size,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	Description   *string `protobuf:"bytes,5,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	Ttl           *string `protobuf:"bytes,6,opt,name=ttl,proto3,oneof" json:"ttl,omitempty"`
+	Name          *string `protobuf:"bytes,7,opt,name=name,proto3,oneof" json:"name,omitempty"`
+	StorageClass  *string `protobuf:"bytes,8,opt,name=storage_class,json=storageClass,proto3,oneof" json:"storage_class,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UpdateVolumeRequest) Reset() {
 	*x = UpdateVolumeRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[29]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[92]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1902,7 +6267,7 @@ func (x *UpdateVolumeRequest) String() string {
 func (*UpdateVolumeRequest) ProtoMessage() {}
 
 func (x *UpdateVolumeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[29]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[92]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1915,7 +6280,7 @@ func (x *UpdateVolumeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateVolumeRequest.ProtoReflect.Descriptor instead.
 func (*UpdateVolumeRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{29}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{92}
 }
 
 func (x *UpdateVolumeRequest) GetId() string {
@@ -1946,6 +6311,7 @@ func (x *UpdateVolumeRequest) GetSize() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *UpdateVolumeRequest) GetDescription() string {
 	if x != nil && x.Description != nil {
 		return *x.Description
@@ -1960,6 +6326,20 @@ func (x *UpdateVolumeRequest) GetTtl() string {
 	return ""
 }
 
+func (x *UpdateVolumeRequest) GetName() string {
+	if x != nil && x.Name != nil {
+		return *x.Name
+	}
+	return ""
+}
+
+func (x *UpdateVolumeRequest) GetStorageClass() string {
+	if x != nil && x.StorageClass != nil {
+		return *x.StorageClass
+	}
+	return ""
+}
+
 type UpdateVolumeResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Volume        *Volume                `protobuf:"bytes,1,opt,name=volume,proto3" json:"volume,omitempty"`
@@ -1969,7 +6349,7 @@ type UpdateVolumeResponse struct {
 
 func (x *UpdateVolumeResponse) Reset() {
 	*x = UpdateVolumeResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[30]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[93]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1981,7 +6361,7 @@ func (x *UpdateVolumeResponse) String() string {
 func (*UpdateVolumeResponse) ProtoMessage() {}
 
 func (x *UpdateVolumeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[30]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[93]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1994,7 +6374,7 @@ func (x *UpdateVolumeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateVolumeResponse.ProtoReflect.Descriptor instead.
 func (*UpdateVolumeResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{30}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{93}
 }
 
 func (x *UpdateVolumeResponse) GetVolume() *Volume {
@@ -2013,7 +6393,7 @@ type DeleteVolumeRequest struct {
 
 func (x *DeleteVolumeRequest) Reset() {
 	*x = DeleteVolumeRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[31]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[94]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2025,7 +6405,7 @@ func (x *DeleteVolumeRequest) String() string {
 func (*DeleteVolumeRequest) ProtoMessage() {}
 
 func (x *DeleteVolumeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[31]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[94]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2038,7 +6418,7 @@ func (x *DeleteVolumeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteVolumeRequest.ProtoReflect.Descriptor instead.
 func (*DeleteVolumeRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{31}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{94}
 }
 
 func (x *DeleteVolumeRequest) GetId() string {
@@ -2056,7 +6436,7 @@ type DeleteVolumeResponse struct {
 
 func (x *DeleteVolumeResponse) Reset() {
 	*x = DeleteVolumeResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[32]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[95]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2068,7 +6448,7 @@ func (x *DeleteVolumeResponse) String() string {
 func (*DeleteVolumeResponse) ProtoMessage() {}
 
 func (x *DeleteVolumeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[32]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[95]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2081,21 +6461,24 @@ func (x *DeleteVolumeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteVolumeResponse.ProtoReflect.Descriptor instead.
 func (*DeleteVolumeResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{32}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{95}
 }
 
 type ListVolumesRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	PageSize       int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	PageToken      string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
-	OrganizationId string                 `protobuf:"bytes,3,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	PageSize  int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	OrganizationId string `protobuf:"bytes,3,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	EnvironmentId  string `protobuf:"bytes,4,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"`
+	McpId          string `protobuf:"bytes,5,opt,name=mcp_id,json=mcpId,proto3" json:"mcp_id,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
 
 func (x *ListVolumesRequest) Reset() {
 	*x = ListVolumesRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[33]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[96]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2107,7 +6490,7 @@ func (x *ListVolumesRequest) String() string {
 func (*ListVolumesRequest) ProtoMessage() {}
 
 func (x *ListVolumesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[33]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[96]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2120,7 +6503,7 @@ func (x *ListVolumesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListVolumesRequest.ProtoReflect.Descriptor instead.
 func (*ListVolumesRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{33}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{96}
 }
 
 func (x *ListVolumesRequest) GetPageSize() int32 {
@@ -2137,9 +6520,24 @@ func (x *ListVolumesRequest) GetPageToken() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *ListVolumesRequest) GetOrganizationId() string {
 	if x != nil {
 		return x.OrganizationId
+	}
+	return ""
+}
+
+func (x *ListVolumesRequest) GetEnvironmentId() string {
+	if x != nil {
+		return x.EnvironmentId
+	}
+	return ""
+}
+
+func (x *ListVolumesRequest) GetMcpId() string {
+	if x != nil {
+		return x.McpId
 	}
 	return ""
 }
@@ -2154,7 +6552,7 @@ type ListVolumesResponse struct {
 
 func (x *ListVolumesResponse) Reset() {
 	*x = ListVolumesResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[34]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[97]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2166,7 +6564,7 @@ func (x *ListVolumesResponse) String() string {
 func (*ListVolumesResponse) ProtoMessage() {}
 
 func (x *ListVolumesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[34]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[97]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2179,7 +6577,7 @@ func (x *ListVolumesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListVolumesResponse.ProtoReflect.Descriptor instead.
 func (*ListVolumesResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{34}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{97}
 }
 
 func (x *ListVolumesResponse) GetVolumes() []*Volume {
@@ -2196,6 +6594,7 @@ func (x *ListVolumesResponse) GetNextPageToken() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type VolumeAttachment struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	Meta     *EntityMeta            `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
@@ -2212,7 +6611,7 @@ type VolumeAttachment struct {
 
 func (x *VolumeAttachment) Reset() {
 	*x = VolumeAttachment{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[35]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[98]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2224,7 +6623,7 @@ func (x *VolumeAttachment) String() string {
 func (*VolumeAttachment) ProtoMessage() {}
 
 func (x *VolumeAttachment) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[35]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[98]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2237,7 +6636,7 @@ func (x *VolumeAttachment) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VolumeAttachment.ProtoReflect.Descriptor instead.
 func (*VolumeAttachment) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{35}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{98}
 }
 
 func (x *VolumeAttachment) GetMeta() *EntityMeta {
@@ -2279,6 +6678,7 @@ func (x *VolumeAttachment) GetMcpId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *VolumeAttachment) GetHookId() string {
 	if x != nil {
 		if x, ok := x.Target.(*VolumeAttachment_HookId); ok {
@@ -2301,6 +6701,7 @@ type VolumeAttachment_McpId struct {
 }
 
 type VolumeAttachment_HookId struct {
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 	HookId string `protobuf:"bytes,5,opt,name=hook_id,json=hookId,proto3,oneof"`
 }
 
@@ -2310,6 +6711,7 @@ func (*VolumeAttachment_McpId) isVolumeAttachment_Target() {}
 
 func (*VolumeAttachment_HookId) isVolumeAttachment_Target() {}
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type CreateVolumeAttachmentRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	VolumeId string                 `protobuf:"bytes,1,opt,name=volume_id,json=volumeId,proto3" json:"volume_id,omitempty"` // UUID
@@ -2325,7 +6727,7 @@ type CreateVolumeAttachmentRequest struct {
 
 func (x *CreateVolumeAttachmentRequest) Reset() {
 	*x = CreateVolumeAttachmentRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[36]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[99]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2337,7 +6739,7 @@ func (x *CreateVolumeAttachmentRequest) String() string {
 func (*CreateVolumeAttachmentRequest) ProtoMessage() {}
 
 func (x *CreateVolumeAttachmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[36]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[99]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2350,7 +6752,7 @@ func (x *CreateVolumeAttachmentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateVolumeAttachmentRequest.ProtoReflect.Descriptor instead.
 func (*CreateVolumeAttachmentRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{36}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{99}
 }
 
 func (x *CreateVolumeAttachmentRequest) GetVolumeId() string {
@@ -2385,6 +6787,7 @@ func (x *CreateVolumeAttachmentRequest) GetMcpId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *CreateVolumeAttachmentRequest) GetHookId() string {
 	if x != nil {
 		if x, ok := x.Target.(*CreateVolumeAttachmentRequest_HookId); ok {
@@ -2407,6 +6810,7 @@ type CreateVolumeAttachmentRequest_McpId struct {
 }
 
 type CreateVolumeAttachmentRequest_HookId struct {
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 	HookId string `protobuf:"bytes,4,opt,name=hook_id,json=hookId,proto3,oneof"`
 }
 
@@ -2416,6 +6820,7 @@ func (*CreateVolumeAttachmentRequest_McpId) isCreateVolumeAttachmentRequest_Targ
 
 func (*CreateVolumeAttachmentRequest_HookId) isCreateVolumeAttachmentRequest_Target() {}
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type CreateVolumeAttachmentResponse struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	VolumeAttachment *VolumeAttachment      `protobuf:"bytes,1,opt,name=volume_attachment,json=volumeAttachment,proto3" json:"volume_attachment,omitempty"`
@@ -2425,7 +6830,7 @@ type CreateVolumeAttachmentResponse struct {
 
 func (x *CreateVolumeAttachmentResponse) Reset() {
 	*x = CreateVolumeAttachmentResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[37]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[100]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2437,7 +6842,7 @@ func (x *CreateVolumeAttachmentResponse) String() string {
 func (*CreateVolumeAttachmentResponse) ProtoMessage() {}
 
 func (x *CreateVolumeAttachmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[37]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[100]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2450,7 +6855,7 @@ func (x *CreateVolumeAttachmentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateVolumeAttachmentResponse.ProtoReflect.Descriptor instead.
 func (*CreateVolumeAttachmentResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{37}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{100}
 }
 
 func (x *CreateVolumeAttachmentResponse) GetVolumeAttachment() *VolumeAttachment {
@@ -2460,6 +6865,7 @@ func (x *CreateVolumeAttachmentResponse) GetVolumeAttachment() *VolumeAttachment
 	return nil
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type GetVolumeAttachmentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
@@ -2469,7 +6875,7 @@ type GetVolumeAttachmentRequest struct {
 
 func (x *GetVolumeAttachmentRequest) Reset() {
 	*x = GetVolumeAttachmentRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[38]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[101]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2481,7 +6887,7 @@ func (x *GetVolumeAttachmentRequest) String() string {
 func (*GetVolumeAttachmentRequest) ProtoMessage() {}
 
 func (x *GetVolumeAttachmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[38]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[101]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2494,7 +6900,7 @@ func (x *GetVolumeAttachmentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetVolumeAttachmentRequest.ProtoReflect.Descriptor instead.
 func (*GetVolumeAttachmentRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{38}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{101}
 }
 
 func (x *GetVolumeAttachmentRequest) GetId() string {
@@ -2504,6 +6910,7 @@ func (x *GetVolumeAttachmentRequest) GetId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type GetVolumeAttachmentResponse struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	VolumeAttachment *VolumeAttachment      `protobuf:"bytes,1,opt,name=volume_attachment,json=volumeAttachment,proto3" json:"volume_attachment,omitempty"`
@@ -2513,7 +6920,7 @@ type GetVolumeAttachmentResponse struct {
 
 func (x *GetVolumeAttachmentResponse) Reset() {
 	*x = GetVolumeAttachmentResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[39]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[102]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2525,7 +6932,7 @@ func (x *GetVolumeAttachmentResponse) String() string {
 func (*GetVolumeAttachmentResponse) ProtoMessage() {}
 
 func (x *GetVolumeAttachmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[39]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[102]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2538,7 +6945,7 @@ func (x *GetVolumeAttachmentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetVolumeAttachmentResponse.ProtoReflect.Descriptor instead.
 func (*GetVolumeAttachmentResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{39}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{102}
 }
 
 func (x *GetVolumeAttachmentResponse) GetVolumeAttachment() *VolumeAttachment {
@@ -2548,6 +6955,7 @@ func (x *GetVolumeAttachmentResponse) GetVolumeAttachment() *VolumeAttachment {
 	return nil
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type DeleteVolumeAttachmentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
@@ -2557,7 +6965,7 @@ type DeleteVolumeAttachmentRequest struct {
 
 func (x *DeleteVolumeAttachmentRequest) Reset() {
 	*x = DeleteVolumeAttachmentRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[40]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[103]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2569,7 +6977,7 @@ func (x *DeleteVolumeAttachmentRequest) String() string {
 func (*DeleteVolumeAttachmentRequest) ProtoMessage() {}
 
 func (x *DeleteVolumeAttachmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[40]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[103]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2582,7 +6990,7 @@ func (x *DeleteVolumeAttachmentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteVolumeAttachmentRequest.ProtoReflect.Descriptor instead.
 func (*DeleteVolumeAttachmentRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{40}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{103}
 }
 
 func (x *DeleteVolumeAttachmentRequest) GetId() string {
@@ -2592,6 +7000,7 @@ func (x *DeleteVolumeAttachmentRequest) GetId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type DeleteVolumeAttachmentResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -2600,7 +7009,7 @@ type DeleteVolumeAttachmentResponse struct {
 
 func (x *DeleteVolumeAttachmentResponse) Reset() {
 	*x = DeleteVolumeAttachmentResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[41]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[104]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2612,7 +7021,7 @@ func (x *DeleteVolumeAttachmentResponse) String() string {
 func (*DeleteVolumeAttachmentResponse) ProtoMessage() {}
 
 func (x *DeleteVolumeAttachmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[41]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[104]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2625,24 +7034,26 @@ func (x *DeleteVolumeAttachmentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteVolumeAttachmentResponse.ProtoReflect.Descriptor instead.
 func (*DeleteVolumeAttachmentResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{41}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{104}
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type ListVolumeAttachmentsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	PageSize      int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	PageToken     string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
-	VolumeId      string                 `protobuf:"bytes,3,opt,name=volume_id,json=volumeId,proto3" json:"volume_id,omitempty"`
-	AgentId       string                 `protobuf:"bytes,4,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
-	McpId         string                 `protobuf:"bytes,5,opt,name=mcp_id,json=mcpId,proto3" json:"mcp_id,omitempty"`
-	HookId        string                 `protobuf:"bytes,6,opt,name=hook_id,json=hookId,proto3" json:"hook_id,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	PageSize  int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	VolumeId  string                 `protobuf:"bytes,3,opt,name=volume_id,json=volumeId,proto3" json:"volume_id,omitempty"`
+	AgentId   string                 `protobuf:"bytes,4,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	McpId     string                 `protobuf:"bytes,5,opt,name=mcp_id,json=mcpId,proto3" json:"mcp_id,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	HookId        string `protobuf:"bytes,6,opt,name=hook_id,json=hookId,proto3" json:"hook_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListVolumeAttachmentsRequest) Reset() {
 	*x = ListVolumeAttachmentsRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[42]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[105]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2654,7 +7065,7 @@ func (x *ListVolumeAttachmentsRequest) String() string {
 func (*ListVolumeAttachmentsRequest) ProtoMessage() {}
 
 func (x *ListVolumeAttachmentsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[42]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[105]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2667,7 +7078,7 @@ func (x *ListVolumeAttachmentsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListVolumeAttachmentsRequest.ProtoReflect.Descriptor instead.
 func (*ListVolumeAttachmentsRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{42}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{105}
 }
 
 func (x *ListVolumeAttachmentsRequest) GetPageSize() int32 {
@@ -2705,6 +7116,7 @@ func (x *ListVolumeAttachmentsRequest) GetMcpId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *ListVolumeAttachmentsRequest) GetHookId() string {
 	if x != nil {
 		return x.HookId
@@ -2712,6 +7124,7 @@ func (x *ListVolumeAttachmentsRequest) GetHookId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type ListVolumeAttachmentsResponse struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	VolumeAttachments []*VolumeAttachment    `protobuf:"bytes,1,rep,name=volume_attachments,json=volumeAttachments,proto3" json:"volume_attachments,omitempty"`
@@ -2722,7 +7135,7 @@ type ListVolumeAttachmentsResponse struct {
 
 func (x *ListVolumeAttachmentsResponse) Reset() {
 	*x = ListVolumeAttachmentsResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[43]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[106]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2734,7 +7147,7 @@ func (x *ListVolumeAttachmentsResponse) String() string {
 func (*ListVolumeAttachmentsResponse) ProtoMessage() {}
 
 func (x *ListVolumeAttachmentsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[43]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[106]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2747,7 +7160,7 @@ func (x *ListVolumeAttachmentsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListVolumeAttachmentsResponse.ProtoReflect.Descriptor instead.
 func (*ListVolumeAttachmentsResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{43}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{106}
 }
 
 func (x *ListVolumeAttachmentsResponse) GetVolumeAttachments() []*VolumeAttachment {
@@ -2764,6 +7177,7 @@ func (x *ListVolumeAttachmentsResponse) GetNextPageToken() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type ImagePullSecretAttachment struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	Meta              *EntityMeta            `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
@@ -2773,6 +7187,7 @@ type ImagePullSecretAttachment struct {
 	//	*ImagePullSecretAttachment_AgentId
 	//	*ImagePullSecretAttachment_McpId
 	//	*ImagePullSecretAttachment_HookId
+	//	*ImagePullSecretAttachment_EnvironmentId
 	Target        isImagePullSecretAttachment_Target `protobuf_oneof:"target"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2780,7 +7195,7 @@ type ImagePullSecretAttachment struct {
 
 func (x *ImagePullSecretAttachment) Reset() {
 	*x = ImagePullSecretAttachment{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[44]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[107]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2792,7 +7207,7 @@ func (x *ImagePullSecretAttachment) String() string {
 func (*ImagePullSecretAttachment) ProtoMessage() {}
 
 func (x *ImagePullSecretAttachment) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[44]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[107]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2805,7 +7220,7 @@ func (x *ImagePullSecretAttachment) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ImagePullSecretAttachment.ProtoReflect.Descriptor instead.
 func (*ImagePullSecretAttachment) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{44}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{107}
 }
 
 func (x *ImagePullSecretAttachment) GetMeta() *EntityMeta {
@@ -2847,10 +7262,20 @@ func (x *ImagePullSecretAttachment) GetMcpId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *ImagePullSecretAttachment) GetHookId() string {
 	if x != nil {
 		if x, ok := x.Target.(*ImagePullSecretAttachment_HookId); ok {
 			return x.HookId
+		}
+	}
+	return ""
+}
+
+func (x *ImagePullSecretAttachment) GetEnvironmentId() string {
+	if x != nil {
+		if x, ok := x.Target.(*ImagePullSecretAttachment_EnvironmentId); ok {
+			return x.EnvironmentId
 		}
 	}
 	return ""
@@ -2869,7 +7294,12 @@ type ImagePullSecretAttachment_McpId struct {
 }
 
 type ImagePullSecretAttachment_HookId struct {
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 	HookId string `protobuf:"bytes,5,opt,name=hook_id,json=hookId,proto3,oneof"`
+}
+
+type ImagePullSecretAttachment_EnvironmentId struct {
+	EnvironmentId string `protobuf:"bytes,6,opt,name=environment_id,json=environmentId,proto3,oneof"`
 }
 
 func (*ImagePullSecretAttachment_AgentId) isImagePullSecretAttachment_Target() {}
@@ -2878,6 +7308,9 @@ func (*ImagePullSecretAttachment_McpId) isImagePullSecretAttachment_Target() {}
 
 func (*ImagePullSecretAttachment_HookId) isImagePullSecretAttachment_Target() {}
 
+func (*ImagePullSecretAttachment_EnvironmentId) isImagePullSecretAttachment_Target() {}
+
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type CreateImagePullSecretAttachmentRequest struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	ImagePullSecretId string                 `protobuf:"bytes,1,opt,name=image_pull_secret_id,json=imagePullSecretId,proto3" json:"image_pull_secret_id,omitempty"` // UUID
@@ -2886,6 +7319,7 @@ type CreateImagePullSecretAttachmentRequest struct {
 	//	*CreateImagePullSecretAttachmentRequest_AgentId
 	//	*CreateImagePullSecretAttachmentRequest_McpId
 	//	*CreateImagePullSecretAttachmentRequest_HookId
+	//	*CreateImagePullSecretAttachmentRequest_EnvironmentId
 	Target        isCreateImagePullSecretAttachmentRequest_Target `protobuf_oneof:"target"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2893,7 +7327,7 @@ type CreateImagePullSecretAttachmentRequest struct {
 
 func (x *CreateImagePullSecretAttachmentRequest) Reset() {
 	*x = CreateImagePullSecretAttachmentRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[45]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[108]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2905,7 +7339,7 @@ func (x *CreateImagePullSecretAttachmentRequest) String() string {
 func (*CreateImagePullSecretAttachmentRequest) ProtoMessage() {}
 
 func (x *CreateImagePullSecretAttachmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[45]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[108]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2918,7 +7352,7 @@ func (x *CreateImagePullSecretAttachmentRequest) ProtoReflect() protoreflect.Mes
 
 // Deprecated: Use CreateImagePullSecretAttachmentRequest.ProtoReflect.Descriptor instead.
 func (*CreateImagePullSecretAttachmentRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{45}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{108}
 }
 
 func (x *CreateImagePullSecretAttachmentRequest) GetImagePullSecretId() string {
@@ -2953,10 +7387,20 @@ func (x *CreateImagePullSecretAttachmentRequest) GetMcpId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *CreateImagePullSecretAttachmentRequest) GetHookId() string {
 	if x != nil {
 		if x, ok := x.Target.(*CreateImagePullSecretAttachmentRequest_HookId); ok {
 			return x.HookId
+		}
+	}
+	return ""
+}
+
+func (x *CreateImagePullSecretAttachmentRequest) GetEnvironmentId() string {
+	if x != nil {
+		if x, ok := x.Target.(*CreateImagePullSecretAttachmentRequest_EnvironmentId); ok {
+			return x.EnvironmentId
 		}
 	}
 	return ""
@@ -2975,7 +7419,12 @@ type CreateImagePullSecretAttachmentRequest_McpId struct {
 }
 
 type CreateImagePullSecretAttachmentRequest_HookId struct {
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 	HookId string `protobuf:"bytes,4,opt,name=hook_id,json=hookId,proto3,oneof"`
+}
+
+type CreateImagePullSecretAttachmentRequest_EnvironmentId struct {
+	EnvironmentId string `protobuf:"bytes,5,opt,name=environment_id,json=environmentId,proto3,oneof"`
 }
 
 func (*CreateImagePullSecretAttachmentRequest_AgentId) isCreateImagePullSecretAttachmentRequest_Target() {
@@ -2987,6 +7436,10 @@ func (*CreateImagePullSecretAttachmentRequest_McpId) isCreateImagePullSecretAtta
 func (*CreateImagePullSecretAttachmentRequest_HookId) isCreateImagePullSecretAttachmentRequest_Target() {
 }
 
+func (*CreateImagePullSecretAttachmentRequest_EnvironmentId) isCreateImagePullSecretAttachmentRequest_Target() {
+}
+
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type CreateImagePullSecretAttachmentResponse struct {
 	state                     protoimpl.MessageState     `protogen:"open.v1"`
 	ImagePullSecretAttachment *ImagePullSecretAttachment `protobuf:"bytes,1,opt,name=image_pull_secret_attachment,json=imagePullSecretAttachment,proto3" json:"image_pull_secret_attachment,omitempty"`
@@ -2996,7 +7449,7 @@ type CreateImagePullSecretAttachmentResponse struct {
 
 func (x *CreateImagePullSecretAttachmentResponse) Reset() {
 	*x = CreateImagePullSecretAttachmentResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[46]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[109]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3008,7 +7461,7 @@ func (x *CreateImagePullSecretAttachmentResponse) String() string {
 func (*CreateImagePullSecretAttachmentResponse) ProtoMessage() {}
 
 func (x *CreateImagePullSecretAttachmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[46]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[109]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3021,7 +7474,7 @@ func (x *CreateImagePullSecretAttachmentResponse) ProtoReflect() protoreflect.Me
 
 // Deprecated: Use CreateImagePullSecretAttachmentResponse.ProtoReflect.Descriptor instead.
 func (*CreateImagePullSecretAttachmentResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{46}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{109}
 }
 
 func (x *CreateImagePullSecretAttachmentResponse) GetImagePullSecretAttachment() *ImagePullSecretAttachment {
@@ -3031,6 +7484,7 @@ func (x *CreateImagePullSecretAttachmentResponse) GetImagePullSecretAttachment()
 	return nil
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type GetImagePullSecretAttachmentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
@@ -3040,7 +7494,7 @@ type GetImagePullSecretAttachmentRequest struct {
 
 func (x *GetImagePullSecretAttachmentRequest) Reset() {
 	*x = GetImagePullSecretAttachmentRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[47]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[110]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3052,7 +7506,7 @@ func (x *GetImagePullSecretAttachmentRequest) String() string {
 func (*GetImagePullSecretAttachmentRequest) ProtoMessage() {}
 
 func (x *GetImagePullSecretAttachmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[47]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[110]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3065,7 +7519,7 @@ func (x *GetImagePullSecretAttachmentRequest) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use GetImagePullSecretAttachmentRequest.ProtoReflect.Descriptor instead.
 func (*GetImagePullSecretAttachmentRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{47}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{110}
 }
 
 func (x *GetImagePullSecretAttachmentRequest) GetId() string {
@@ -3075,6 +7529,7 @@ func (x *GetImagePullSecretAttachmentRequest) GetId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type GetImagePullSecretAttachmentResponse struct {
 	state                     protoimpl.MessageState     `protogen:"open.v1"`
 	ImagePullSecretAttachment *ImagePullSecretAttachment `protobuf:"bytes,1,opt,name=image_pull_secret_attachment,json=imagePullSecretAttachment,proto3" json:"image_pull_secret_attachment,omitempty"`
@@ -3084,7 +7539,7 @@ type GetImagePullSecretAttachmentResponse struct {
 
 func (x *GetImagePullSecretAttachmentResponse) Reset() {
 	*x = GetImagePullSecretAttachmentResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[48]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[111]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3096,7 +7551,7 @@ func (x *GetImagePullSecretAttachmentResponse) String() string {
 func (*GetImagePullSecretAttachmentResponse) ProtoMessage() {}
 
 func (x *GetImagePullSecretAttachmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[48]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[111]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3109,7 +7564,7 @@ func (x *GetImagePullSecretAttachmentResponse) ProtoReflect() protoreflect.Messa
 
 // Deprecated: Use GetImagePullSecretAttachmentResponse.ProtoReflect.Descriptor instead.
 func (*GetImagePullSecretAttachmentResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{48}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{111}
 }
 
 func (x *GetImagePullSecretAttachmentResponse) GetImagePullSecretAttachment() *ImagePullSecretAttachment {
@@ -3119,6 +7574,7 @@ func (x *GetImagePullSecretAttachmentResponse) GetImagePullSecretAttachment() *I
 	return nil
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type DeleteImagePullSecretAttachmentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
@@ -3128,7 +7584,7 @@ type DeleteImagePullSecretAttachmentRequest struct {
 
 func (x *DeleteImagePullSecretAttachmentRequest) Reset() {
 	*x = DeleteImagePullSecretAttachmentRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[49]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[112]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3140,7 +7596,7 @@ func (x *DeleteImagePullSecretAttachmentRequest) String() string {
 func (*DeleteImagePullSecretAttachmentRequest) ProtoMessage() {}
 
 func (x *DeleteImagePullSecretAttachmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[49]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[112]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3153,7 +7609,7 @@ func (x *DeleteImagePullSecretAttachmentRequest) ProtoReflect() protoreflect.Mes
 
 // Deprecated: Use DeleteImagePullSecretAttachmentRequest.ProtoReflect.Descriptor instead.
 func (*DeleteImagePullSecretAttachmentRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{49}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{112}
 }
 
 func (x *DeleteImagePullSecretAttachmentRequest) GetId() string {
@@ -3163,6 +7619,7 @@ func (x *DeleteImagePullSecretAttachmentRequest) GetId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type DeleteImagePullSecretAttachmentResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -3171,7 +7628,7 @@ type DeleteImagePullSecretAttachmentResponse struct {
 
 func (x *DeleteImagePullSecretAttachmentResponse) Reset() {
 	*x = DeleteImagePullSecretAttachmentResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[50]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[113]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3183,7 +7640,7 @@ func (x *DeleteImagePullSecretAttachmentResponse) String() string {
 func (*DeleteImagePullSecretAttachmentResponse) ProtoMessage() {}
 
 func (x *DeleteImagePullSecretAttachmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[50]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[113]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3196,24 +7653,31 @@ func (x *DeleteImagePullSecretAttachmentResponse) ProtoReflect() protoreflect.Me
 
 // Deprecated: Use DeleteImagePullSecretAttachmentResponse.ProtoReflect.Descriptor instead.
 func (*DeleteImagePullSecretAttachmentResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{50}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{113}
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type ListImagePullSecretAttachmentsRequest struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	PageSize          int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	PageToken         string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
-	ImagePullSecretId string                 `protobuf:"bytes,3,opt,name=image_pull_secret_id,json=imagePullSecretId,proto3" json:"image_pull_secret_id,omitempty"`
-	AgentId           string                 `protobuf:"bytes,4,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
-	McpId             string                 `protobuf:"bytes,5,opt,name=mcp_id,json=mcpId,proto3" json:"mcp_id,omitempty"`
-	HookId            string                 `protobuf:"bytes,6,opt,name=hook_id,json=hookId,proto3" json:"hook_id,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	PageSize  int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	// The organization whose image pull secret attachments are listed. Required
+	// of a caller presenting an identity; the remaining ids only narrow the
+	// result within it.
+	OrganizationId    string `protobuf:"bytes,8,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"` // UUID
+	ImagePullSecretId string `protobuf:"bytes,3,opt,name=image_pull_secret_id,json=imagePullSecretId,proto3" json:"image_pull_secret_id,omitempty"`
+	AgentId           string `protobuf:"bytes,4,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	McpId             string `protobuf:"bytes,5,opt,name=mcp_id,json=mcpId,proto3" json:"mcp_id,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	HookId        string `protobuf:"bytes,6,opt,name=hook_id,json=hookId,proto3" json:"hook_id,omitempty"`
+	EnvironmentId string `protobuf:"bytes,7,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListImagePullSecretAttachmentsRequest) Reset() {
 	*x = ListImagePullSecretAttachmentsRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[51]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[114]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3225,7 +7689,7 @@ func (x *ListImagePullSecretAttachmentsRequest) String() string {
 func (*ListImagePullSecretAttachmentsRequest) ProtoMessage() {}
 
 func (x *ListImagePullSecretAttachmentsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[51]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[114]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3238,7 +7702,7 @@ func (x *ListImagePullSecretAttachmentsRequest) ProtoReflect() protoreflect.Mess
 
 // Deprecated: Use ListImagePullSecretAttachmentsRequest.ProtoReflect.Descriptor instead.
 func (*ListImagePullSecretAttachmentsRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{51}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{114}
 }
 
 func (x *ListImagePullSecretAttachmentsRequest) GetPageSize() int32 {
@@ -3251,6 +7715,13 @@ func (x *ListImagePullSecretAttachmentsRequest) GetPageSize() int32 {
 func (x *ListImagePullSecretAttachmentsRequest) GetPageToken() string {
 	if x != nil {
 		return x.PageToken
+	}
+	return ""
+}
+
+func (x *ListImagePullSecretAttachmentsRequest) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
 	}
 	return ""
 }
@@ -3276,6 +7747,7 @@ func (x *ListImagePullSecretAttachmentsRequest) GetMcpId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *ListImagePullSecretAttachmentsRequest) GetHookId() string {
 	if x != nil {
 		return x.HookId
@@ -3283,6 +7755,14 @@ func (x *ListImagePullSecretAttachmentsRequest) GetHookId() string {
 	return ""
 }
 
+func (x *ListImagePullSecretAttachmentsRequest) GetEnvironmentId() string {
+	if x != nil {
+		return x.EnvironmentId
+	}
+	return ""
+}
+
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type ListImagePullSecretAttachmentsResponse struct {
 	state                      protoimpl.MessageState       `protogen:"open.v1"`
 	ImagePullSecretAttachments []*ImagePullSecretAttachment `protobuf:"bytes,1,rep,name=image_pull_secret_attachments,json=imagePullSecretAttachments,proto3" json:"image_pull_secret_attachments,omitempty"`
@@ -3293,7 +7773,7 @@ type ListImagePullSecretAttachmentsResponse struct {
 
 func (x *ListImagePullSecretAttachmentsResponse) Reset() {
 	*x = ListImagePullSecretAttachmentsResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[52]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[115]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3305,7 +7785,7 @@ func (x *ListImagePullSecretAttachmentsResponse) String() string {
 func (*ListImagePullSecretAttachmentsResponse) ProtoMessage() {}
 
 func (x *ListImagePullSecretAttachmentsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[52]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[115]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3318,7 +7798,7 @@ func (x *ListImagePullSecretAttachmentsResponse) ProtoReflect() protoreflect.Mes
 
 // Deprecated: Use ListImagePullSecretAttachmentsResponse.ProtoReflect.Descriptor instead.
 func (*ListImagePullSecretAttachmentsResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{52}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{115}
 }
 
 func (x *ListImagePullSecretAttachmentsResponse) GetImagePullSecretAttachments() []*ImagePullSecretAttachment {
@@ -3336,21 +7816,30 @@ func (x *ListImagePullSecretAttachmentsResponse) GetNextPageToken() string {
 }
 
 type Mcp struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Meta          *EntityMeta            `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
-	AgentId       string                 `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"` // UUID
-	Image         string                 `protobuf:"bytes,3,opt,name=image,proto3" json:"image,omitempty"`
-	Command       string                 `protobuf:"bytes,4,opt,name=command,proto3" json:"command,omitempty"`
-	Resources     *ComputeResources      `protobuf:"bytes,5,opt,name=resources,proto3" json:"resources,omitempty"`
-	Description   string                 `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
-	Name          string                 `protobuf:"bytes,7,opt,name=name,proto3" json:"name,omitempty"` // MCP server name, unique within agent
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	Meta    *EntityMeta            `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
+	AgentId string                 `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"` // UUID
+	// Superseded by image_id + image_tag.
+	//
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	Image       string            `protobuf:"bytes,3,opt,name=image,proto3" json:"image,omitempty"`
+	Command     string            `protobuf:"bytes,4,opt,name=command,proto3" json:"command,omitempty"`
+	Resources   *ComputeResources `protobuf:"bytes,5,opt,name=resources,proto3" json:"resources,omitempty"`
+	Description string            `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
+	Name        string            `protobuf:"bytes,7,opt,name=name,proto3" json:"name,omitempty"` // MCP server name, unique within agent
+	// An Image of type mcp or workspace: a purpose-built server and a
+	// devcontainer are both legitimate ways to host one.
+	ImageId       string   `protobuf:"bytes,8,opt,name=image_id,json=imageId,proto3" json:"image_id,omitempty"` // UUID
+	ImageTag      string   `protobuf:"bytes,9,opt,name=image_tag,json=imageTag,proto3" json:"image_tag,omitempty"`
+	SharedVolumes []string `protobuf:"bytes,10,rep,name=shared_volumes,json=sharedVolumes,proto3" json:"shared_volumes,omitempty"`
+	EnvironmentId string   `protobuf:"bytes,11,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"` // UUID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Mcp) Reset() {
 	*x = Mcp{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[53]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[116]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3362,7 +7851,7 @@ func (x *Mcp) String() string {
 func (*Mcp) ProtoMessage() {}
 
 func (x *Mcp) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[53]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[116]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3375,7 +7864,7 @@ func (x *Mcp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Mcp.ProtoReflect.Descriptor instead.
 func (*Mcp) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{53}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{116}
 }
 
 func (x *Mcp) GetMeta() *EntityMeta {
@@ -3392,6 +7881,7 @@ func (x *Mcp) GetAgentId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *Mcp) GetImage() string {
 	if x != nil {
 		return x.Image
@@ -3427,21 +7917,54 @@ func (x *Mcp) GetName() string {
 	return ""
 }
 
+func (x *Mcp) GetImageId() string {
+	if x != nil {
+		return x.ImageId
+	}
+	return ""
+}
+
+func (x *Mcp) GetImageTag() string {
+	if x != nil {
+		return x.ImageTag
+	}
+	return ""
+}
+
+func (x *Mcp) GetSharedVolumes() []string {
+	if x != nil {
+		return x.SharedVolumes
+	}
+	return nil
+}
+
+func (x *Mcp) GetEnvironmentId() string {
+	if x != nil {
+		return x.EnvironmentId
+	}
+	return ""
+}
+
 type CreateMcpRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AgentId       string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"` // UUID
-	Image         string                 `protobuf:"bytes,2,opt,name=image,proto3" json:"image,omitempty"`
-	Command       string                 `protobuf:"bytes,3,opt,name=command,proto3" json:"command,omitempty"`
-	Resources     *ComputeResources      `protobuf:"bytes,4,opt,name=resources,proto3" json:"resources,omitempty"`
-	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
-	Name          string                 `protobuf:"bytes,6,opt,name=name,proto3" json:"name,omitempty"` // MCP server name
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	AgentId string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"` // UUID
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	Image         string            `protobuf:"bytes,2,opt,name=image,proto3" json:"image,omitempty"`
+	Command       string            `protobuf:"bytes,3,opt,name=command,proto3" json:"command,omitempty"`
+	Resources     *ComputeResources `protobuf:"bytes,4,opt,name=resources,proto3" json:"resources,omitempty"`
+	Description   string            `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	Name          string            `protobuf:"bytes,6,opt,name=name,proto3" json:"name,omitempty"`                      // MCP server name
+	ImageId       string            `protobuf:"bytes,7,opt,name=image_id,json=imageId,proto3" json:"image_id,omitempty"` // UUID
+	ImageTag      string            `protobuf:"bytes,8,opt,name=image_tag,json=imageTag,proto3" json:"image_tag,omitempty"`
+	SharedVolumes []string          `protobuf:"bytes,9,rep,name=shared_volumes,json=sharedVolumes,proto3" json:"shared_volumes,omitempty"`
+	EnvironmentId string            `protobuf:"bytes,10,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"` // UUID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreateMcpRequest) Reset() {
 	*x = CreateMcpRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[54]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[117]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3453,7 +7976,7 @@ func (x *CreateMcpRequest) String() string {
 func (*CreateMcpRequest) ProtoMessage() {}
 
 func (x *CreateMcpRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[54]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[117]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3466,7 +7989,7 @@ func (x *CreateMcpRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateMcpRequest.ProtoReflect.Descriptor instead.
 func (*CreateMcpRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{54}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{117}
 }
 
 func (x *CreateMcpRequest) GetAgentId() string {
@@ -3476,6 +7999,7 @@ func (x *CreateMcpRequest) GetAgentId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *CreateMcpRequest) GetImage() string {
 	if x != nil {
 		return x.Image
@@ -3511,6 +8035,34 @@ func (x *CreateMcpRequest) GetName() string {
 	return ""
 }
 
+func (x *CreateMcpRequest) GetImageId() string {
+	if x != nil {
+		return x.ImageId
+	}
+	return ""
+}
+
+func (x *CreateMcpRequest) GetImageTag() string {
+	if x != nil {
+		return x.ImageTag
+	}
+	return ""
+}
+
+func (x *CreateMcpRequest) GetSharedVolumes() []string {
+	if x != nil {
+		return x.SharedVolumes
+	}
+	return nil
+}
+
+func (x *CreateMcpRequest) GetEnvironmentId() string {
+	if x != nil {
+		return x.EnvironmentId
+	}
+	return ""
+}
+
 type CreateMcpResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Mcp           *Mcp                   `protobuf:"bytes,1,opt,name=mcp,proto3" json:"mcp,omitempty"`
@@ -3520,7 +8072,7 @@ type CreateMcpResponse struct {
 
 func (x *CreateMcpResponse) Reset() {
 	*x = CreateMcpResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[55]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[118]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3532,7 +8084,7 @@ func (x *CreateMcpResponse) String() string {
 func (*CreateMcpResponse) ProtoMessage() {}
 
 func (x *CreateMcpResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[55]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[118]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3545,7 +8097,7 @@ func (x *CreateMcpResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateMcpResponse.ProtoReflect.Descriptor instead.
 func (*CreateMcpResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{55}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{118}
 }
 
 func (x *CreateMcpResponse) GetMcp() *Mcp {
@@ -3564,7 +8116,7 @@ type GetMcpRequest struct {
 
 func (x *GetMcpRequest) Reset() {
 	*x = GetMcpRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[56]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[119]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3576,7 +8128,7 @@ func (x *GetMcpRequest) String() string {
 func (*GetMcpRequest) ProtoMessage() {}
 
 func (x *GetMcpRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[56]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[119]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3589,7 +8141,7 @@ func (x *GetMcpRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMcpRequest.ProtoReflect.Descriptor instead.
 func (*GetMcpRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{56}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{119}
 }
 
 func (x *GetMcpRequest) GetId() string {
@@ -3608,7 +8160,7 @@ type GetMcpResponse struct {
 
 func (x *GetMcpResponse) Reset() {
 	*x = GetMcpResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[57]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[120]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3620,7 +8172,7 @@ func (x *GetMcpResponse) String() string {
 func (*GetMcpResponse) ProtoMessage() {}
 
 func (x *GetMcpResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[57]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[120]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3633,7 +8185,7 @@ func (x *GetMcpResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMcpResponse.ProtoReflect.Descriptor instead.
 func (*GetMcpResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{57}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{120}
 }
 
 func (x *GetMcpResponse) GetMcp() *Mcp {
@@ -3644,19 +8196,23 @@ func (x *GetMcpResponse) GetMcp() *Mcp {
 }
 
 type UpdateMcpRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
-	Image         *string                `protobuf:"bytes,2,opt,name=image,proto3,oneof" json:"image,omitempty"`
-	Command       *string                `protobuf:"bytes,3,opt,name=command,proto3,oneof" json:"command,omitempty"`
-	Resources     *ComputeResources      `protobuf:"bytes,4,opt,name=resources,proto3,oneof" json:"resources,omitempty"`
-	Description   *string                `protobuf:"bytes,5,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	Image         *string           `protobuf:"bytes,2,opt,name=image,proto3,oneof" json:"image,omitempty"`
+	Command       *string           `protobuf:"bytes,3,opt,name=command,proto3,oneof" json:"command,omitempty"`
+	Resources     *ComputeResources `protobuf:"bytes,4,opt,name=resources,proto3,oneof" json:"resources,omitempty"`
+	Description   *string           `protobuf:"bytes,5,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	ImageId       *string           `protobuf:"bytes,6,opt,name=image_id,json=imageId,proto3,oneof" json:"image_id,omitempty"` // UUID
+	ImageTag      *string           `protobuf:"bytes,7,opt,name=image_tag,json=imageTag,proto3,oneof" json:"image_tag,omitempty"`
+	SharedVolumes []string          `protobuf:"bytes,8,rep,name=shared_volumes,json=sharedVolumes,proto3" json:"shared_volumes,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UpdateMcpRequest) Reset() {
 	*x = UpdateMcpRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[58]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[121]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3668,7 +8224,7 @@ func (x *UpdateMcpRequest) String() string {
 func (*UpdateMcpRequest) ProtoMessage() {}
 
 func (x *UpdateMcpRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[58]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[121]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3681,7 +8237,7 @@ func (x *UpdateMcpRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMcpRequest.ProtoReflect.Descriptor instead.
 func (*UpdateMcpRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{58}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{121}
 }
 
 func (x *UpdateMcpRequest) GetId() string {
@@ -3691,6 +8247,7 @@ func (x *UpdateMcpRequest) GetId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *UpdateMcpRequest) GetImage() string {
 	if x != nil && x.Image != nil {
 		return *x.Image
@@ -3719,6 +8276,27 @@ func (x *UpdateMcpRequest) GetDescription() string {
 	return ""
 }
 
+func (x *UpdateMcpRequest) GetImageId() string {
+	if x != nil && x.ImageId != nil {
+		return *x.ImageId
+	}
+	return ""
+}
+
+func (x *UpdateMcpRequest) GetImageTag() string {
+	if x != nil && x.ImageTag != nil {
+		return *x.ImageTag
+	}
+	return ""
+}
+
+func (x *UpdateMcpRequest) GetSharedVolumes() []string {
+	if x != nil {
+		return x.SharedVolumes
+	}
+	return nil
+}
+
 type UpdateMcpResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Mcp           *Mcp                   `protobuf:"bytes,1,opt,name=mcp,proto3" json:"mcp,omitempty"`
@@ -3728,7 +8306,7 @@ type UpdateMcpResponse struct {
 
 func (x *UpdateMcpResponse) Reset() {
 	*x = UpdateMcpResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[59]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[122]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3740,7 +8318,7 @@ func (x *UpdateMcpResponse) String() string {
 func (*UpdateMcpResponse) ProtoMessage() {}
 
 func (x *UpdateMcpResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[59]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[122]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3753,7 +8331,7 @@ func (x *UpdateMcpResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMcpResponse.ProtoReflect.Descriptor instead.
 func (*UpdateMcpResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{59}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{122}
 }
 
 func (x *UpdateMcpResponse) GetMcp() *Mcp {
@@ -3772,7 +8350,7 @@ type DeleteMcpRequest struct {
 
 func (x *DeleteMcpRequest) Reset() {
 	*x = DeleteMcpRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[60]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[123]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3784,7 +8362,7 @@ func (x *DeleteMcpRequest) String() string {
 func (*DeleteMcpRequest) ProtoMessage() {}
 
 func (x *DeleteMcpRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[60]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[123]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3797,7 +8375,7 @@ func (x *DeleteMcpRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteMcpRequest.ProtoReflect.Descriptor instead.
 func (*DeleteMcpRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{60}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{123}
 }
 
 func (x *DeleteMcpRequest) GetId() string {
@@ -3815,7 +8393,7 @@ type DeleteMcpResponse struct {
 
 func (x *DeleteMcpResponse) Reset() {
 	*x = DeleteMcpResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[61]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[124]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3827,7 +8405,7 @@ func (x *DeleteMcpResponse) String() string {
 func (*DeleteMcpResponse) ProtoMessage() {}
 
 func (x *DeleteMcpResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[61]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[124]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3840,7 +8418,7 @@ func (x *DeleteMcpResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteMcpResponse.ProtoReflect.Descriptor instead.
 func (*DeleteMcpResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{61}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{124}
 }
 
 type ListMcpsRequest struct {
@@ -3848,13 +8426,14 @@ type ListMcpsRequest struct {
 	PageSize      int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	PageToken     string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
 	AgentId       string                 `protobuf:"bytes,3,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	EnvironmentId string                 `protobuf:"bytes,4,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListMcpsRequest) Reset() {
 	*x = ListMcpsRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[62]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[125]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3866,7 +8445,7 @@ func (x *ListMcpsRequest) String() string {
 func (*ListMcpsRequest) ProtoMessage() {}
 
 func (x *ListMcpsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[62]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[125]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3879,7 +8458,7 @@ func (x *ListMcpsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMcpsRequest.ProtoReflect.Descriptor instead.
 func (*ListMcpsRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{62}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{125}
 }
 
 func (x *ListMcpsRequest) GetPageSize() int32 {
@@ -3903,6 +8482,13 @@ func (x *ListMcpsRequest) GetAgentId() string {
 	return ""
 }
 
+func (x *ListMcpsRequest) GetEnvironmentId() string {
+	if x != nil {
+		return x.EnvironmentId
+	}
+	return ""
+}
+
 type ListMcpsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Mcps          []*Mcp                 `protobuf:"bytes,1,rep,name=mcps,proto3" json:"mcps,omitempty"`
@@ -3913,7 +8499,7 @@ type ListMcpsResponse struct {
 
 func (x *ListMcpsResponse) Reset() {
 	*x = ListMcpsResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[63]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[126]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3925,7 +8511,7 @@ func (x *ListMcpsResponse) String() string {
 func (*ListMcpsResponse) ProtoMessage() {}
 
 func (x *ListMcpsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[63]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[126]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3938,7 +8524,7 @@ func (x *ListMcpsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMcpsResponse.ProtoReflect.Descriptor instead.
 func (*ListMcpsResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{63}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{126}
 }
 
 func (x *ListMcpsResponse) GetMcps() []*Mcp {
@@ -3968,7 +8554,7 @@ type Skill struct {
 
 func (x *Skill) Reset() {
 	*x = Skill{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[64]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[127]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3980,7 +8566,7 @@ func (x *Skill) String() string {
 func (*Skill) ProtoMessage() {}
 
 func (x *Skill) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[64]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[127]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3993,7 +8579,7 @@ func (x *Skill) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Skill.ProtoReflect.Descriptor instead.
 func (*Skill) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{64}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{127}
 }
 
 func (x *Skill) GetMeta() *EntityMeta {
@@ -4043,7 +8629,7 @@ type CreateSkillRequest struct {
 
 func (x *CreateSkillRequest) Reset() {
 	*x = CreateSkillRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[65]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[128]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4055,7 +8641,7 @@ func (x *CreateSkillRequest) String() string {
 func (*CreateSkillRequest) ProtoMessage() {}
 
 func (x *CreateSkillRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[65]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[128]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4068,7 +8654,7 @@ func (x *CreateSkillRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSkillRequest.ProtoReflect.Descriptor instead.
 func (*CreateSkillRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{65}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{128}
 }
 
 func (x *CreateSkillRequest) GetAgentId() string {
@@ -4108,7 +8694,7 @@ type CreateSkillResponse struct {
 
 func (x *CreateSkillResponse) Reset() {
 	*x = CreateSkillResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[66]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[129]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4120,7 +8706,7 @@ func (x *CreateSkillResponse) String() string {
 func (*CreateSkillResponse) ProtoMessage() {}
 
 func (x *CreateSkillResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[66]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[129]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4133,7 +8719,7 @@ func (x *CreateSkillResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSkillResponse.ProtoReflect.Descriptor instead.
 func (*CreateSkillResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{66}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{129}
 }
 
 func (x *CreateSkillResponse) GetSkill() *Skill {
@@ -4152,7 +8738,7 @@ type GetSkillRequest struct {
 
 func (x *GetSkillRequest) Reset() {
 	*x = GetSkillRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[67]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[130]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4164,7 +8750,7 @@ func (x *GetSkillRequest) String() string {
 func (*GetSkillRequest) ProtoMessage() {}
 
 func (x *GetSkillRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[67]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[130]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4177,7 +8763,7 @@ func (x *GetSkillRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSkillRequest.ProtoReflect.Descriptor instead.
 func (*GetSkillRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{67}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{130}
 }
 
 func (x *GetSkillRequest) GetId() string {
@@ -4196,7 +8782,7 @@ type GetSkillResponse struct {
 
 func (x *GetSkillResponse) Reset() {
 	*x = GetSkillResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[68]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[131]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4208,7 +8794,7 @@ func (x *GetSkillResponse) String() string {
 func (*GetSkillResponse) ProtoMessage() {}
 
 func (x *GetSkillResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[68]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[131]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4221,7 +8807,7 @@ func (x *GetSkillResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSkillResponse.ProtoReflect.Descriptor instead.
 func (*GetSkillResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{68}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{131}
 }
 
 func (x *GetSkillResponse) GetSkill() *Skill {
@@ -4243,7 +8829,7 @@ type UpdateSkillRequest struct {
 
 func (x *UpdateSkillRequest) Reset() {
 	*x = UpdateSkillRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[69]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[132]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4255,7 +8841,7 @@ func (x *UpdateSkillRequest) String() string {
 func (*UpdateSkillRequest) ProtoMessage() {}
 
 func (x *UpdateSkillRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[69]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[132]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4268,7 +8854,7 @@ func (x *UpdateSkillRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateSkillRequest.ProtoReflect.Descriptor instead.
 func (*UpdateSkillRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{69}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{132}
 }
 
 func (x *UpdateSkillRequest) GetId() string {
@@ -4308,7 +8894,7 @@ type UpdateSkillResponse struct {
 
 func (x *UpdateSkillResponse) Reset() {
 	*x = UpdateSkillResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[70]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[133]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4320,7 +8906,7 @@ func (x *UpdateSkillResponse) String() string {
 func (*UpdateSkillResponse) ProtoMessage() {}
 
 func (x *UpdateSkillResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[70]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[133]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4333,7 +8919,7 @@ func (x *UpdateSkillResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateSkillResponse.ProtoReflect.Descriptor instead.
 func (*UpdateSkillResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{70}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{133}
 }
 
 func (x *UpdateSkillResponse) GetSkill() *Skill {
@@ -4352,7 +8938,7 @@ type DeleteSkillRequest struct {
 
 func (x *DeleteSkillRequest) Reset() {
 	*x = DeleteSkillRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[71]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[134]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4364,7 +8950,7 @@ func (x *DeleteSkillRequest) String() string {
 func (*DeleteSkillRequest) ProtoMessage() {}
 
 func (x *DeleteSkillRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[71]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[134]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4377,7 +8963,7 @@ func (x *DeleteSkillRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSkillRequest.ProtoReflect.Descriptor instead.
 func (*DeleteSkillRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{71}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{134}
 }
 
 func (x *DeleteSkillRequest) GetId() string {
@@ -4395,7 +8981,7 @@ type DeleteSkillResponse struct {
 
 func (x *DeleteSkillResponse) Reset() {
 	*x = DeleteSkillResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[72]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[135]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4407,7 +8993,7 @@ func (x *DeleteSkillResponse) String() string {
 func (*DeleteSkillResponse) ProtoMessage() {}
 
 func (x *DeleteSkillResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[72]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[135]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4420,7 +9006,7 @@ func (x *DeleteSkillResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSkillResponse.ProtoReflect.Descriptor instead.
 func (*DeleteSkillResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{72}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{135}
 }
 
 type ListSkillsRequest struct {
@@ -4434,7 +9020,7 @@ type ListSkillsRequest struct {
 
 func (x *ListSkillsRequest) Reset() {
 	*x = ListSkillsRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[73]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[136]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4446,7 +9032,7 @@ func (x *ListSkillsRequest) String() string {
 func (*ListSkillsRequest) ProtoMessage() {}
 
 func (x *ListSkillsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[73]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[136]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4459,7 +9045,7 @@ func (x *ListSkillsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSkillsRequest.ProtoReflect.Descriptor instead.
 func (*ListSkillsRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{73}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{136}
 }
 
 func (x *ListSkillsRequest) GetPageSize() int32 {
@@ -4493,7 +9079,7 @@ type ListSkillsResponse struct {
 
 func (x *ListSkillsResponse) Reset() {
 	*x = ListSkillsResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[74]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[137]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4505,7 +9091,7 @@ func (x *ListSkillsResponse) String() string {
 func (*ListSkillsResponse) ProtoMessage() {}
 
 func (x *ListSkillsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[74]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[137]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4518,7 +9104,7 @@ func (x *ListSkillsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSkillsResponse.ProtoReflect.Descriptor instead.
 func (*ListSkillsResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{74}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{137}
 }
 
 func (x *ListSkillsResponse) GetSkills() []*Skill {
@@ -4535,6 +9121,7 @@ func (x *ListSkillsResponse) GetNextPageToken() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type Hook struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Meta          *EntityMeta            `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
@@ -4550,7 +9137,7 @@ type Hook struct {
 
 func (x *Hook) Reset() {
 	*x = Hook{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[75]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[138]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4562,7 +9149,7 @@ func (x *Hook) String() string {
 func (*Hook) ProtoMessage() {}
 
 func (x *Hook) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[75]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[138]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4575,7 +9162,7 @@ func (x *Hook) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Hook.ProtoReflect.Descriptor instead.
 func (*Hook) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{75}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{138}
 }
 
 func (x *Hook) GetMeta() *EntityMeta {
@@ -4627,6 +9214,7 @@ func (x *Hook) GetDescription() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type CreateHookRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AgentId       string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"` // UUID
@@ -4641,7 +9229,7 @@ type CreateHookRequest struct {
 
 func (x *CreateHookRequest) Reset() {
 	*x = CreateHookRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[76]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[139]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4653,7 +9241,7 @@ func (x *CreateHookRequest) String() string {
 func (*CreateHookRequest) ProtoMessage() {}
 
 func (x *CreateHookRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[76]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[139]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4666,7 +9254,7 @@ func (x *CreateHookRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateHookRequest.ProtoReflect.Descriptor instead.
 func (*CreateHookRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{76}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{139}
 }
 
 func (x *CreateHookRequest) GetAgentId() string {
@@ -4711,6 +9299,7 @@ func (x *CreateHookRequest) GetDescription() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type CreateHookResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Hook          *Hook                  `protobuf:"bytes,1,opt,name=hook,proto3" json:"hook,omitempty"`
@@ -4720,7 +9309,7 @@ type CreateHookResponse struct {
 
 func (x *CreateHookResponse) Reset() {
 	*x = CreateHookResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[77]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[140]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4732,7 +9321,7 @@ func (x *CreateHookResponse) String() string {
 func (*CreateHookResponse) ProtoMessage() {}
 
 func (x *CreateHookResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[77]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[140]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4745,7 +9334,7 @@ func (x *CreateHookResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateHookResponse.ProtoReflect.Descriptor instead.
 func (*CreateHookResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{77}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{140}
 }
 
 func (x *CreateHookResponse) GetHook() *Hook {
@@ -4755,6 +9344,7 @@ func (x *CreateHookResponse) GetHook() *Hook {
 	return nil
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type GetHookRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
@@ -4764,7 +9354,7 @@ type GetHookRequest struct {
 
 func (x *GetHookRequest) Reset() {
 	*x = GetHookRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[78]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[141]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4776,7 +9366,7 @@ func (x *GetHookRequest) String() string {
 func (*GetHookRequest) ProtoMessage() {}
 
 func (x *GetHookRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[78]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[141]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4789,7 +9379,7 @@ func (x *GetHookRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetHookRequest.ProtoReflect.Descriptor instead.
 func (*GetHookRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{78}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{141}
 }
 
 func (x *GetHookRequest) GetId() string {
@@ -4799,6 +9389,7 @@ func (x *GetHookRequest) GetId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type GetHookResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Hook          *Hook                  `protobuf:"bytes,1,opt,name=hook,proto3" json:"hook,omitempty"`
@@ -4808,7 +9399,7 @@ type GetHookResponse struct {
 
 func (x *GetHookResponse) Reset() {
 	*x = GetHookResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[79]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[142]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4820,7 +9411,7 @@ func (x *GetHookResponse) String() string {
 func (*GetHookResponse) ProtoMessage() {}
 
 func (x *GetHookResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[79]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[142]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4833,7 +9424,7 @@ func (x *GetHookResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetHookResponse.ProtoReflect.Descriptor instead.
 func (*GetHookResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{79}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{142}
 }
 
 func (x *GetHookResponse) GetHook() *Hook {
@@ -4843,6 +9434,7 @@ func (x *GetHookResponse) GetHook() *Hook {
 	return nil
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type UpdateHookRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
@@ -4857,7 +9449,7 @@ type UpdateHookRequest struct {
 
 func (x *UpdateHookRequest) Reset() {
 	*x = UpdateHookRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[80]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[143]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4869,7 +9461,7 @@ func (x *UpdateHookRequest) String() string {
 func (*UpdateHookRequest) ProtoMessage() {}
 
 func (x *UpdateHookRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[80]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[143]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4882,7 +9474,7 @@ func (x *UpdateHookRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateHookRequest.ProtoReflect.Descriptor instead.
 func (*UpdateHookRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{80}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{143}
 }
 
 func (x *UpdateHookRequest) GetId() string {
@@ -4927,6 +9519,7 @@ func (x *UpdateHookRequest) GetDescription() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type UpdateHookResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Hook          *Hook                  `protobuf:"bytes,1,opt,name=hook,proto3" json:"hook,omitempty"`
@@ -4936,7 +9529,7 @@ type UpdateHookResponse struct {
 
 func (x *UpdateHookResponse) Reset() {
 	*x = UpdateHookResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[81]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[144]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4948,7 +9541,7 @@ func (x *UpdateHookResponse) String() string {
 func (*UpdateHookResponse) ProtoMessage() {}
 
 func (x *UpdateHookResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[81]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[144]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4961,7 +9554,7 @@ func (x *UpdateHookResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateHookResponse.ProtoReflect.Descriptor instead.
 func (*UpdateHookResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{81}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{144}
 }
 
 func (x *UpdateHookResponse) GetHook() *Hook {
@@ -4971,6 +9564,7 @@ func (x *UpdateHookResponse) GetHook() *Hook {
 	return nil
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type DeleteHookRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
@@ -4980,7 +9574,7 @@ type DeleteHookRequest struct {
 
 func (x *DeleteHookRequest) Reset() {
 	*x = DeleteHookRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[82]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[145]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4992,7 +9586,7 @@ func (x *DeleteHookRequest) String() string {
 func (*DeleteHookRequest) ProtoMessage() {}
 
 func (x *DeleteHookRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[82]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[145]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5005,7 +9599,7 @@ func (x *DeleteHookRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteHookRequest.ProtoReflect.Descriptor instead.
 func (*DeleteHookRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{82}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{145}
 }
 
 func (x *DeleteHookRequest) GetId() string {
@@ -5015,6 +9609,7 @@ func (x *DeleteHookRequest) GetId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type DeleteHookResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -5023,7 +9618,7 @@ type DeleteHookResponse struct {
 
 func (x *DeleteHookResponse) Reset() {
 	*x = DeleteHookResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[83]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[146]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5035,7 +9630,7 @@ func (x *DeleteHookResponse) String() string {
 func (*DeleteHookResponse) ProtoMessage() {}
 
 func (x *DeleteHookResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[83]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[146]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5048,9 +9643,10 @@ func (x *DeleteHookResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteHookResponse.ProtoReflect.Descriptor instead.
 func (*DeleteHookResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{83}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{146}
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type ListHooksRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	PageSize      int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
@@ -5062,7 +9658,7 @@ type ListHooksRequest struct {
 
 func (x *ListHooksRequest) Reset() {
 	*x = ListHooksRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[84]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[147]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5074,7 +9670,7 @@ func (x *ListHooksRequest) String() string {
 func (*ListHooksRequest) ProtoMessage() {}
 
 func (x *ListHooksRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[84]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[147]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5087,7 +9683,7 @@ func (x *ListHooksRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListHooksRequest.ProtoReflect.Descriptor instead.
 func (*ListHooksRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{84}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{147}
 }
 
 func (x *ListHooksRequest) GetPageSize() int32 {
@@ -5111,6 +9707,7 @@ func (x *ListHooksRequest) GetAgentId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 type ListHooksResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Hooks         []*Hook                `protobuf:"bytes,1,rep,name=hooks,proto3" json:"hooks,omitempty"`
@@ -5121,7 +9718,7 @@ type ListHooksResponse struct {
 
 func (x *ListHooksResponse) Reset() {
 	*x = ListHooksResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[85]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[148]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5133,7 +9730,7 @@ func (x *ListHooksResponse) String() string {
 func (*ListHooksResponse) ProtoMessage() {}
 
 func (x *ListHooksResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[85]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[148]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5146,7 +9743,7 @@ func (x *ListHooksResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListHooksResponse.ProtoReflect.Descriptor instead.
 func (*ListHooksResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{85}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{148}
 }
 
 func (x *ListHooksResponse) GetHooks() []*Hook {
@@ -5173,6 +9770,7 @@ type Env struct {
 	//	*Env_AgentId
 	//	*Env_McpId
 	//	*Env_HookId
+	//	*Env_EnvironmentId
 	Target isEnv_Target `protobuf_oneof:"target"`
 	// Types that are valid to be assigned to Source:
 	//
@@ -5185,7 +9783,7 @@ type Env struct {
 
 func (x *Env) Reset() {
 	*x = Env{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[86]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[149]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5197,7 +9795,7 @@ func (x *Env) String() string {
 func (*Env) ProtoMessage() {}
 
 func (x *Env) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[86]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[149]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5210,7 +9808,7 @@ func (x *Env) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Env.ProtoReflect.Descriptor instead.
 func (*Env) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{86}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{149}
 }
 
 func (x *Env) GetMeta() *EntityMeta {
@@ -5259,10 +9857,20 @@ func (x *Env) GetMcpId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *Env) GetHookId() string {
 	if x != nil {
 		if x, ok := x.Target.(*Env_HookId); ok {
 			return x.HookId
+		}
+	}
+	return ""
+}
+
+func (x *Env) GetEnvironmentId() string {
+	if x != nil {
+		if x, ok := x.Target.(*Env_EnvironmentId); ok {
+			return x.EnvironmentId
 		}
 	}
 	return ""
@@ -5306,7 +9914,12 @@ type Env_McpId struct {
 }
 
 type Env_HookId struct {
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 	HookId string `protobuf:"bytes,6,opt,name=hook_id,json=hookId,proto3,oneof"`
+}
+
+type Env_EnvironmentId struct {
+	EnvironmentId string `protobuf:"bytes,9,opt,name=environment_id,json=environmentId,proto3,oneof"`
 }
 
 func (*Env_AgentId) isEnv_Target() {}
@@ -5314,6 +9927,8 @@ func (*Env_AgentId) isEnv_Target() {}
 func (*Env_McpId) isEnv_Target() {}
 
 func (*Env_HookId) isEnv_Target() {}
+
+func (*Env_EnvironmentId) isEnv_Target() {}
 
 type isEnv_Source interface {
 	isEnv_Source()
@@ -5340,6 +9955,7 @@ type CreateEnvRequest struct {
 	//	*CreateEnvRequest_AgentId
 	//	*CreateEnvRequest_McpId
 	//	*CreateEnvRequest_HookId
+	//	*CreateEnvRequest_EnvironmentId
 	Target isCreateEnvRequest_Target `protobuf_oneof:"target"`
 	// Types that are valid to be assigned to Source:
 	//
@@ -5352,7 +9968,7 @@ type CreateEnvRequest struct {
 
 func (x *CreateEnvRequest) Reset() {
 	*x = CreateEnvRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[87]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[150]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5364,7 +9980,7 @@ func (x *CreateEnvRequest) String() string {
 func (*CreateEnvRequest) ProtoMessage() {}
 
 func (x *CreateEnvRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[87]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[150]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5377,7 +9993,7 @@ func (x *CreateEnvRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateEnvRequest.ProtoReflect.Descriptor instead.
 func (*CreateEnvRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{87}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{150}
 }
 
 func (x *CreateEnvRequest) GetName() string {
@@ -5419,10 +10035,20 @@ func (x *CreateEnvRequest) GetMcpId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *CreateEnvRequest) GetHookId() string {
 	if x != nil {
 		if x, ok := x.Target.(*CreateEnvRequest_HookId); ok {
 			return x.HookId
+		}
+	}
+	return ""
+}
+
+func (x *CreateEnvRequest) GetEnvironmentId() string {
+	if x != nil {
+		if x, ok := x.Target.(*CreateEnvRequest_EnvironmentId); ok {
+			return x.EnvironmentId
 		}
 	}
 	return ""
@@ -5466,7 +10092,12 @@ type CreateEnvRequest_McpId struct {
 }
 
 type CreateEnvRequest_HookId struct {
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 	HookId string `protobuf:"bytes,5,opt,name=hook_id,json=hookId,proto3,oneof"`
+}
+
+type CreateEnvRequest_EnvironmentId struct {
+	EnvironmentId string `protobuf:"bytes,8,opt,name=environment_id,json=environmentId,proto3,oneof"`
 }
 
 func (*CreateEnvRequest_AgentId) isCreateEnvRequest_Target() {}
@@ -5474,6 +10105,8 @@ func (*CreateEnvRequest_AgentId) isCreateEnvRequest_Target() {}
 func (*CreateEnvRequest_McpId) isCreateEnvRequest_Target() {}
 
 func (*CreateEnvRequest_HookId) isCreateEnvRequest_Target() {}
+
+func (*CreateEnvRequest_EnvironmentId) isCreateEnvRequest_Target() {}
 
 type isCreateEnvRequest_Source interface {
 	isCreateEnvRequest_Source()
@@ -5500,7 +10133,7 @@ type CreateEnvResponse struct {
 
 func (x *CreateEnvResponse) Reset() {
 	*x = CreateEnvResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[88]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[151]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5512,7 +10145,7 @@ func (x *CreateEnvResponse) String() string {
 func (*CreateEnvResponse) ProtoMessage() {}
 
 func (x *CreateEnvResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[88]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[151]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5525,7 +10158,7 @@ func (x *CreateEnvResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateEnvResponse.ProtoReflect.Descriptor instead.
 func (*CreateEnvResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{88}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{151}
 }
 
 func (x *CreateEnvResponse) GetEnv() *Env {
@@ -5544,7 +10177,7 @@ type GetEnvRequest struct {
 
 func (x *GetEnvRequest) Reset() {
 	*x = GetEnvRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[89]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[152]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5556,7 +10189,7 @@ func (x *GetEnvRequest) String() string {
 func (*GetEnvRequest) ProtoMessage() {}
 
 func (x *GetEnvRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[89]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[152]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5569,7 +10202,7 @@ func (x *GetEnvRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetEnvRequest.ProtoReflect.Descriptor instead.
 func (*GetEnvRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{89}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{152}
 }
 
 func (x *GetEnvRequest) GetId() string {
@@ -5588,7 +10221,7 @@ type GetEnvResponse struct {
 
 func (x *GetEnvResponse) Reset() {
 	*x = GetEnvResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[90]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[153]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5600,7 +10233,7 @@ func (x *GetEnvResponse) String() string {
 func (*GetEnvResponse) ProtoMessage() {}
 
 func (x *GetEnvResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[90]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[153]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5613,7 +10246,7 @@ func (x *GetEnvResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetEnvResponse.ProtoReflect.Descriptor instead.
 func (*GetEnvResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{90}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{153}
 }
 
 func (x *GetEnvResponse) GetEnv() *Env {
@@ -5636,7 +10269,7 @@ type UpdateEnvRequest struct {
 
 func (x *UpdateEnvRequest) Reset() {
 	*x = UpdateEnvRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[91]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[154]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5648,7 +10281,7 @@ func (x *UpdateEnvRequest) String() string {
 func (*UpdateEnvRequest) ProtoMessage() {}
 
 func (x *UpdateEnvRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[91]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[154]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5661,7 +10294,7 @@ func (x *UpdateEnvRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateEnvRequest.ProtoReflect.Descriptor instead.
 func (*UpdateEnvRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{91}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{154}
 }
 
 func (x *UpdateEnvRequest) GetId() string {
@@ -5708,7 +10341,7 @@ type UpdateEnvResponse struct {
 
 func (x *UpdateEnvResponse) Reset() {
 	*x = UpdateEnvResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[92]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[155]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5720,7 +10353,7 @@ func (x *UpdateEnvResponse) String() string {
 func (*UpdateEnvResponse) ProtoMessage() {}
 
 func (x *UpdateEnvResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[92]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[155]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5733,7 +10366,7 @@ func (x *UpdateEnvResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateEnvResponse.ProtoReflect.Descriptor instead.
 func (*UpdateEnvResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{92}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{155}
 }
 
 func (x *UpdateEnvResponse) GetEnv() *Env {
@@ -5752,7 +10385,7 @@ type DeleteEnvRequest struct {
 
 func (x *DeleteEnvRequest) Reset() {
 	*x = DeleteEnvRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[93]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[156]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5764,7 +10397,7 @@ func (x *DeleteEnvRequest) String() string {
 func (*DeleteEnvRequest) ProtoMessage() {}
 
 func (x *DeleteEnvRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[93]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[156]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5777,7 +10410,7 @@ func (x *DeleteEnvRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteEnvRequest.ProtoReflect.Descriptor instead.
 func (*DeleteEnvRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{93}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{156}
 }
 
 func (x *DeleteEnvRequest) GetId() string {
@@ -5795,7 +10428,7 @@ type DeleteEnvResponse struct {
 
 func (x *DeleteEnvResponse) Reset() {
 	*x = DeleteEnvResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[94]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[157]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5807,7 +10440,7 @@ func (x *DeleteEnvResponse) String() string {
 func (*DeleteEnvResponse) ProtoMessage() {}
 
 func (x *DeleteEnvResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[94]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[157]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5820,23 +10453,28 @@ func (x *DeleteEnvResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteEnvResponse.ProtoReflect.Descriptor instead.
 func (*DeleteEnvResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{94}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{157}
 }
 
 type ListEnvsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	PageSize      int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	PageToken     string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
-	AgentId       string                 `protobuf:"bytes,3,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
-	McpId         string                 `protobuf:"bytes,4,opt,name=mcp_id,json=mcpId,proto3" json:"mcp_id,omitempty"`
-	HookId        string                 `protobuf:"bytes,5,opt,name=hook_id,json=hookId,proto3" json:"hook_id,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	PageSize  int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	// The organization whose envs are listed. Required of a caller presenting an
+	// identity; the remaining ids only narrow the result within it.
+	OrganizationId string `protobuf:"bytes,7,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"` // UUID
+	AgentId        string `protobuf:"bytes,3,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	McpId          string `protobuf:"bytes,4,opt,name=mcp_id,json=mcpId,proto3" json:"mcp_id,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	HookId        string `protobuf:"bytes,5,opt,name=hook_id,json=hookId,proto3" json:"hook_id,omitempty"`
+	EnvironmentId string `protobuf:"bytes,6,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListEnvsRequest) Reset() {
 	*x = ListEnvsRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[95]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[158]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5848,7 +10486,7 @@ func (x *ListEnvsRequest) String() string {
 func (*ListEnvsRequest) ProtoMessage() {}
 
 func (x *ListEnvsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[95]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[158]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5861,7 +10499,7 @@ func (x *ListEnvsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListEnvsRequest.ProtoReflect.Descriptor instead.
 func (*ListEnvsRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{95}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{158}
 }
 
 func (x *ListEnvsRequest) GetPageSize() int32 {
@@ -5874,6 +10512,13 @@ func (x *ListEnvsRequest) GetPageSize() int32 {
 func (x *ListEnvsRequest) GetPageToken() string {
 	if x != nil {
 		return x.PageToken
+	}
+	return ""
+}
+
+func (x *ListEnvsRequest) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
 	}
 	return ""
 }
@@ -5892,9 +10537,17 @@ func (x *ListEnvsRequest) GetMcpId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *ListEnvsRequest) GetHookId() string {
 	if x != nil {
 		return x.HookId
+	}
+	return ""
+}
+
+func (x *ListEnvsRequest) GetEnvironmentId() string {
+	if x != nil {
+		return x.EnvironmentId
 	}
 	return ""
 }
@@ -5909,7 +10562,7 @@ type ListEnvsResponse struct {
 
 func (x *ListEnvsResponse) Reset() {
 	*x = ListEnvsResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[96]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[159]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5921,7 +10574,7 @@ func (x *ListEnvsResponse) String() string {
 func (*ListEnvsResponse) ProtoMessage() {}
 
 func (x *ListEnvsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[96]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[159]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5934,7 +10587,7 @@ func (x *ListEnvsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListEnvsResponse.ProtoReflect.Descriptor instead.
 func (*ListEnvsResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{96}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{159}
 }
 
 func (x *ListEnvsResponse) GetEnvs() []*Env {
@@ -5961,6 +10614,7 @@ type InitScript struct {
 	//	*InitScript_AgentId
 	//	*InitScript_McpId
 	//	*InitScript_HookId
+	//	*InitScript_EnvironmentId
 	Target        isInitScript_Target `protobuf_oneof:"target"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -5968,7 +10622,7 @@ type InitScript struct {
 
 func (x *InitScript) Reset() {
 	*x = InitScript{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[97]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[160]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5980,7 +10634,7 @@ func (x *InitScript) String() string {
 func (*InitScript) ProtoMessage() {}
 
 func (x *InitScript) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[97]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[160]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5993,7 +10647,7 @@ func (x *InitScript) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InitScript.ProtoReflect.Descriptor instead.
 func (*InitScript) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{97}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{160}
 }
 
 func (x *InitScript) GetMeta() *EntityMeta {
@@ -6042,10 +10696,20 @@ func (x *InitScript) GetMcpId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *InitScript) GetHookId() string {
 	if x != nil {
 		if x, ok := x.Target.(*InitScript_HookId); ok {
 			return x.HookId
+		}
+	}
+	return ""
+}
+
+func (x *InitScript) GetEnvironmentId() string {
+	if x != nil {
+		if x, ok := x.Target.(*InitScript_EnvironmentId); ok {
+			return x.EnvironmentId
 		}
 	}
 	return ""
@@ -6064,7 +10728,12 @@ type InitScript_McpId struct {
 }
 
 type InitScript_HookId struct {
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 	HookId string `protobuf:"bytes,6,opt,name=hook_id,json=hookId,proto3,oneof"`
+}
+
+type InitScript_EnvironmentId struct {
+	EnvironmentId string `protobuf:"bytes,7,opt,name=environment_id,json=environmentId,proto3,oneof"`
 }
 
 func (*InitScript_AgentId) isInitScript_Target() {}
@@ -6072,6 +10741,8 @@ func (*InitScript_AgentId) isInitScript_Target() {}
 func (*InitScript_McpId) isInitScript_Target() {}
 
 func (*InitScript_HookId) isInitScript_Target() {}
+
+func (*InitScript_EnvironmentId) isInitScript_Target() {}
 
 type CreateInitScriptRequest struct {
 	state       protoimpl.MessageState `protogen:"open.v1"`
@@ -6082,6 +10753,7 @@ type CreateInitScriptRequest struct {
 	//	*CreateInitScriptRequest_AgentId
 	//	*CreateInitScriptRequest_McpId
 	//	*CreateInitScriptRequest_HookId
+	//	*CreateInitScriptRequest_EnvironmentId
 	Target        isCreateInitScriptRequest_Target `protobuf_oneof:"target"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -6089,7 +10761,7 @@ type CreateInitScriptRequest struct {
 
 func (x *CreateInitScriptRequest) Reset() {
 	*x = CreateInitScriptRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[98]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[161]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6101,7 +10773,7 @@ func (x *CreateInitScriptRequest) String() string {
 func (*CreateInitScriptRequest) ProtoMessage() {}
 
 func (x *CreateInitScriptRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[98]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[161]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6114,7 +10786,7 @@ func (x *CreateInitScriptRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateInitScriptRequest.ProtoReflect.Descriptor instead.
 func (*CreateInitScriptRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{98}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{161}
 }
 
 func (x *CreateInitScriptRequest) GetScript() string {
@@ -6156,10 +10828,20 @@ func (x *CreateInitScriptRequest) GetMcpId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *CreateInitScriptRequest) GetHookId() string {
 	if x != nil {
 		if x, ok := x.Target.(*CreateInitScriptRequest_HookId); ok {
 			return x.HookId
+		}
+	}
+	return ""
+}
+
+func (x *CreateInitScriptRequest) GetEnvironmentId() string {
+	if x != nil {
+		if x, ok := x.Target.(*CreateInitScriptRequest_EnvironmentId); ok {
+			return x.EnvironmentId
 		}
 	}
 	return ""
@@ -6178,7 +10860,12 @@ type CreateInitScriptRequest_McpId struct {
 }
 
 type CreateInitScriptRequest_HookId struct {
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 	HookId string `protobuf:"bytes,5,opt,name=hook_id,json=hookId,proto3,oneof"`
+}
+
+type CreateInitScriptRequest_EnvironmentId struct {
+	EnvironmentId string `protobuf:"bytes,6,opt,name=environment_id,json=environmentId,proto3,oneof"`
 }
 
 func (*CreateInitScriptRequest_AgentId) isCreateInitScriptRequest_Target() {}
@@ -6186,6 +10873,8 @@ func (*CreateInitScriptRequest_AgentId) isCreateInitScriptRequest_Target() {}
 func (*CreateInitScriptRequest_McpId) isCreateInitScriptRequest_Target() {}
 
 func (*CreateInitScriptRequest_HookId) isCreateInitScriptRequest_Target() {}
+
+func (*CreateInitScriptRequest_EnvironmentId) isCreateInitScriptRequest_Target() {}
 
 type CreateInitScriptResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -6196,7 +10885,7 @@ type CreateInitScriptResponse struct {
 
 func (x *CreateInitScriptResponse) Reset() {
 	*x = CreateInitScriptResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[99]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[162]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6208,7 +10897,7 @@ func (x *CreateInitScriptResponse) String() string {
 func (*CreateInitScriptResponse) ProtoMessage() {}
 
 func (x *CreateInitScriptResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[99]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[162]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6221,7 +10910,7 @@ func (x *CreateInitScriptResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateInitScriptResponse.ProtoReflect.Descriptor instead.
 func (*CreateInitScriptResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{99}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{162}
 }
 
 func (x *CreateInitScriptResponse) GetInitScript() *InitScript {
@@ -6240,7 +10929,7 @@ type GetInitScriptRequest struct {
 
 func (x *GetInitScriptRequest) Reset() {
 	*x = GetInitScriptRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[100]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[163]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6252,7 +10941,7 @@ func (x *GetInitScriptRequest) String() string {
 func (*GetInitScriptRequest) ProtoMessage() {}
 
 func (x *GetInitScriptRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[100]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[163]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6265,7 +10954,7 @@ func (x *GetInitScriptRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetInitScriptRequest.ProtoReflect.Descriptor instead.
 func (*GetInitScriptRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{100}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{163}
 }
 
 func (x *GetInitScriptRequest) GetId() string {
@@ -6284,7 +10973,7 @@ type GetInitScriptResponse struct {
 
 func (x *GetInitScriptResponse) Reset() {
 	*x = GetInitScriptResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[101]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[164]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6296,7 +10985,7 @@ func (x *GetInitScriptResponse) String() string {
 func (*GetInitScriptResponse) ProtoMessage() {}
 
 func (x *GetInitScriptResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[101]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[164]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6309,7 +10998,7 @@ func (x *GetInitScriptResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetInitScriptResponse.ProtoReflect.Descriptor instead.
 func (*GetInitScriptResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{101}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{164}
 }
 
 func (x *GetInitScriptResponse) GetInitScript() *InitScript {
@@ -6330,7 +11019,7 @@ type UpdateInitScriptRequest struct {
 
 func (x *UpdateInitScriptRequest) Reset() {
 	*x = UpdateInitScriptRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[102]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[165]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6342,7 +11031,7 @@ func (x *UpdateInitScriptRequest) String() string {
 func (*UpdateInitScriptRequest) ProtoMessage() {}
 
 func (x *UpdateInitScriptRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[102]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[165]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6355,7 +11044,7 @@ func (x *UpdateInitScriptRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateInitScriptRequest.ProtoReflect.Descriptor instead.
 func (*UpdateInitScriptRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{102}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{165}
 }
 
 func (x *UpdateInitScriptRequest) GetId() string {
@@ -6388,7 +11077,7 @@ type UpdateInitScriptResponse struct {
 
 func (x *UpdateInitScriptResponse) Reset() {
 	*x = UpdateInitScriptResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[103]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[166]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6400,7 +11089,7 @@ func (x *UpdateInitScriptResponse) String() string {
 func (*UpdateInitScriptResponse) ProtoMessage() {}
 
 func (x *UpdateInitScriptResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[103]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[166]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6413,7 +11102,7 @@ func (x *UpdateInitScriptResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateInitScriptResponse.ProtoReflect.Descriptor instead.
 func (*UpdateInitScriptResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{103}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{166}
 }
 
 func (x *UpdateInitScriptResponse) GetInitScript() *InitScript {
@@ -6432,7 +11121,7 @@ type DeleteInitScriptRequest struct {
 
 func (x *DeleteInitScriptRequest) Reset() {
 	*x = DeleteInitScriptRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[104]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[167]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6444,7 +11133,7 @@ func (x *DeleteInitScriptRequest) String() string {
 func (*DeleteInitScriptRequest) ProtoMessage() {}
 
 func (x *DeleteInitScriptRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[104]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[167]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6457,7 +11146,7 @@ func (x *DeleteInitScriptRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteInitScriptRequest.ProtoReflect.Descriptor instead.
 func (*DeleteInitScriptRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{104}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{167}
 }
 
 func (x *DeleteInitScriptRequest) GetId() string {
@@ -6475,7 +11164,7 @@ type DeleteInitScriptResponse struct {
 
 func (x *DeleteInitScriptResponse) Reset() {
 	*x = DeleteInitScriptResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[105]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[168]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6487,7 +11176,7 @@ func (x *DeleteInitScriptResponse) String() string {
 func (*DeleteInitScriptResponse) ProtoMessage() {}
 
 func (x *DeleteInitScriptResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[105]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[168]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6500,23 +11189,25 @@ func (x *DeleteInitScriptResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteInitScriptResponse.ProtoReflect.Descriptor instead.
 func (*DeleteInitScriptResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{105}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{168}
 }
 
 type ListInitScriptsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	PageSize      int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	PageToken     string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
-	AgentId       string                 `protobuf:"bytes,3,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
-	McpId         string                 `protobuf:"bytes,4,opt,name=mcp_id,json=mcpId,proto3" json:"mcp_id,omitempty"`
-	HookId        string                 `protobuf:"bytes,5,opt,name=hook_id,json=hookId,proto3" json:"hook_id,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	PageSize  int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	AgentId   string                 `protobuf:"bytes,3,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	McpId     string                 `protobuf:"bytes,4,opt,name=mcp_id,json=mcpId,proto3" json:"mcp_id,omitempty"`
+	// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
+	HookId        string `protobuf:"bytes,5,opt,name=hook_id,json=hookId,proto3" json:"hook_id,omitempty"`
+	EnvironmentId string `protobuf:"bytes,6,opt,name=environment_id,json=environmentId,proto3" json:"environment_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListInitScriptsRequest) Reset() {
 	*x = ListInitScriptsRequest{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[106]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[169]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6528,7 +11219,7 @@ func (x *ListInitScriptsRequest) String() string {
 func (*ListInitScriptsRequest) ProtoMessage() {}
 
 func (x *ListInitScriptsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[106]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[169]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6541,7 +11232,7 @@ func (x *ListInitScriptsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListInitScriptsRequest.ProtoReflect.Descriptor instead.
 func (*ListInitScriptsRequest) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{106}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{169}
 }
 
 func (x *ListInitScriptsRequest) GetPageSize() int32 {
@@ -6572,9 +11263,17 @@ func (x *ListInitScriptsRequest) GetMcpId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in agynio/api/agents/v1/agents.proto.
 func (x *ListInitScriptsRequest) GetHookId() string {
 	if x != nil {
 		return x.HookId
+	}
+	return ""
+}
+
+func (x *ListInitScriptsRequest) GetEnvironmentId() string {
+	if x != nil {
+		return x.EnvironmentId
 	}
 	return ""
 }
@@ -6589,7 +11288,7 @@ type ListInitScriptsResponse struct {
 
 func (x *ListInitScriptsResponse) Reset() {
 	*x = ListInitScriptsResponse{}
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[107]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[170]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6601,7 +11300,7 @@ func (x *ListInitScriptsResponse) String() string {
 func (*ListInitScriptsResponse) ProtoMessage() {}
 
 func (x *ListInitScriptsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[107]
+	mi := &file_agynio_api_agents_v1_agents_proto_msgTypes[170]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6614,7 +11313,7 @@ func (x *ListInitScriptsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListInitScriptsResponse.ProtoReflect.Descriptor instead.
 func (*ListInitScriptsResponse) Descriptor() ([]byte, []int) {
-	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{107}
+	return file_agynio_api_agents_v1_agents_proto_rawDescGZIP(), []int{170}
 }
 
 func (x *ListInitScriptsResponse) GetInitScripts() []*InitScript {
@@ -6648,16 +11347,16 @@ const file_agynio_api_agents_v1_agents_proto_rawDesc = "" +
 	"\x0frequests_memory\x18\x02 \x01(\tR\x0erequestsMemory\x12\x1d\n" +
 	"\n" +
 	"limits_cpu\x18\x03 \x01(\tR\tlimitsCpu\x12#\n" +
-	"\rlimits_memory\x18\x04 \x01(\tR\flimitsMemory\"\xad\x04\n" +
+	"\rlimits_memory\x18\x04 \x01(\tR\flimitsMemory\"\xc2\x06\n" +
 	"\x05Agent\x124\n" +
 	"\x04meta\x18\x01 \x01(\v2 .agynio.api.agents.v1.EntityMetaR\x04meta\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
 	"\x04role\x18\x03 \x01(\tR\x04role\x12\x14\n" +
 	"\x05model\x18\x04 \x01(\tR\x05model\x12 \n" +
 	"\vdescription\x18\x05 \x01(\tR\vdescription\x12$\n" +
-	"\rconfiguration\x18\x06 \x01(\tR\rconfiguration\x12\x14\n" +
-	"\x05image\x18\a \x01(\tR\x05image\x12D\n" +
-	"\tresources\x18\b \x01(\v2&.agynio.api.agents.v1.ComputeResourcesR\tresources\x12\x1d\n" +
+	"\rconfiguration\x18\x06 \x01(\tR\rconfiguration\x12\x18\n" +
+	"\x05image\x18\a \x01(\tB\x02\x18\x01R\x05image\x12H\n" +
+	"\tresources\x18\b \x01(\v2&.agynio.api.agents.v1.ComputeResourcesB\x02\x18\x01R\tresources\x12\x1d\n" +
 	"\n" +
 	"init_image\x18\t \x01(\tR\tinitImage\x12'\n" +
 	"\x0forganization_id\x18\n" +
@@ -6665,16 +11364,21 @@ const file_agynio_api_agents_v1_agents_proto_rawDesc = "" +
 	"\bnickname\x18\v \x01(\tR\bnickname\x12&\n" +
 	"\fidle_timeout\x18\f \x01(\tH\x00R\vidleTimeout\x88\x01\x01\x12\"\n" +
 	"\fcapabilities\x18\r \x03(\tR\fcapabilities\x12K\n" +
-	"\favailability\x18\x0e \x01(\x0e2'.agynio.api.agents.v1.AgentAvailabilityR\favailabilityB\x0f\n" +
-	"\r_idle_timeout\"\x84\x04\n" +
+	"\favailability\x18\x0e \x01(\x0e2'.agynio.api.agents.v1.AgentAvailabilityR\favailability\x12%\n" +
+	"\x0eenvironment_id\x18\x0f \x01(\tR\renvironmentId\x12O\n" +
+	"\x0edefault_thread\x18\x10 \x01(\x0e2(.agynio.api.agents.v1.AgentDefaultThreadR\rdefaultThread\x12L\n" +
+	"\rfinal_message\x18\x11 \x01(\x0e2'.agynio.api.agents.v1.AgentFinalMessageR\ffinalMessage\x12/\n" +
+	"\x11instance_idle_ttl\x18\x12 \x01(\tH\x01R\x0finstanceIdleTtl\x88\x01\x01B\x0f\n" +
+	"\r_idle_timeoutB\x14\n" +
+	"\x12_instance_idle_ttl\"\x99\x06\n" +
 	"\x12CreateAgentRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04role\x18\x02 \x01(\tR\x04role\x12\x14\n" +
 	"\x05model\x18\x03 \x01(\tR\x05model\x12 \n" +
 	"\vdescription\x18\x04 \x01(\tR\vdescription\x12$\n" +
-	"\rconfiguration\x18\x05 \x01(\tR\rconfiguration\x12\x14\n" +
-	"\x05image\x18\x06 \x01(\tR\x05image\x12D\n" +
-	"\tresources\x18\a \x01(\v2&.agynio.api.agents.v1.ComputeResourcesR\tresources\x12'\n" +
+	"\rconfiguration\x18\x05 \x01(\tR\rconfiguration\x12\x18\n" +
+	"\x05image\x18\x06 \x01(\tB\x02\x18\x01R\x05image\x12H\n" +
+	"\tresources\x18\a \x01(\v2&.agynio.api.agents.v1.ComputeResourcesB\x02\x18\x01R\tresources\x12'\n" +
 	"\x0forganization_id\x18\b \x01(\tR\x0eorganizationId\x12\x1d\n" +
 	"\n" +
 	"init_image\x18\t \x01(\tR\tinitImage\x12\x1a\n" +
@@ -6682,8 +11386,13 @@ const file_agynio_api_agents_v1_agents_proto_rawDesc = "" +
 	" \x01(\tR\bnickname\x12&\n" +
 	"\fidle_timeout\x18\v \x01(\tH\x00R\vidleTimeout\x88\x01\x01\x12\"\n" +
 	"\fcapabilities\x18\f \x03(\tR\fcapabilities\x12K\n" +
-	"\favailability\x18\r \x01(\x0e2'.agynio.api.agents.v1.AgentAvailabilityR\favailabilityB\x0f\n" +
-	"\r_idle_timeout\"H\n" +
+	"\favailability\x18\r \x01(\x0e2'.agynio.api.agents.v1.AgentAvailabilityR\favailability\x12%\n" +
+	"\x0eenvironment_id\x18\x0e \x01(\tR\renvironmentId\x12O\n" +
+	"\x0edefault_thread\x18\x0f \x01(\x0e2(.agynio.api.agents.v1.AgentDefaultThreadR\rdefaultThread\x12L\n" +
+	"\rfinal_message\x18\x10 \x01(\x0e2'.agynio.api.agents.v1.AgentFinalMessageR\ffinalMessage\x12/\n" +
+	"\x11instance_idle_ttl\x18\x11 \x01(\tH\x01R\x0finstanceIdleTtl\x88\x01\x01B\x0f\n" +
+	"\r_idle_timeoutB\x14\n" +
+	"\x12_instance_idle_ttl\"H\n" +
 	"\x13CreateAgentResponse\x121\n" +
 	"\x05agent\x18\x01 \x01(\v2\x1b.agynio.api.agents.v1.AgentR\x05agent\"!\n" +
 	"\x0fGetAgentRequest\x12\x0e\n" +
@@ -6692,19 +11401,21 @@ const file_agynio_api_agents_v1_agents_proto_rawDesc = "" +
 	"\x05agent\x18\x01 \x01(\v2\x1b.agynio.api.agents.v1.AgentR\x05agent\">\n" +
 	"\x1bResolveAgentIdentityRequest\x12\x1f\n" +
 	"\videntity_id\x18\x01 \x01(\tR\n" +
-	"identityId\"b\n" +
+	"identityId\"\xa9\x01\n" +
 	"\x1cResolveAgentIdentityResponse\x12\x19\n" +
 	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12'\n" +
-	"\x0forganization_id\x18\x02 \x01(\tR\x0eorganizationId\"\xa0\x05\n" +
+	"\x0forganization_id\x18\x02 \x01(\tR\x0eorganizationId\x12/\n" +
+	"\x11agent_instance_id\x18\x03 \x01(\tH\x00R\x0fagentInstanceId\x88\x01\x01B\x14\n" +
+	"\x12_agent_instance_id\"\xfc\a\n" +
 	"\x12UpdateAgentRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\x04name\x18\x02 \x01(\tH\x00R\x04name\x88\x01\x01\x12\x17\n" +
 	"\x04role\x18\x03 \x01(\tH\x01R\x04role\x88\x01\x01\x12\x19\n" +
 	"\x05model\x18\x04 \x01(\tH\x02R\x05model\x88\x01\x01\x12%\n" +
 	"\vdescription\x18\x05 \x01(\tH\x03R\vdescription\x88\x01\x01\x12)\n" +
-	"\rconfiguration\x18\x06 \x01(\tH\x04R\rconfiguration\x88\x01\x01\x12\x19\n" +
-	"\x05image\x18\a \x01(\tH\x05R\x05image\x88\x01\x01\x12I\n" +
-	"\tresources\x18\b \x01(\v2&.agynio.api.agents.v1.ComputeResourcesH\x06R\tresources\x88\x01\x01\x12\"\n" +
+	"\rconfiguration\x18\x06 \x01(\tH\x04R\rconfiguration\x88\x01\x01\x12\x1d\n" +
+	"\x05image\x18\a \x01(\tB\x02\x18\x01H\x05R\x05image\x88\x01\x01\x12M\n" +
+	"\tresources\x18\b \x01(\v2&.agynio.api.agents.v1.ComputeResourcesB\x02\x18\x01H\x06R\tresources\x88\x01\x01\x12\"\n" +
 	"\n" +
 	"init_image\x18\t \x01(\tH\aR\tinitImage\x88\x01\x01\x12\x1f\n" +
 	"\bnickname\x18\n" +
@@ -6712,7 +11423,11 @@ const file_agynio_api_agents_v1_agents_proto_rawDesc = "" +
 	"\fidle_timeout\x18\v \x01(\tH\tR\vidleTimeout\x88\x01\x01\x12\"\n" +
 	"\fcapabilities\x18\f \x03(\tR\fcapabilities\x12P\n" +
 	"\favailability\x18\r \x01(\x0e2'.agynio.api.agents.v1.AgentAvailabilityH\n" +
-	"R\favailability\x88\x01\x01B\a\n" +
+	"R\favailability\x88\x01\x01\x12*\n" +
+	"\x0eenvironment_id\x18\x0e \x01(\tH\vR\renvironmentId\x88\x01\x01\x12T\n" +
+	"\x0edefault_thread\x18\x0f \x01(\x0e2(.agynio.api.agents.v1.AgentDefaultThreadH\fR\rdefaultThread\x88\x01\x01\x12Q\n" +
+	"\rfinal_message\x18\x10 \x01(\x0e2'.agynio.api.agents.v1.AgentFinalMessageH\rR\ffinalMessage\x88\x01\x01\x12/\n" +
+	"\x11instance_idle_ttl\x18\x11 \x01(\tH\x0eR\x0finstanceIdleTtl\x88\x01\x01B\a\n" +
 	"\x05_nameB\a\n" +
 	"\x05_roleB\b\n" +
 	"\x06_modelB\x0e\n" +
@@ -6724,7 +11439,11 @@ const file_agynio_api_agents_v1_agents_proto_rawDesc = "" +
 	"\v_init_imageB\v\n" +
 	"\t_nicknameB\x0f\n" +
 	"\r_idle_timeoutB\x0f\n" +
-	"\r_availability\"H\n" +
+	"\r_availabilityB\x11\n" +
+	"\x0f_environment_idB\x11\n" +
+	"\x0f_default_threadB\x10\n" +
+	"\x0e_final_messageB\x14\n" +
+	"\x12_instance_idle_ttl\"H\n" +
 	"\x13UpdateAgentResponse\x121\n" +
 	"\x05agent\x18\x01 \x01(\v2\x1b.agynio.api.agents.v1.AgentR\x05agent\"$\n" +
 	"\x12DeleteAgentRequest\x12\x0e\n" +
@@ -6764,7 +11483,300 @@ const file_agynio_api_agents_v1_agents_proto_rawDesc = "" +
 	"\x17ListMyAgentRolesRequest\x12'\n" +
 	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\"g\n" +
 	"\x18ListMyAgentRolesResponse\x12K\n" +
-	"\vassignments\x18\x01 \x03(\v2).agynio.api.agents.v1.AgentRoleAssignmentR\vassignments\"\xd2\x01\n" +
+	"\vassignments\x18\x01 \x03(\v2).agynio.api.agents.v1.AgentRoleAssignmentR\vassignments\"\x80\x04\n" +
+	"\rAgentInstance\x124\n" +
+	"\x04meta\x18\x01 \x01(\v2 .agynio.api.agents.v1.EntityMetaR\x04meta\x12\x19\n" +
+	"\bagent_id\x18\x02 \x01(\tR\aagentId\x12'\n" +
+	"\x0forganization_id\x18\x03 \x01(\tR\x0eorganizationId\x12\x19\n" +
+	"\x05label\x18\x04 \x01(\tH\x00R\x05label\x88\x01\x01\x12\x16\n" +
+	"\x06suffix\x18\x05 \x01(\tR\x06suffix\x12>\n" +
+	"\x05state\x18\x06 \x01(\x0e2(.agynio.api.agents.v1.AgentInstanceStateR\x05state\x12&\n" +
+	"\fpause_reason\x18\a \x01(\tH\x01R\vpauseReason\x88\x01\x01\x12D\n" +
+	"\x10last_activity_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\x0elastActivityAt\x12\x1a\n" +
+	"\bnickname\x18\t \x01(\tR\bnickname\x12\x16\n" +
+	"\x06handle\x18\n" +
+	" \x01(\tR\x06handle\x12/\n" +
+	"\x11default_thread_id\x18\v \x01(\tH\x02R\x0fdefaultThreadId\x88\x01\x01B\b\n" +
+	"\x06_labelB\x0f\n" +
+	"\r_pause_reasonB\x14\n" +
+	"\x12_default_thread_id\"G\n" +
+	"\x15CreateInstanceContext\x12 \n" +
+	"\tthread_id\x18\x01 \x01(\tH\x00R\bthreadId\x88\x01\x01B\f\n" +
+	"\n" +
+	"_thread_id\"\xe5\x01\n" +
+	"\x15CreateInstanceRequest\x12\x19\n" +
+	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12\x19\n" +
+	"\x05label\x18\x02 \x01(\tH\x00R\x05label\x88\x01\x01\x12E\n" +
+	"\acontext\x18\x03 \x01(\v2+.agynio.api.agents.v1.CreateInstanceContextR\acontext\x12/\n" +
+	"\x11default_thread_id\x18\x04 \x01(\tH\x01R\x0fdefaultThreadId\x88\x01\x01B\b\n" +
+	"\x06_labelB\x14\n" +
+	"\x12_default_thread_id\"Y\n" +
+	"\x16CreateInstanceResponse\x12?\n" +
+	"\binstance\x18\x01 \x01(\v2#.agynio.api.agents.v1.AgentInstanceR\binstance\"$\n" +
+	"\x12GetInstanceRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"V\n" +
+	"\x13GetInstanceResponse\x12?\n" +
+	"\binstance\x18\x01 \x01(\v2#.agynio.api.agents.v1.AgentInstanceR\binstance\"x\n" +
+	"\x1fSetInstanceDefaultThreadRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12/\n" +
+	"\x11default_thread_id\x18\x02 \x01(\tH\x00R\x0fdefaultThreadId\x88\x01\x01B\x14\n" +
+	"\x12_default_thread_id\"c\n" +
+	" SetInstanceDefaultThreadResponse\x12?\n" +
+	"\binstance\x18\x01 \x01(\v2#.agynio.api.agents.v1.AgentInstanceR\binstance\"\xa3\x02\n" +
+	"\x14ListInstancesRequest\x12\x1b\n" +
+	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\n" +
+	"page_token\x18\x02 \x01(\tR\tpageToken\x12'\n" +
+	"\x0forganization_id\x18\x03 \x01(\tR\x0eorganizationId\x12\x1e\n" +
+	"\bagent_id\x18\x04 \x01(\tH\x00R\aagentId\x88\x01\x01\x12C\n" +
+	"\bstate_in\x18\x05 \x03(\x0e2(.agynio.api.agents.v1.AgentInstanceStateR\astateIn\x12$\n" +
+	"\vhas_unacked\x18\x06 \x01(\bH\x01R\n" +
+	"hasUnacked\x88\x01\x01B\v\n" +
+	"\t_agent_idB\x0e\n" +
+	"\f_has_unacked\"\x82\x01\n" +
+	"\x15ListInstancesResponse\x12A\n" +
+	"\tinstances\x18\x01 \x03(\v2#.agynio.api.agents.v1.AgentInstanceR\tinstances\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"I\n" +
+	"\x14PauseInstanceRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
+	"\fpause_reason\x18\x02 \x01(\tR\vpauseReason\"X\n" +
+	"\x15PauseInstanceResponse\x12?\n" +
+	"\binstance\x18\x01 \x01(\v2#.agynio.api.agents.v1.AgentInstanceR\binstance\"'\n" +
+	"\x15ResumeInstanceRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"Y\n" +
+	"\x16ResumeInstanceResponse\x12?\n" +
+	"\binstance\x18\x01 \x01(\v2#.agynio.api.agents.v1.AgentInstanceR\binstance\"'\n" +
+	"\x15DeleteInstanceRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"Y\n" +
+	"\x16DeleteInstanceResponse\x12?\n" +
+	"\binstance\x18\x01 \x01(\v2#.agynio.api.agents.v1.AgentInstanceR\binstance\"\x84\x04\n" +
+	"\tInboxItem\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12*\n" +
+	"\x11agent_instance_id\x18\x02 \x01(\tR\x0fagentInstanceId\x12J\n" +
+	"\vsource_kind\x18\x03 \x01(\x0e2).agynio.api.agents.v1.InboxItemSourceKindR\n" +
+	"sourceKind\x12 \n" +
+	"\tthread_id\x18\x04 \x01(\tH\x00R\bthreadId\x88\x01\x01\x12\"\n" +
+	"\n" +
+	"message_id\x18\x05 \x01(\tH\x01R\tmessageId\x88\x01\x01\x12\x1b\n" +
+	"\tsender_id\x18\x06 \x01(\tR\bsenderId\x12\x12\n" +
+	"\x04body\x18\a \x01(\tR\x04body\x12\x19\n" +
+	"\bfile_ids\x18\b \x03(\tR\afileIds\x12;\n" +
+	"\vaccepted_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"acceptedAt\x12:\n" +
+	"\backed_at\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampH\x02R\aackedAt\x88\x01\x01\x12(\n" +
+	"\rsender_handle\x18\v \x01(\tH\x03R\fsenderHandle\x88\x01\x01B\f\n" +
+	"\n" +
+	"_thread_idB\r\n" +
+	"\v_message_idB\v\n" +
+	"\t_acked_atB\x10\n" +
+	"\x0e_sender_handle\"\x8f\x01\n" +
+	"\x15WriteInboxItemRequest\x12*\n" +
+	"\x11agent_instance_id\x18\x01 \x01(\tR\x0fagentInstanceId\x12\x1b\n" +
+	"\tsender_id\x18\x02 \x01(\tR\bsenderId\x12\x12\n" +
+	"\x04body\x18\x03 \x01(\tR\x04body\x12\x19\n" +
+	"\bfile_ids\x18\x04 \x03(\tR\afileIds\"M\n" +
+	"\x16WriteInboxItemResponse\x123\n" +
+	"\x04item\x18\x01 \x01(\v2\x1f.agynio.api.agents.v1.InboxItemR\x04item\"\xcc\x01\n" +
+	"\x16FanoutInboxItemRequest\x12*\n" +
+	"\x11agent_instance_id\x18\x01 \x01(\tR\x0fagentInstanceId\x12\x1b\n" +
+	"\tthread_id\x18\x02 \x01(\tR\bthreadId\x12\x1d\n" +
+	"\n" +
+	"message_id\x18\x03 \x01(\tR\tmessageId\x12\x1b\n" +
+	"\tsender_id\x18\x04 \x01(\tR\bsenderId\x12\x12\n" +
+	"\x04body\x18\x05 \x01(\tR\x04body\x12\x19\n" +
+	"\bfile_ids\x18\x06 \x03(\tR\afileIds\"N\n" +
+	"\x17FanoutInboxItemResponse\x123\n" +
+	"\x04item\x18\x01 \x01(\v2\x1f.agynio.api.agents.v1.InboxItemR\x04item\"\x85\x01\n" +
+	"\x1bGetUnackedInboxItemsRequest\x12*\n" +
+	"\x11agent_instance_id\x18\x01 \x01(\tR\x0fagentInstanceId\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\n" +
+	"page_token\x18\x03 \x01(\tR\tpageToken\"}\n" +
+	"\x1cGetUnackedInboxItemsResponse\x125\n" +
+	"\x05items\x18\x01 \x03(\v2\x1f.agynio.api.agents.v1.InboxItemR\x05items\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"]\n" +
+	"\x14AckInboxItemsRequest\x12*\n" +
+	"\x11agent_instance_id\x18\x01 \x01(\tR\x0fagentInstanceId\x12\x19\n" +
+	"\bitem_ids\x18\x02 \x03(\tR\aitemIds\"8\n" +
+	"\x15AckInboxItemsResponse\x12\x1f\n" +
+	"\vacked_count\x18\x01 \x01(\x05R\n" +
+	"ackedCount\"y\n" +
+	"\x1bGetUnackedInboxCountRequest\x12*\n" +
+	"\x11agent_instance_id\x18\x01 \x01(\tR\x0fagentInstanceId\x12 \n" +
+	"\tthread_id\x18\x02 \x01(\tH\x00R\bthreadId\x88\x01\x01B\f\n" +
+	"\n" +
+	"_thread_id\"4\n" +
+	"\x1cGetUnackedInboxCountResponse\x12\x14\n" +
+	"\x05count\x18\x01 \x01(\x05R\x05count\"\xb2\x04\n" +
+	"\vEnvironment\x124\n" +
+	"\x04meta\x18\x01 \x01(\v2 .agynio.api.agents.v1.EntityMetaR\x04meta\x12'\n" +
+	"\x0forganization_id\x18\x02 \x01(\tR\x0eorganizationId\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12\x1f\n" +
+	"\tflavor_id\x18\x04 \x01(\tB\x02\x18\x01R\bflavorId\x12\x18\n" +
+	"\x05image\x18\x05 \x01(\tB\x02\x18\x01R\x05image\x12#\n" +
+	"\vflavor_name\x18\x06 \x01(\tB\x02\x18\x01R\n" +
+	"flavorName\x12\x1b\n" +
+	"\trunner_id\x18\a \x01(\tR\brunnerId\x12\x16\n" +
+	"\x06flavor\x18\b \x01(\tR\x06flavor\x12,\n" +
+	"\x12workspace_image_id\x18\t \x01(\tR\x10workspaceImageId\x12.\n" +
+	"\x13workspace_image_tag\x18\n" +
+	" \x01(\tR\x11workspaceImageTag\x123\n" +
+	"\x16agent_runtime_image_id\x18\v \x01(\tR\x13agentRuntimeImageId\x125\n" +
+	"\x17agent_runtime_image_tag\x18\f \x01(\tR\x14agentRuntimeImageTag\x12Q\n" +
+	"\favailability\x18\r \x01(\x0e2-.agynio.api.agents.v1.EnvironmentAvailabilityR\favailability\"\xe4\x03\n" +
+	"\x18CreateEnvironmentRequest\x12'\n" +
+	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1f\n" +
+	"\tflavor_id\x18\x03 \x01(\tB\x02\x18\x01R\bflavorId\x12\x18\n" +
+	"\x05image\x18\x04 \x01(\tB\x02\x18\x01R\x05image\x12\x1b\n" +
+	"\trunner_id\x18\x05 \x01(\tR\brunnerId\x12\x16\n" +
+	"\x06flavor\x18\x06 \x01(\tR\x06flavor\x12,\n" +
+	"\x12workspace_image_id\x18\a \x01(\tR\x10workspaceImageId\x12.\n" +
+	"\x13workspace_image_tag\x18\b \x01(\tR\x11workspaceImageTag\x123\n" +
+	"\x16agent_runtime_image_id\x18\t \x01(\tR\x13agentRuntimeImageId\x125\n" +
+	"\x17agent_runtime_image_tag\x18\n" +
+	" \x01(\tR\x14agentRuntimeImageTag\x12Q\n" +
+	"\favailability\x18\v \x01(\x0e2-.agynio.api.agents.v1.EnvironmentAvailabilityR\favailability\"`\n" +
+	"\x19CreateEnvironmentResponse\x12C\n" +
+	"\venvironment\x18\x01 \x01(\v2!.agynio.api.agents.v1.EnvironmentR\venvironment\"'\n" +
+	"\x15GetEnvironmentRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"]\n" +
+	"\x16GetEnvironmentResponse\x12C\n" +
+	"\venvironment\x18\x01 \x01(\v2!.agynio.api.agents.v1.EnvironmentR\venvironment\"\xae\x05\n" +
+	"\x18UpdateEnvironmentRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
+	"\x04name\x18\x02 \x01(\tH\x00R\x04name\x88\x01\x01\x12$\n" +
+	"\tflavor_id\x18\x03 \x01(\tB\x02\x18\x01H\x01R\bflavorId\x88\x01\x01\x12\x1d\n" +
+	"\x05image\x18\x04 \x01(\tB\x02\x18\x01H\x02R\x05image\x88\x01\x01\x12 \n" +
+	"\trunner_id\x18\x05 \x01(\tH\x03R\brunnerId\x88\x01\x01\x12\x1b\n" +
+	"\x06flavor\x18\x06 \x01(\tH\x04R\x06flavor\x88\x01\x01\x121\n" +
+	"\x12workspace_image_id\x18\a \x01(\tH\x05R\x10workspaceImageId\x88\x01\x01\x123\n" +
+	"\x13workspace_image_tag\x18\b \x01(\tH\x06R\x11workspaceImageTag\x88\x01\x01\x128\n" +
+	"\x16agent_runtime_image_id\x18\t \x01(\tH\aR\x13agentRuntimeImageId\x88\x01\x01\x12:\n" +
+	"\x17agent_runtime_image_tag\x18\n" +
+	" \x01(\tH\bR\x14agentRuntimeImageTag\x88\x01\x01\x12V\n" +
+	"\favailability\x18\v \x01(\x0e2-.agynio.api.agents.v1.EnvironmentAvailabilityH\tR\favailability\x88\x01\x01B\a\n" +
+	"\x05_nameB\f\n" +
+	"\n" +
+	"_flavor_idB\b\n" +
+	"\x06_imageB\f\n" +
+	"\n" +
+	"_runner_idB\t\n" +
+	"\a_flavorB\x15\n" +
+	"\x13_workspace_image_idB\x16\n" +
+	"\x14_workspace_image_tagB\x19\n" +
+	"\x17_agent_runtime_image_idB\x1a\n" +
+	"\x18_agent_runtime_image_tagB\x0f\n" +
+	"\r_availability\"`\n" +
+	"\x19UpdateEnvironmentResponse\x12C\n" +
+	"\venvironment\x18\x01 \x01(\v2!.agynio.api.agents.v1.EnvironmentR\venvironment\"*\n" +
+	"\x18DeleteEnvironmentRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x1b\n" +
+	"\x19DeleteEnvironmentResponse\"~\n" +
+	"\x17ListEnvironmentsRequest\x12\x1b\n" +
+	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\n" +
+	"page_token\x18\x02 \x01(\tR\tpageToken\x12'\n" +
+	"\x0forganization_id\x18\x03 \x01(\tR\x0eorganizationId\"\x89\x01\n" +
+	"\x18ListEnvironmentsResponse\x12E\n" +
+	"\fenvironments\x18\x01 \x03(\v2!.agynio.api.agents.v1.EnvironmentR\fenvironments\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\x9e\x01\n" +
+	"\x19EnvironmentRoleAssignment\x12%\n" +
+	"\x0eenvironment_id\x18\x01 \x01(\tR\renvironmentId\x12\x1f\n" +
+	"\videntity_id\x18\x02 \x01(\tR\n" +
+	"identityId\x129\n" +
+	"\x04role\x18\x03 \x01(\x0e2%.agynio.api.agents.v1.EnvironmentRoleR\x04role\"\x9e\x01\n" +
+	"\x19SetEnvironmentRoleRequest\x12%\n" +
+	"\x0eenvironment_id\x18\x01 \x01(\tR\renvironmentId\x12\x1f\n" +
+	"\videntity_id\x18\x02 \x01(\tR\n" +
+	"identityId\x129\n" +
+	"\x04role\x18\x03 \x01(\x0e2%.agynio.api.agents.v1.EnvironmentRoleR\x04role\"m\n" +
+	"\x1aSetEnvironmentRoleResponse\x12O\n" +
+	"\n" +
+	"assignment\x18\x01 \x01(\v2/.agynio.api.agents.v1.EnvironmentRoleAssignmentR\n" +
+	"assignment\"f\n" +
+	"\x1cRemoveEnvironmentRoleRequest\x12%\n" +
+	"\x0eenvironment_id\x18\x01 \x01(\tR\renvironmentId\x12\x1f\n" +
+	"\videntity_id\x18\x02 \x01(\tR\n" +
+	"identityId\"\x1f\n" +
+	"\x1dRemoveEnvironmentRoleResponse\"D\n" +
+	"\x1bListEnvironmentRolesRequest\x12%\n" +
+	"\x0eenvironment_id\x18\x01 \x01(\tR\renvironmentId\"q\n" +
+	"\x1cListEnvironmentRolesResponse\x12Q\n" +
+	"\vassignments\x18\x01 \x03(\v2/.agynio.api.agents.v1.EnvironmentRoleAssignmentR\vassignments\"\xee\x03\n" +
+	"\aSandbox\x124\n" +
+	"\x04meta\x18\x01 \x01(\v2 .agynio.api.agents.v1.EntityMetaR\x04meta\x12'\n" +
+	"\x0forganization_id\x18\x02 \x01(\tR\x0eorganizationId\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12%\n" +
+	"\x0eenvironment_id\x18\x04 \x01(\tR\renvironmentId\x12\x19\n" +
+	"\bowner_id\x18\x05 \x01(\tR\aownerId\x12;\n" +
+	"\x06status\x18\x06 \x01(\x0e2#.agynio.api.agents.v1.SandboxStatusR\x06status\x12!\n" +
+	"\fidle_timeout\x18\a \x01(\tR\vidleTimeout\x12\x10\n" +
+	"\x03ttl\x18\b \x01(\tR\x03ttl\x12G\n" +
+	"\x0flast_session_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampH\x00R\rlastSessionAt\x88\x01\x01\x12)\n" +
+	"\x10environment_name\x18\n" +
+	" \x01(\tR\x0fenvironmentName\x12$\n" +
+	"\vworkload_id\x18\v \x01(\tH\x01R\n" +
+	"workloadId\x88\x01\x01B\x12\n" +
+	"\x10_last_session_atB\x0e\n" +
+	"\f_workload_id\"\xc1\x01\n" +
+	"\x14CreateSandboxRequest\x12'\n" +
+	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\x12\x17\n" +
+	"\x04name\x18\x02 \x01(\tH\x00R\x04name\x88\x01\x01\x12%\n" +
+	"\x0eenvironment_id\x18\x03 \x01(\tR\renvironmentId\x12&\n" +
+	"\fidle_timeout\x18\x04 \x01(\tH\x01R\vidleTimeout\x88\x01\x01B\a\n" +
+	"\x05_nameB\x0f\n" +
+	"\r_idle_timeout\"P\n" +
+	"\x15CreateSandboxResponse\x127\n" +
+	"\asandbox\x18\x01 \x01(\v2\x1d.agynio.api.agents.v1.SandboxR\asandbox\"h\n" +
+	"\x11GetSandboxRequest\x12\x10\n" +
+	"\x02id\x18\x01 \x01(\tH\x00R\x02id\x12:\n" +
+	"\x04name\x18\x02 \x01(\v2$.agynio.api.agents.v1.SandboxNameRefH\x00R\x04nameB\x05\n" +
+	"\x03ref\"M\n" +
+	"\x0eSandboxNameRef\x12'\n" +
+	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"M\n" +
+	"\x12GetSandboxResponse\x127\n" +
+	"\asandbox\x18\x01 \x01(\v2\x1d.agynio.api.agents.v1.SandboxR\asandbox\"\xd7\x01\n" +
+	"\x14ListSandboxesRequest\x12\x1b\n" +
+	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\n" +
+	"page_token\x18\x02 \x01(\tR\tpageToken\x12'\n" +
+	"\x0forganization_id\x18\x03 \x01(\tR\x0eorganizationId\x12\x1e\n" +
+	"\bowner_id\x18\x04 \x01(\tH\x00R\aownerId\x88\x01\x01\x12-\n" +
+	"\x12include_terminated\x18\x05 \x01(\bR\x11includeTerminatedB\v\n" +
+	"\t_owner_id\"|\n" +
+	"\x15ListSandboxesResponse\x12;\n" +
+	"\tsandboxes\x18\x01 \x03(\v2\x1d.agynio.api.agents.v1.SandboxR\tsandboxes\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"$\n" +
+	"\x12StopSandboxRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"N\n" +
+	"\x13StopSandboxResponse\x127\n" +
+	"\asandbox\x18\x01 \x01(\v2\x1d.agynio.api.agents.v1.SandboxR\asandbox\"&\n" +
+	"\x14DeleteSandboxRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"P\n" +
+	"\x15DeleteSandboxResponse\x127\n" +
+	"\asandbox\x18\x01 \x01(\v2\x1d.agynio.api.agents.v1.SandboxR\asandbox\"-\n" +
+	"\x1bEnsureSandboxRunningRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"W\n" +
+	"\x1cEnsureSandboxRunningResponse\x127\n" +
+	"\asandbox\x18\x01 \x01(\v2\x1d.agynio.api.agents.v1.SandboxR\asandbox\"\xe6\x01\n" +
+	" UpdateSandboxRuntimeStateRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12@\n" +
+	"\x06status\x18\x02 \x01(\x0e2#.agynio.api.agents.v1.SandboxStatusH\x01R\x06status\x88\x01\x01\x12!\n" +
+	"\vworkload_id\x18\x03 \x01(\tH\x00R\n" +
+	"workloadId\x12,\n" +
+	"\x11clear_workload_id\x18\x04 \x01(\bH\x00R\x0fclearWorkloadIdB\x14\n" +
+	"\x12workload_id_updateB\t\n" +
+	"\a_status\"\\\n" +
+	"!UpdateSandboxRuntimeStateResponse\x127\n" +
+	"\asandbox\x18\x01 \x01(\v2\x1d.agynio.api.agents.v1.SandboxR\asandbox\"u\n" +
+	"\x1fUpdateSandboxLastSessionRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12B\n" +
+	"\x0flast_session_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\rlastSessionAt\"[\n" +
+	" UpdateSandboxLastSessionResponse\x127\n" +
+	"\asandbox\x18\x01 \x01(\v2\x1d.agynio.api.agents.v1.SandboxR\asandbox\"\xf2\x02\n" +
 	"\x06Volume\x124\n" +
 	"\x04meta\x18\x01 \x01(\v2 .agynio.api.agents.v1.EntityMetaR\x04meta\x12\x1e\n" +
 	"\n" +
@@ -6772,27 +11784,41 @@ const file_agynio_api_agents_v1_agents_proto_rawDesc = "" +
 	"persistent\x12\x1d\n" +
 	"\n" +
 	"mount_path\x18\x03 \x01(\tR\tmountPath\x12\x12\n" +
-	"\x04size\x18\x04 \x01(\tR\x04size\x12 \n" +
-	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x15\n" +
-	"\x03ttl\x18\x06 \x01(\tH\x00R\x03ttl\x88\x01\x01B\x06\n" +
-	"\x04_ttl\"\xd2\x01\n" +
+	"\x04size\x18\x04 \x01(\tR\x04size\x12$\n" +
+	"\vdescription\x18\x05 \x01(\tB\x02\x18\x01R\vdescription\x12\x15\n" +
+	"\x03ttl\x18\x06 \x01(\tH\x01R\x03ttl\x88\x01\x01\x12\x12\n" +
+	"\x04name\x18\a \x01(\tR\x04name\x12(\n" +
+	"\rstorage_class\x18\b \x01(\tH\x02R\fstorageClass\x88\x01\x01\x12'\n" +
+	"\x0eenvironment_id\x18\t \x01(\tH\x00R\renvironmentId\x12\x17\n" +
+	"\x06mcp_id\x18\n" +
+	" \x01(\tH\x00R\x05mcpIdB\b\n" +
+	"\x06targetB\x06\n" +
+	"\x04_ttlB\x10\n" +
+	"\x0e_storage_class\"\xf6\x02\n" +
 	"\x13CreateVolumeRequest\x12\x1e\n" +
 	"\n" +
 	"persistent\x18\x01 \x01(\bR\n" +
 	"persistent\x12\x1d\n" +
 	"\n" +
 	"mount_path\x18\x02 \x01(\tR\tmountPath\x12\x12\n" +
-	"\x04size\x18\x03 \x01(\tR\x04size\x12 \n" +
-	"\vdescription\x18\x04 \x01(\tR\vdescription\x12'\n" +
-	"\x0forganization_id\x18\x05 \x01(\tR\x0eorganizationId\x12\x15\n" +
-	"\x03ttl\x18\x06 \x01(\tH\x00R\x03ttl\x88\x01\x01B\x06\n" +
-	"\x04_ttl\"L\n" +
+	"\x04size\x18\x03 \x01(\tR\x04size\x12$\n" +
+	"\vdescription\x18\x04 \x01(\tB\x02\x18\x01R\vdescription\x12+\n" +
+	"\x0forganization_id\x18\x05 \x01(\tB\x02\x18\x01R\x0eorganizationId\x12\x15\n" +
+	"\x03ttl\x18\x06 \x01(\tH\x01R\x03ttl\x88\x01\x01\x12\x12\n" +
+	"\x04name\x18\a \x01(\tR\x04name\x12(\n" +
+	"\rstorage_class\x18\b \x01(\tH\x02R\fstorageClass\x88\x01\x01\x12'\n" +
+	"\x0eenvironment_id\x18\t \x01(\tH\x00R\renvironmentId\x12\x17\n" +
+	"\x06mcp_id\x18\n" +
+	" \x01(\tH\x00R\x05mcpIdB\b\n" +
+	"\x06targetB\x06\n" +
+	"\x04_ttlB\x10\n" +
+	"\x0e_storage_class\"L\n" +
 	"\x14CreateVolumeResponse\x124\n" +
 	"\x06volume\x18\x01 \x01(\v2\x1c.agynio.api.agents.v1.VolumeR\x06volume\"\"\n" +
 	"\x10GetVolumeRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"I\n" +
 	"\x11GetVolumeResponse\x124\n" +
-	"\x06volume\x18\x01 \x01(\v2\x1c.agynio.api.agents.v1.VolumeR\x06volume\"\x84\x02\n" +
+	"\x06volume\x18\x01 \x01(\v2\x1c.agynio.api.agents.v1.VolumeR\x06volume\"\xe6\x02\n" +
 	"\x13UpdateVolumeRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12#\n" +
 	"\n" +
@@ -6800,136 +11826,163 @@ const file_agynio_api_agents_v1_agents_proto_rawDesc = "" +
 	"persistent\x88\x01\x01\x12\"\n" +
 	"\n" +
 	"mount_path\x18\x03 \x01(\tH\x01R\tmountPath\x88\x01\x01\x12\x17\n" +
-	"\x04size\x18\x04 \x01(\tH\x02R\x04size\x88\x01\x01\x12%\n" +
-	"\vdescription\x18\x05 \x01(\tH\x03R\vdescription\x88\x01\x01\x12\x15\n" +
-	"\x03ttl\x18\x06 \x01(\tH\x04R\x03ttl\x88\x01\x01B\r\n" +
+	"\x04size\x18\x04 \x01(\tH\x02R\x04size\x88\x01\x01\x12)\n" +
+	"\vdescription\x18\x05 \x01(\tB\x02\x18\x01H\x03R\vdescription\x88\x01\x01\x12\x15\n" +
+	"\x03ttl\x18\x06 \x01(\tH\x04R\x03ttl\x88\x01\x01\x12\x17\n" +
+	"\x04name\x18\a \x01(\tH\x05R\x04name\x88\x01\x01\x12(\n" +
+	"\rstorage_class\x18\b \x01(\tH\x06R\fstorageClass\x88\x01\x01B\r\n" +
 	"\v_persistentB\r\n" +
 	"\v_mount_pathB\a\n" +
 	"\x05_sizeB\x0e\n" +
 	"\f_descriptionB\x06\n" +
-	"\x04_ttl\"L\n" +
+	"\x04_ttlB\a\n" +
+	"\x05_nameB\x10\n" +
+	"\x0e_storage_class\"L\n" +
 	"\x14UpdateVolumeResponse\x124\n" +
 	"\x06volume\x18\x01 \x01(\v2\x1c.agynio.api.agents.v1.VolumeR\x06volume\"%\n" +
 	"\x13DeleteVolumeRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x16\n" +
-	"\x14DeleteVolumeResponse\"y\n" +
+	"\x14DeleteVolumeResponse\"\xbb\x01\n" +
 	"\x12ListVolumesRequest\x12\x1b\n" +
 	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
-	"page_token\x18\x02 \x01(\tR\tpageToken\x12'\n" +
-	"\x0forganization_id\x18\x03 \x01(\tR\x0eorganizationId\"u\n" +
+	"page_token\x18\x02 \x01(\tR\tpageToken\x12+\n" +
+	"\x0forganization_id\x18\x03 \x01(\tB\x02\x18\x01R\x0eorganizationId\x12%\n" +
+	"\x0eenvironment_id\x18\x04 \x01(\tR\renvironmentId\x12\x15\n" +
+	"\x06mcp_id\x18\x05 \x01(\tR\x05mcpId\"u\n" +
 	"\x13ListVolumesResponse\x126\n" +
 	"\avolumes\x18\x01 \x03(\v2\x1c.agynio.api.agents.v1.VolumeR\avolumes\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xc0\x01\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xc8\x01\n" +
 	"\x10VolumeAttachment\x124\n" +
 	"\x04meta\x18\x01 \x01(\v2 .agynio.api.agents.v1.EntityMetaR\x04meta\x12\x1b\n" +
 	"\tvolume_id\x18\x02 \x01(\tR\bvolumeId\x12\x1b\n" +
 	"\bagent_id\x18\x03 \x01(\tH\x00R\aagentId\x12\x17\n" +
-	"\x06mcp_id\x18\x04 \x01(\tH\x00R\x05mcpId\x12\x19\n" +
-	"\ahook_id\x18\x05 \x01(\tH\x00R\x06hookIdB\b\n" +
-	"\x06target\"\x97\x01\n" +
+	"\x06mcp_id\x18\x04 \x01(\tH\x00R\x05mcpId\x12\x1d\n" +
+	"\ahook_id\x18\x05 \x01(\tB\x02\x18\x01H\x00R\x06hookId:\x02\x18\x01B\b\n" +
+	"\x06target\"\x9f\x01\n" +
 	"\x1dCreateVolumeAttachmentRequest\x12\x1b\n" +
 	"\tvolume_id\x18\x01 \x01(\tR\bvolumeId\x12\x1b\n" +
 	"\bagent_id\x18\x02 \x01(\tH\x00R\aagentId\x12\x17\n" +
-	"\x06mcp_id\x18\x03 \x01(\tH\x00R\x05mcpId\x12\x19\n" +
-	"\ahook_id\x18\x04 \x01(\tH\x00R\x06hookIdB\b\n" +
-	"\x06target\"u\n" +
+	"\x06mcp_id\x18\x03 \x01(\tH\x00R\x05mcpId\x12\x1d\n" +
+	"\ahook_id\x18\x04 \x01(\tB\x02\x18\x01H\x00R\x06hookId:\x02\x18\x01B\b\n" +
+	"\x06target\"y\n" +
 	"\x1eCreateVolumeAttachmentResponse\x12S\n" +
-	"\x11volume_attachment\x18\x01 \x01(\v2&.agynio.api.agents.v1.VolumeAttachmentR\x10volumeAttachment\",\n" +
+	"\x11volume_attachment\x18\x01 \x01(\v2&.agynio.api.agents.v1.VolumeAttachmentR\x10volumeAttachment:\x02\x18\x01\"0\n" +
 	"\x1aGetVolumeAttachmentRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"r\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id:\x02\x18\x01\"v\n" +
 	"\x1bGetVolumeAttachmentResponse\x12S\n" +
-	"\x11volume_attachment\x18\x01 \x01(\v2&.agynio.api.agents.v1.VolumeAttachmentR\x10volumeAttachment\"/\n" +
+	"\x11volume_attachment\x18\x01 \x01(\v2&.agynio.api.agents.v1.VolumeAttachmentR\x10volumeAttachment:\x02\x18\x01\"3\n" +
 	"\x1dDeleteVolumeAttachmentRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\" \n" +
-	"\x1eDeleteVolumeAttachmentResponse\"\xc2\x01\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id:\x02\x18\x01\"$\n" +
+	"\x1eDeleteVolumeAttachmentResponse:\x02\x18\x01\"\xca\x01\n" +
 	"\x1cListVolumeAttachmentsRequest\x12\x1b\n" +
 	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
 	"page_token\x18\x02 \x01(\tR\tpageToken\x12\x1b\n" +
 	"\tvolume_id\x18\x03 \x01(\tR\bvolumeId\x12\x19\n" +
 	"\bagent_id\x18\x04 \x01(\tR\aagentId\x12\x15\n" +
-	"\x06mcp_id\x18\x05 \x01(\tR\x05mcpId\x12\x17\n" +
-	"\ahook_id\x18\x06 \x01(\tR\x06hookId\"\x9e\x01\n" +
+	"\x06mcp_id\x18\x05 \x01(\tR\x05mcpId\x12\x1b\n" +
+	"\ahook_id\x18\x06 \x01(\tB\x02\x18\x01R\x06hookId:\x02\x18\x01\"\xa2\x01\n" +
 	"\x1dListVolumeAttachmentsResponse\x12U\n" +
 	"\x12volume_attachments\x18\x01 \x03(\v2&.agynio.api.agents.v1.VolumeAttachmentR\x11volumeAttachments\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xdd\x01\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken:\x02\x18\x01\"\x8e\x02\n" +
 	"\x19ImagePullSecretAttachment\x124\n" +
 	"\x04meta\x18\x01 \x01(\v2 .agynio.api.agents.v1.EntityMetaR\x04meta\x12/\n" +
 	"\x14image_pull_secret_id\x18\x02 \x01(\tR\x11imagePullSecretId\x12\x1b\n" +
 	"\bagent_id\x18\x03 \x01(\tH\x00R\aagentId\x12\x17\n" +
-	"\x06mcp_id\x18\x04 \x01(\tH\x00R\x05mcpId\x12\x19\n" +
-	"\ahook_id\x18\x05 \x01(\tH\x00R\x06hookIdB\b\n" +
-	"\x06target\"\xb4\x01\n" +
+	"\x06mcp_id\x18\x04 \x01(\tH\x00R\x05mcpId\x12\x1d\n" +
+	"\ahook_id\x18\x05 \x01(\tB\x02\x18\x01H\x00R\x06hookId\x12'\n" +
+	"\x0eenvironment_id\x18\x06 \x01(\tH\x00R\renvironmentId:\x02\x18\x01B\b\n" +
+	"\x06target\"\xe5\x01\n" +
 	"&CreateImagePullSecretAttachmentRequest\x12/\n" +
 	"\x14image_pull_secret_id\x18\x01 \x01(\tR\x11imagePullSecretId\x12\x1b\n" +
 	"\bagent_id\x18\x02 \x01(\tH\x00R\aagentId\x12\x17\n" +
-	"\x06mcp_id\x18\x03 \x01(\tH\x00R\x05mcpId\x12\x19\n" +
-	"\ahook_id\x18\x04 \x01(\tH\x00R\x06hookIdB\b\n" +
-	"\x06target\"\x9b\x01\n" +
+	"\x06mcp_id\x18\x03 \x01(\tH\x00R\x05mcpId\x12\x1d\n" +
+	"\ahook_id\x18\x04 \x01(\tB\x02\x18\x01H\x00R\x06hookId\x12'\n" +
+	"\x0eenvironment_id\x18\x05 \x01(\tH\x00R\renvironmentId:\x02\x18\x01B\b\n" +
+	"\x06target\"\x9f\x01\n" +
 	"'CreateImagePullSecretAttachmentResponse\x12p\n" +
-	"\x1cimage_pull_secret_attachment\x18\x01 \x01(\v2/.agynio.api.agents.v1.ImagePullSecretAttachmentR\x19imagePullSecretAttachment\"5\n" +
+	"\x1cimage_pull_secret_attachment\x18\x01 \x01(\v2/.agynio.api.agents.v1.ImagePullSecretAttachmentR\x19imagePullSecretAttachment:\x02\x18\x01\"9\n" +
 	"#GetImagePullSecretAttachmentRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\x98\x01\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id:\x02\x18\x01\"\x9c\x01\n" +
 	"$GetImagePullSecretAttachmentResponse\x12p\n" +
-	"\x1cimage_pull_secret_attachment\x18\x01 \x01(\v2/.agynio.api.agents.v1.ImagePullSecretAttachmentR\x19imagePullSecretAttachment\"8\n" +
+	"\x1cimage_pull_secret_attachment\x18\x01 \x01(\v2/.agynio.api.agents.v1.ImagePullSecretAttachmentR\x19imagePullSecretAttachment:\x02\x18\x01\"<\n" +
 	"&DeleteImagePullSecretAttachmentRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\")\n" +
-	"'DeleteImagePullSecretAttachmentResponse\"\xdf\x01\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id:\x02\x18\x01\"-\n" +
+	"'DeleteImagePullSecretAttachmentResponse:\x02\x18\x01\"\xb7\x02\n" +
 	"%ListImagePullSecretAttachmentsRequest\x12\x1b\n" +
 	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
-	"page_token\x18\x02 \x01(\tR\tpageToken\x12/\n" +
+	"page_token\x18\x02 \x01(\tR\tpageToken\x12'\n" +
+	"\x0forganization_id\x18\b \x01(\tR\x0eorganizationId\x12/\n" +
 	"\x14image_pull_secret_id\x18\x03 \x01(\tR\x11imagePullSecretId\x12\x19\n" +
 	"\bagent_id\x18\x04 \x01(\tR\aagentId\x12\x15\n" +
-	"\x06mcp_id\x18\x05 \x01(\tR\x05mcpId\x12\x17\n" +
-	"\ahook_id\x18\x06 \x01(\tR\x06hookId\"\xc4\x01\n" +
+	"\x06mcp_id\x18\x05 \x01(\tR\x05mcpId\x12\x1b\n" +
+	"\ahook_id\x18\x06 \x01(\tB\x02\x18\x01R\x06hookId\x12%\n" +
+	"\x0eenvironment_id\x18\a \x01(\tR\renvironmentId:\x02\x18\x01\"\xc8\x01\n" +
 	"&ListImagePullSecretAttachmentsResponse\x12r\n" +
 	"\x1dimage_pull_secret_attachments\x18\x01 \x03(\v2/.agynio.api.agents.v1.ImagePullSecretAttachmentR\x1aimagePullSecretAttachments\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\x82\x02\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken:\x02\x18\x01\"\x8c\x03\n" +
 	"\x03Mcp\x124\n" +
 	"\x04meta\x18\x01 \x01(\v2 .agynio.api.agents.v1.EntityMetaR\x04meta\x12\x19\n" +
-	"\bagent_id\x18\x02 \x01(\tR\aagentId\x12\x14\n" +
-	"\x05image\x18\x03 \x01(\tR\x05image\x12\x18\n" +
+	"\bagent_id\x18\x02 \x01(\tR\aagentId\x12\x18\n" +
+	"\x05image\x18\x03 \x01(\tB\x02\x18\x01R\x05image\x12\x18\n" +
 	"\acommand\x18\x04 \x01(\tR\acommand\x12D\n" +
 	"\tresources\x18\x05 \x01(\v2&.agynio.api.agents.v1.ComputeResourcesR\tresources\x12 \n" +
 	"\vdescription\x18\x06 \x01(\tR\vdescription\x12\x12\n" +
-	"\x04name\x18\a \x01(\tR\x04name\"\xd9\x01\n" +
+	"\x04name\x18\a \x01(\tR\x04name\x12\x19\n" +
+	"\bimage_id\x18\b \x01(\tR\aimageId\x12\x1b\n" +
+	"\timage_tag\x18\t \x01(\tR\bimageTag\x12%\n" +
+	"\x0eshared_volumes\x18\n" +
+	" \x03(\tR\rsharedVolumes\x12%\n" +
+	"\x0eenvironment_id\x18\v \x01(\tR\renvironmentId\"\xe3\x02\n" +
 	"\x10CreateMcpRequest\x12\x19\n" +
-	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12\x14\n" +
-	"\x05image\x18\x02 \x01(\tR\x05image\x12\x18\n" +
+	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12\x18\n" +
+	"\x05image\x18\x02 \x01(\tB\x02\x18\x01R\x05image\x12\x18\n" +
 	"\acommand\x18\x03 \x01(\tR\acommand\x12D\n" +
 	"\tresources\x18\x04 \x01(\v2&.agynio.api.agents.v1.ComputeResourcesR\tresources\x12 \n" +
 	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x12\n" +
-	"\x04name\x18\x06 \x01(\tR\x04name\"@\n" +
+	"\x04name\x18\x06 \x01(\tR\x04name\x12\x19\n" +
+	"\bimage_id\x18\a \x01(\tR\aimageId\x12\x1b\n" +
+	"\timage_tag\x18\b \x01(\tR\bimageTag\x12%\n" +
+	"\x0eshared_volumes\x18\t \x03(\tR\rsharedVolumes\x12%\n" +
+	"\x0eenvironment_id\x18\n" +
+	" \x01(\tR\renvironmentId\"@\n" +
 	"\x11CreateMcpResponse\x12+\n" +
 	"\x03mcp\x18\x01 \x01(\v2\x19.agynio.api.agents.v1.McpR\x03mcp\"\x1f\n" +
 	"\rGetMcpRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"=\n" +
 	"\x0eGetMcpResponse\x12+\n" +
-	"\x03mcp\x18\x01 \x01(\v2\x19.agynio.api.agents.v1.McpR\x03mcp\"\x82\x02\n" +
+	"\x03mcp\x18\x01 \x01(\v2\x19.agynio.api.agents.v1.McpR\x03mcp\"\x8a\x03\n" +
 	"\x10UpdateMcpRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
-	"\x05image\x18\x02 \x01(\tH\x00R\x05image\x88\x01\x01\x12\x1d\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
+	"\x05image\x18\x02 \x01(\tB\x02\x18\x01H\x00R\x05image\x88\x01\x01\x12\x1d\n" +
 	"\acommand\x18\x03 \x01(\tH\x01R\acommand\x88\x01\x01\x12I\n" +
 	"\tresources\x18\x04 \x01(\v2&.agynio.api.agents.v1.ComputeResourcesH\x02R\tresources\x88\x01\x01\x12%\n" +
-	"\vdescription\x18\x05 \x01(\tH\x03R\vdescription\x88\x01\x01B\b\n" +
+	"\vdescription\x18\x05 \x01(\tH\x03R\vdescription\x88\x01\x01\x12\x1e\n" +
+	"\bimage_id\x18\x06 \x01(\tH\x04R\aimageId\x88\x01\x01\x12 \n" +
+	"\timage_tag\x18\a \x01(\tH\x05R\bimageTag\x88\x01\x01\x12%\n" +
+	"\x0eshared_volumes\x18\b \x03(\tR\rsharedVolumesB\b\n" +
 	"\x06_imageB\n" +
 	"\n" +
 	"\b_commandB\f\n" +
 	"\n" +
 	"_resourcesB\x0e\n" +
-	"\f_description\"@\n" +
+	"\f_descriptionB\v\n" +
+	"\t_image_idB\f\n" +
+	"\n" +
+	"_image_tag\"@\n" +
 	"\x11UpdateMcpResponse\x12+\n" +
 	"\x03mcp\x18\x01 \x01(\v2\x19.agynio.api.agents.v1.McpR\x03mcp\"\"\n" +
 	"\x10DeleteMcpRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x13\n" +
-	"\x11DeleteMcpResponse\"h\n" +
+	"\x11DeleteMcpResponse\"\x8f\x01\n" +
 	"\x0fListMcpsRequest\x12\x1b\n" +
 	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
 	"page_token\x18\x02 \x01(\tR\tpageToken\x12\x19\n" +
-	"\bagent_id\x18\x03 \x01(\tR\aagentId\"i\n" +
+	"\bagent_id\x18\x03 \x01(\tR\aagentId\x12%\n" +
+	"\x0eenvironment_id\x18\x04 \x01(\tR\renvironmentId\"i\n" +
 	"\x10ListMcpsResponse\x12-\n" +
 	"\x04mcps\x18\x01 \x03(\v2\x19.agynio.api.agents.v1.McpR\x04mcps\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xa2\x01\n" +
@@ -6970,7 +12023,7 @@ const file_agynio_api_agents_v1_agents_proto_rawDesc = "" +
 	"\bagent_id\x18\x03 \x01(\tR\aagentId\"q\n" +
 	"\x12ListSkillsResponse\x123\n" +
 	"\x06skills\x18\x01 \x03(\v2\x1b.agynio.api.agents.v1.SkillR\x06skills\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\x87\x02\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\x8b\x02\n" +
 	"\x04Hook\x124\n" +
 	"\x04meta\x18\x01 \x01(\v2 .agynio.api.agents.v1.EntityMetaR\x04meta\x12\x19\n" +
 	"\bagent_id\x18\x02 \x01(\tR\aagentId\x12\x14\n" +
@@ -6978,63 +12031,65 @@ const file_agynio_api_agents_v1_agents_proto_rawDesc = "" +
 	"\bfunction\x18\x04 \x01(\tR\bfunction\x12\x14\n" +
 	"\x05image\x18\x05 \x01(\tR\x05image\x12D\n" +
 	"\tresources\x18\x06 \x01(\v2&.agynio.api.agents.v1.ComputeResourcesR\tresources\x12 \n" +
-	"\vdescription\x18\a \x01(\tR\vdescription\"\xde\x01\n" +
+	"\vdescription\x18\a \x01(\tR\vdescription:\x02\x18\x01\"\xe2\x01\n" +
 	"\x11CreateHookRequest\x12\x19\n" +
 	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12\x14\n" +
 	"\x05event\x18\x02 \x01(\tR\x05event\x12\x1a\n" +
 	"\bfunction\x18\x03 \x01(\tR\bfunction\x12\x14\n" +
 	"\x05image\x18\x04 \x01(\tR\x05image\x12D\n" +
 	"\tresources\x18\x05 \x01(\v2&.agynio.api.agents.v1.ComputeResourcesR\tresources\x12 \n" +
-	"\vdescription\x18\x06 \x01(\tR\vdescription\"D\n" +
+	"\vdescription\x18\x06 \x01(\tR\vdescription:\x02\x18\x01\"H\n" +
 	"\x12CreateHookResponse\x12.\n" +
-	"\x04hook\x18\x01 \x01(\v2\x1a.agynio.api.agents.v1.HookR\x04hook\" \n" +
+	"\x04hook\x18\x01 \x01(\v2\x1a.agynio.api.agents.v1.HookR\x04hook:\x02\x18\x01\"$\n" +
 	"\x0eGetHookRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"A\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id:\x02\x18\x01\"E\n" +
 	"\x0fGetHookResponse\x12.\n" +
-	"\x04hook\x18\x01 \x01(\v2\x1a.agynio.api.agents.v1.HookR\x04hook\"\xab\x02\n" +
+	"\x04hook\x18\x01 \x01(\v2\x1a.agynio.api.agents.v1.HookR\x04hook:\x02\x18\x01\"\xaf\x02\n" +
 	"\x11UpdateHookRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\x05event\x18\x02 \x01(\tH\x00R\x05event\x88\x01\x01\x12\x1f\n" +
 	"\bfunction\x18\x03 \x01(\tH\x01R\bfunction\x88\x01\x01\x12\x19\n" +
 	"\x05image\x18\x04 \x01(\tH\x02R\x05image\x88\x01\x01\x12I\n" +
 	"\tresources\x18\x05 \x01(\v2&.agynio.api.agents.v1.ComputeResourcesH\x03R\tresources\x88\x01\x01\x12%\n" +
-	"\vdescription\x18\x06 \x01(\tH\x04R\vdescription\x88\x01\x01B\b\n" +
+	"\vdescription\x18\x06 \x01(\tH\x04R\vdescription\x88\x01\x01:\x02\x18\x01B\b\n" +
 	"\x06_eventB\v\n" +
 	"\t_functionB\b\n" +
 	"\x06_imageB\f\n" +
 	"\n" +
 	"_resourcesB\x0e\n" +
-	"\f_description\"D\n" +
+	"\f_description\"H\n" +
 	"\x12UpdateHookResponse\x12.\n" +
-	"\x04hook\x18\x01 \x01(\v2\x1a.agynio.api.agents.v1.HookR\x04hook\"#\n" +
+	"\x04hook\x18\x01 \x01(\v2\x1a.agynio.api.agents.v1.HookR\x04hook:\x02\x18\x01\"'\n" +
 	"\x11DeleteHookRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\x14\n" +
-	"\x12DeleteHookResponse\"i\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id:\x02\x18\x01\"\x18\n" +
+	"\x12DeleteHookResponse:\x02\x18\x01\"m\n" +
 	"\x10ListHooksRequest\x12\x1b\n" +
 	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
 	"page_token\x18\x02 \x01(\tR\tpageToken\x12\x19\n" +
-	"\bagent_id\x18\x03 \x01(\tR\aagentId\"m\n" +
+	"\bagent_id\x18\x03 \x01(\tR\aagentId:\x02\x18\x01\"q\n" +
 	"\x11ListHooksResponse\x120\n" +
 	"\x05hooks\x18\x01 \x03(\v2\x1a.agynio.api.agents.v1.HookR\x05hooks\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\x8d\x02\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken:\x02\x18\x01\"\xba\x02\n" +
 	"\x03Env\x124\n" +
 	"\x04meta\x18\x01 \x01(\v2 .agynio.api.agents.v1.EntityMetaR\x04meta\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1b\n" +
 	"\bagent_id\x18\x04 \x01(\tH\x00R\aagentId\x12\x17\n" +
-	"\x06mcp_id\x18\x05 \x01(\tH\x00R\x05mcpId\x12\x19\n" +
-	"\ahook_id\x18\x06 \x01(\tH\x00R\x06hookId\x12\x16\n" +
+	"\x06mcp_id\x18\x05 \x01(\tH\x00R\x05mcpId\x12\x1d\n" +
+	"\ahook_id\x18\x06 \x01(\tB\x02\x18\x01H\x00R\x06hookId\x12'\n" +
+	"\x0eenvironment_id\x18\t \x01(\tH\x00R\renvironmentId\x12\x16\n" +
 	"\x05value\x18\a \x01(\tH\x01R\x05value\x12\x1d\n" +
 	"\tsecret_id\x18\b \x01(\tH\x01R\bsecretIdB\b\n" +
 	"\x06targetB\b\n" +
-	"\x06source\"\xe4\x01\n" +
+	"\x06source\"\x91\x02\n" +
 	"\x10CreateEnvRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1b\n" +
 	"\bagent_id\x18\x03 \x01(\tH\x00R\aagentId\x12\x17\n" +
-	"\x06mcp_id\x18\x04 \x01(\tH\x00R\x05mcpId\x12\x19\n" +
-	"\ahook_id\x18\x05 \x01(\tH\x00R\x06hookId\x12\x16\n" +
+	"\x06mcp_id\x18\x04 \x01(\tH\x00R\x05mcpId\x12\x1d\n" +
+	"\ahook_id\x18\x05 \x01(\tB\x02\x18\x01H\x00R\x06hookId\x12'\n" +
+	"\x0eenvironment_id\x18\b \x01(\tH\x00R\renvironmentId\x12\x16\n" +
 	"\x05value\x18\x06 \x01(\tH\x01R\x05value\x12\x1d\n" +
 	"\tsecret_id\x18\a \x01(\tH\x01R\bsecretIdB\b\n" +
 	"\x06targetB\b\n" +
@@ -7060,32 +12115,36 @@ const file_agynio_api_agents_v1_agents_proto_rawDesc = "" +
 	"\x03env\x18\x01 \x01(\v2\x19.agynio.api.agents.v1.EnvR\x03env\"\"\n" +
 	"\x10DeleteEnvRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x13\n" +
-	"\x11DeleteEnvResponse\"\x98\x01\n" +
+	"\x11DeleteEnvResponse\"\xec\x01\n" +
 	"\x0fListEnvsRequest\x12\x1b\n" +
 	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
-	"page_token\x18\x02 \x01(\tR\tpageToken\x12\x19\n" +
+	"page_token\x18\x02 \x01(\tR\tpageToken\x12'\n" +
+	"\x0forganization_id\x18\a \x01(\tR\x0eorganizationId\x12\x19\n" +
 	"\bagent_id\x18\x03 \x01(\tR\aagentId\x12\x15\n" +
-	"\x06mcp_id\x18\x04 \x01(\tR\x05mcpId\x12\x17\n" +
-	"\ahook_id\x18\x05 \x01(\tR\x06hookId\"i\n" +
+	"\x06mcp_id\x18\x04 \x01(\tR\x05mcpId\x12\x1b\n" +
+	"\ahook_id\x18\x05 \x01(\tB\x02\x18\x01R\x06hookId\x12%\n" +
+	"\x0eenvironment_id\x18\x06 \x01(\tR\renvironmentId\"i\n" +
 	"\x10ListEnvsResponse\x12-\n" +
 	"\x04envs\x18\x01 \x03(\v2\x19.agynio.api.agents.v1.EnvR\x04envs\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xd7\x01\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\x84\x02\n" +
 	"\n" +
 	"InitScript\x124\n" +
 	"\x04meta\x18\x01 \x01(\v2 .agynio.api.agents.v1.EntityMetaR\x04meta\x12\x16\n" +
 	"\x06script\x18\x02 \x01(\tR\x06script\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1b\n" +
 	"\bagent_id\x18\x04 \x01(\tH\x00R\aagentId\x12\x17\n" +
-	"\x06mcp_id\x18\x05 \x01(\tH\x00R\x05mcpId\x12\x19\n" +
-	"\ahook_id\x18\x06 \x01(\tH\x00R\x06hookIdB\b\n" +
-	"\x06target\"\xae\x01\n" +
+	"\x06mcp_id\x18\x05 \x01(\tH\x00R\x05mcpId\x12\x1d\n" +
+	"\ahook_id\x18\x06 \x01(\tB\x02\x18\x01H\x00R\x06hookId\x12'\n" +
+	"\x0eenvironment_id\x18\a \x01(\tH\x00R\renvironmentIdB\b\n" +
+	"\x06target\"\xdb\x01\n" +
 	"\x17CreateInitScriptRequest\x12\x16\n" +
 	"\x06script\x18\x01 \x01(\tR\x06script\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1b\n" +
 	"\bagent_id\x18\x03 \x01(\tH\x00R\aagentId\x12\x17\n" +
-	"\x06mcp_id\x18\x04 \x01(\tH\x00R\x05mcpId\x12\x19\n" +
-	"\ahook_id\x18\x05 \x01(\tH\x00R\x06hookIdB\b\n" +
+	"\x06mcp_id\x18\x04 \x01(\tH\x00R\x05mcpId\x12\x1d\n" +
+	"\ahook_id\x18\x05 \x01(\tB\x02\x18\x01H\x00R\x06hookId\x12'\n" +
+	"\x0eenvironment_id\x18\x06 \x01(\tH\x00R\renvironmentIdB\b\n" +
 	"\x06target\"]\n" +
 	"\x18CreateInitScriptResponse\x12A\n" +
 	"\vinit_script\x18\x01 \x01(\v2 .agynio.api.agents.v1.InitScriptR\n" +
@@ -7106,26 +12165,60 @@ const file_agynio_api_agents_v1_agents_proto_rawDesc = "" +
 	"initScript\")\n" +
 	"\x17DeleteInitScriptRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x1a\n" +
-	"\x18DeleteInitScriptResponse\"\x9f\x01\n" +
+	"\x18DeleteInitScriptResponse\"\xca\x01\n" +
 	"\x16ListInitScriptsRequest\x12\x1b\n" +
 	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
 	"page_token\x18\x02 \x01(\tR\tpageToken\x12\x19\n" +
 	"\bagent_id\x18\x03 \x01(\tR\aagentId\x12\x15\n" +
-	"\x06mcp_id\x18\x04 \x01(\tR\x05mcpId\x12\x17\n" +
-	"\ahook_id\x18\x05 \x01(\tR\x06hookId\"\x86\x01\n" +
+	"\x06mcp_id\x18\x04 \x01(\tR\x05mcpId\x12\x1b\n" +
+	"\ahook_id\x18\x05 \x01(\tB\x02\x18\x01R\x06hookId\x12%\n" +
+	"\x0eenvironment_id\x18\x06 \x01(\tR\renvironmentId\"\x86\x01\n" +
 	"\x17ListInitScriptsResponse\x12C\n" +
 	"\finit_scripts\x18\x01 \x03(\v2 .agynio.api.agents.v1.InitScriptR\vinitScripts\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken*x\n" +
 	"\x11AgentAvailability\x12\"\n" +
 	"\x1eAGENT_AVAILABILITY_UNSPECIFIED\x10\x00\x12\x1f\n" +
 	"\x1bAGENT_AVAILABILITY_INTERNAL\x10\x01\x12\x1e\n" +
-	"\x1aAGENT_AVAILABILITY_PRIVATE\x10\x02*t\n" +
+	"\x1aAGENT_AVAILABILITY_PRIVATE\x10\x02*z\n" +
+	"\x12AgentDefaultThread\x12$\n" +
+	" AGENT_DEFAULT_THREAD_UNSPECIFIED\x10\x00\x12\x1f\n" +
+	"\x1bAGENT_DEFAULT_THREAD_ORIGIN\x10\x01\x12\x1d\n" +
+	"\x19AGENT_DEFAULT_THREAD_NONE\x10\x02*\x81\x01\n" +
+	"\x11AgentFinalMessage\x12#\n" +
+	"\x1fAGENT_FINAL_MESSAGE_UNSPECIFIED\x10\x00\x12\x1f\n" +
+	"\x1bAGENT_FINAL_MESSAGE_DISCARD\x10\x01\x12&\n" +
+	"\"AGENT_FINAL_MESSAGE_DEFAULT_THREAD\x10\x02*t\n" +
 	"\tAgentRole\x12\x1a\n" +
 	"\x16AGENT_ROLE_UNSPECIFIED\x10\x00\x12\x14\n" +
 	"\x10AGENT_ROLE_OWNER\x10\x01\x12\x19\n" +
 	"\x15AGENT_ROLE_MAINTAINER\x10\x02\x12\x1a\n" +
-	"\x16AGENT_ROLE_PARTICIPANT\x10\x032\xaf(\n" +
+	"\x16AGENT_ROLE_PARTICIPANT\x10\x03*\x90\x01\n" +
+	"\x17EnvironmentAvailability\x12(\n" +
+	"$ENVIRONMENT_AVAILABILITY_UNSPECIFIED\x10\x00\x12%\n" +
+	"!ENVIRONMENT_AVAILABILITY_INTERNAL\x10\x01\x12$\n" +
+	" ENVIRONMENT_AVAILABILITY_PRIVATE\x10\x02*\x8b\x01\n" +
+	"\x0fEnvironmentRole\x12 \n" +
+	"\x1cENVIRONMENT_ROLE_UNSPECIFIED\x10\x00\x12\x1a\n" +
+	"\x16ENVIRONMENT_ROLE_OWNER\x10\x01\x12\x1f\n" +
+	"\x1bENVIRONMENT_ROLE_MAINTAINER\x10\x02\x12\x19\n" +
+	"\x15ENVIRONMENT_ROLE_USER\x10\x03*\xa1\x01\n" +
+	"\x12AgentInstanceState\x12$\n" +
+	" AGENT_INSTANCE_STATE_UNSPECIFIED\x10\x00\x12\x1f\n" +
+	"\x1bAGENT_INSTANCE_STATE_ACTIVE\x10\x01\x12\x1f\n" +
+	"\x1bAGENT_INSTANCE_STATE_PAUSED\x10\x02\x12#\n" +
+	"\x1fAGENT_INSTANCE_STATE_TERMINATED\x10\x03*\x83\x01\n" +
+	"\x13InboxItemSourceKind\x12&\n" +
+	"\"INBOX_ITEM_SOURCE_KIND_UNSPECIFIED\x10\x00\x12!\n" +
+	"\x1dINBOX_ITEM_SOURCE_KIND_THREAD\x10\x01\x12!\n" +
+	"\x1dINBOX_ITEM_SOURCE_KIND_DIRECT\x10\x02*\xbe\x01\n" +
+	"\rSandboxStatus\x12\x1e\n" +
+	"\x1aSANDBOX_STATUS_UNSPECIFIED\x10\x00\x12\x1b\n" +
+	"\x17SANDBOX_STATUS_STARTING\x10\x01\x12\x1a\n" +
+	"\x16SANDBOX_STATUS_RUNNING\x10\x02\x12\x1a\n" +
+	"\x16SANDBOX_STATUS_STOPPED\x10\x03\x12\x19\n" +
+	"\x15SANDBOX_STATUS_FAILED\x10\x04\x12\x1d\n" +
+	"\x19SANDBOX_STATUS_TERMINATED\x10\x052\x9aB\n" +
 	"\rAgentsService\x12b\n" +
 	"\vCreateAgent\x12(.agynio.api.agents.v1.CreateAgentRequest\x1a).agynio.api.agents.v1.CreateAgentResponse\x12Y\n" +
 	"\bGetAgent\x12%.agynio.api.agents.v1.GetAgentRequest\x1a&.agynio.api.agents.v1.GetAgentResponse\x12}\n" +
@@ -7137,16 +12230,45 @@ const file_agynio_api_agents_v1_agents_proto_rawDesc = "" +
 	"\fSetAgentRole\x12).agynio.api.agents.v1.SetAgentRoleRequest\x1a*.agynio.api.agents.v1.SetAgentRoleResponse\x12n\n" +
 	"\x0fRemoveAgentRole\x12,.agynio.api.agents.v1.RemoveAgentRoleRequest\x1a-.agynio.api.agents.v1.RemoveAgentRoleResponse\x12k\n" +
 	"\x0eListAgentRoles\x12+.agynio.api.agents.v1.ListAgentRolesRequest\x1a,.agynio.api.agents.v1.ListAgentRolesResponse\x12q\n" +
-	"\x10ListMyAgentRoles\x12-.agynio.api.agents.v1.ListMyAgentRolesRequest\x1a..agynio.api.agents.v1.ListMyAgentRolesResponse\x12e\n" +
+	"\x10ListMyAgentRoles\x12-.agynio.api.agents.v1.ListMyAgentRolesRequest\x1a..agynio.api.agents.v1.ListMyAgentRolesResponse\x12t\n" +
+	"\x11CreateEnvironment\x12..agynio.api.agents.v1.CreateEnvironmentRequest\x1a/.agynio.api.agents.v1.CreateEnvironmentResponse\x12k\n" +
+	"\x0eGetEnvironment\x12+.agynio.api.agents.v1.GetEnvironmentRequest\x1a,.agynio.api.agents.v1.GetEnvironmentResponse\x12t\n" +
+	"\x11UpdateEnvironment\x12..agynio.api.agents.v1.UpdateEnvironmentRequest\x1a/.agynio.api.agents.v1.UpdateEnvironmentResponse\x12t\n" +
+	"\x11DeleteEnvironment\x12..agynio.api.agents.v1.DeleteEnvironmentRequest\x1a/.agynio.api.agents.v1.DeleteEnvironmentResponse\x12q\n" +
+	"\x10ListEnvironments\x12-.agynio.api.agents.v1.ListEnvironmentsRequest\x1a..agynio.api.agents.v1.ListEnvironmentsResponse\x12w\n" +
+	"\x12SetEnvironmentRole\x12/.agynio.api.agents.v1.SetEnvironmentRoleRequest\x1a0.agynio.api.agents.v1.SetEnvironmentRoleResponse\x12\x80\x01\n" +
+	"\x15RemoveEnvironmentRole\x122.agynio.api.agents.v1.RemoveEnvironmentRoleRequest\x1a3.agynio.api.agents.v1.RemoveEnvironmentRoleResponse\x12}\n" +
+	"\x14ListEnvironmentRoles\x121.agynio.api.agents.v1.ListEnvironmentRolesRequest\x1a2.agynio.api.agents.v1.ListEnvironmentRolesResponse\x12h\n" +
+	"\rCreateSandbox\x12*.agynio.api.agents.v1.CreateSandboxRequest\x1a+.agynio.api.agents.v1.CreateSandboxResponse\x12_\n" +
+	"\n" +
+	"GetSandbox\x12'.agynio.api.agents.v1.GetSandboxRequest\x1a(.agynio.api.agents.v1.GetSandboxResponse\x12h\n" +
+	"\rListSandboxes\x12*.agynio.api.agents.v1.ListSandboxesRequest\x1a+.agynio.api.agents.v1.ListSandboxesResponse\x12b\n" +
+	"\vStopSandbox\x12(.agynio.api.agents.v1.StopSandboxRequest\x1a).agynio.api.agents.v1.StopSandboxResponse\x12h\n" +
+	"\rDeleteSandbox\x12*.agynio.api.agents.v1.DeleteSandboxRequest\x1a+.agynio.api.agents.v1.DeleteSandboxResponse\x12}\n" +
+	"\x14EnsureSandboxRunning\x121.agynio.api.agents.v1.EnsureSandboxRunningRequest\x1a2.agynio.api.agents.v1.EnsureSandboxRunningResponse\x12\x8c\x01\n" +
+	"\x19UpdateSandboxRuntimeState\x126.agynio.api.agents.v1.UpdateSandboxRuntimeStateRequest\x1a7.agynio.api.agents.v1.UpdateSandboxRuntimeStateResponse\x12\x89\x01\n" +
+	"\x18UpdateSandboxLastSession\x125.agynio.api.agents.v1.UpdateSandboxLastSessionRequest\x1a6.agynio.api.agents.v1.UpdateSandboxLastSessionResponse\x12k\n" +
+	"\x0eCreateInstance\x12+.agynio.api.agents.v1.CreateInstanceRequest\x1a,.agynio.api.agents.v1.CreateInstanceResponse\x12b\n" +
+	"\vGetInstance\x12(.agynio.api.agents.v1.GetInstanceRequest\x1a).agynio.api.agents.v1.GetInstanceResponse\x12h\n" +
+	"\rListInstances\x12*.agynio.api.agents.v1.ListInstancesRequest\x1a+.agynio.api.agents.v1.ListInstancesResponse\x12h\n" +
+	"\rPauseInstance\x12*.agynio.api.agents.v1.PauseInstanceRequest\x1a+.agynio.api.agents.v1.PauseInstanceResponse\x12k\n" +
+	"\x0eResumeInstance\x12+.agynio.api.agents.v1.ResumeInstanceRequest\x1a,.agynio.api.agents.v1.ResumeInstanceResponse\x12k\n" +
+	"\x0eDeleteInstance\x12+.agynio.api.agents.v1.DeleteInstanceRequest\x1a,.agynio.api.agents.v1.DeleteInstanceResponse\x12\x89\x01\n" +
+	"\x18SetInstanceDefaultThread\x125.agynio.api.agents.v1.SetInstanceDefaultThreadRequest\x1a6.agynio.api.agents.v1.SetInstanceDefaultThreadResponse\x12k\n" +
+	"\x0eWriteInboxItem\x12+.agynio.api.agents.v1.WriteInboxItemRequest\x1a,.agynio.api.agents.v1.WriteInboxItemResponse\x12n\n" +
+	"\x0fFanoutInboxItem\x12,.agynio.api.agents.v1.FanoutInboxItemRequest\x1a-.agynio.api.agents.v1.FanoutInboxItemResponse\x12}\n" +
+	"\x14GetUnackedInboxItems\x121.agynio.api.agents.v1.GetUnackedInboxItemsRequest\x1a2.agynio.api.agents.v1.GetUnackedInboxItemsResponse\x12h\n" +
+	"\rAckInboxItems\x12*.agynio.api.agents.v1.AckInboxItemsRequest\x1a+.agynio.api.agents.v1.AckInboxItemsResponse\x12}\n" +
+	"\x14GetUnackedInboxCount\x121.agynio.api.agents.v1.GetUnackedInboxCountRequest\x1a2.agynio.api.agents.v1.GetUnackedInboxCountResponse\x12e\n" +
 	"\fCreateVolume\x12).agynio.api.agents.v1.CreateVolumeRequest\x1a*.agynio.api.agents.v1.CreateVolumeResponse\x12\\\n" +
 	"\tGetVolume\x12&.agynio.api.agents.v1.GetVolumeRequest\x1a'.agynio.api.agents.v1.GetVolumeResponse\x12e\n" +
 	"\fUpdateVolume\x12).agynio.api.agents.v1.UpdateVolumeRequest\x1a*.agynio.api.agents.v1.UpdateVolumeResponse\x12e\n" +
 	"\fDeleteVolume\x12).agynio.api.agents.v1.DeleteVolumeRequest\x1a*.agynio.api.agents.v1.DeleteVolumeResponse\x12b\n" +
-	"\vListVolumes\x12(.agynio.api.agents.v1.ListVolumesRequest\x1a).agynio.api.agents.v1.ListVolumesResponse\x12\x83\x01\n" +
-	"\x16CreateVolumeAttachment\x123.agynio.api.agents.v1.CreateVolumeAttachmentRequest\x1a4.agynio.api.agents.v1.CreateVolumeAttachmentResponse\x12z\n" +
-	"\x13GetVolumeAttachment\x120.agynio.api.agents.v1.GetVolumeAttachmentRequest\x1a1.agynio.api.agents.v1.GetVolumeAttachmentResponse\x12\x83\x01\n" +
-	"\x16DeleteVolumeAttachment\x123.agynio.api.agents.v1.DeleteVolumeAttachmentRequest\x1a4.agynio.api.agents.v1.DeleteVolumeAttachmentResponse\x12\x80\x01\n" +
-	"\x15ListVolumeAttachments\x122.agynio.api.agents.v1.ListVolumeAttachmentsRequest\x1a3.agynio.api.agents.v1.ListVolumeAttachmentsResponse\x12\\\n" +
+	"\vListVolumes\x12(.agynio.api.agents.v1.ListVolumesRequest\x1a).agynio.api.agents.v1.ListVolumesResponse\x12\x88\x01\n" +
+	"\x16CreateVolumeAttachment\x123.agynio.api.agents.v1.CreateVolumeAttachmentRequest\x1a4.agynio.api.agents.v1.CreateVolumeAttachmentResponse\"\x03\x88\x02\x01\x12\x7f\n" +
+	"\x13GetVolumeAttachment\x120.agynio.api.agents.v1.GetVolumeAttachmentRequest\x1a1.agynio.api.agents.v1.GetVolumeAttachmentResponse\"\x03\x88\x02\x01\x12\x88\x01\n" +
+	"\x16DeleteVolumeAttachment\x123.agynio.api.agents.v1.DeleteVolumeAttachmentRequest\x1a4.agynio.api.agents.v1.DeleteVolumeAttachmentResponse\"\x03\x88\x02\x01\x12\x85\x01\n" +
+	"\x15ListVolumeAttachments\x122.agynio.api.agents.v1.ListVolumeAttachmentsRequest\x1a3.agynio.api.agents.v1.ListVolumeAttachmentsResponse\"\x03\x88\x02\x01\x12\\\n" +
 	"\tCreateMcp\x12&.agynio.api.agents.v1.CreateMcpRequest\x1a'.agynio.api.agents.v1.CreateMcpResponse\x12S\n" +
 	"\x06GetMcp\x12#.agynio.api.agents.v1.GetMcpRequest\x1a$.agynio.api.agents.v1.GetMcpResponse\x12\\\n" +
 	"\tUpdateMcp\x12&.agynio.api.agents.v1.UpdateMcpRequest\x1a'.agynio.api.agents.v1.UpdateMcpResponse\x12\\\n" +
@@ -7157,15 +12279,15 @@ const file_agynio_api_agents_v1_agents_proto_rawDesc = "" +
 	"\vUpdateSkill\x12(.agynio.api.agents.v1.UpdateSkillRequest\x1a).agynio.api.agents.v1.UpdateSkillResponse\x12b\n" +
 	"\vDeleteSkill\x12(.agynio.api.agents.v1.DeleteSkillRequest\x1a).agynio.api.agents.v1.DeleteSkillResponse\x12_\n" +
 	"\n" +
-	"ListSkills\x12'.agynio.api.agents.v1.ListSkillsRequest\x1a(.agynio.api.agents.v1.ListSkillsResponse\x12_\n" +
+	"ListSkills\x12'.agynio.api.agents.v1.ListSkillsRequest\x1a(.agynio.api.agents.v1.ListSkillsResponse\x12d\n" +
 	"\n" +
-	"CreateHook\x12'.agynio.api.agents.v1.CreateHookRequest\x1a(.agynio.api.agents.v1.CreateHookResponse\x12V\n" +
-	"\aGetHook\x12$.agynio.api.agents.v1.GetHookRequest\x1a%.agynio.api.agents.v1.GetHookResponse\x12_\n" +
+	"CreateHook\x12'.agynio.api.agents.v1.CreateHookRequest\x1a(.agynio.api.agents.v1.CreateHookResponse\"\x03\x88\x02\x01\x12[\n" +
+	"\aGetHook\x12$.agynio.api.agents.v1.GetHookRequest\x1a%.agynio.api.agents.v1.GetHookResponse\"\x03\x88\x02\x01\x12d\n" +
 	"\n" +
-	"UpdateHook\x12'.agynio.api.agents.v1.UpdateHookRequest\x1a(.agynio.api.agents.v1.UpdateHookResponse\x12_\n" +
+	"UpdateHook\x12'.agynio.api.agents.v1.UpdateHookRequest\x1a(.agynio.api.agents.v1.UpdateHookResponse\"\x03\x88\x02\x01\x12d\n" +
 	"\n" +
-	"DeleteHook\x12'.agynio.api.agents.v1.DeleteHookRequest\x1a(.agynio.api.agents.v1.DeleteHookResponse\x12\\\n" +
-	"\tListHooks\x12&.agynio.api.agents.v1.ListHooksRequest\x1a'.agynio.api.agents.v1.ListHooksResponse\x12\\\n" +
+	"DeleteHook\x12'.agynio.api.agents.v1.DeleteHookRequest\x1a(.agynio.api.agents.v1.DeleteHookResponse\"\x03\x88\x02\x01\x12a\n" +
+	"\tListHooks\x12&.agynio.api.agents.v1.ListHooksRequest\x1a'.agynio.api.agents.v1.ListHooksResponse\"\x03\x88\x02\x01\x12\\\n" +
 	"\tCreateEnv\x12&.agynio.api.agents.v1.CreateEnvRequest\x1a'.agynio.api.agents.v1.CreateEnvResponse\x12S\n" +
 	"\x06GetEnv\x12#.agynio.api.agents.v1.GetEnvRequest\x1a$.agynio.api.agents.v1.GetEnvResponse\x12\\\n" +
 	"\tUpdateEnv\x12&.agynio.api.agents.v1.UpdateEnvRequest\x1a'.agynio.api.agents.v1.UpdateEnvResponse\x12\\\n" +
@@ -7175,11 +12297,11 @@ const file_agynio_api_agents_v1_agents_proto_rawDesc = "" +
 	"\rGetInitScript\x12*.agynio.api.agents.v1.GetInitScriptRequest\x1a+.agynio.api.agents.v1.GetInitScriptResponse\x12q\n" +
 	"\x10UpdateInitScript\x12-.agynio.api.agents.v1.UpdateInitScriptRequest\x1a..agynio.api.agents.v1.UpdateInitScriptResponse\x12q\n" +
 	"\x10DeleteInitScript\x12-.agynio.api.agents.v1.DeleteInitScriptRequest\x1a..agynio.api.agents.v1.DeleteInitScriptResponse\x12n\n" +
-	"\x0fListInitScripts\x12,.agynio.api.agents.v1.ListInitScriptsRequest\x1a-.agynio.api.agents.v1.ListInitScriptsResponse\x12\x9e\x01\n" +
-	"\x1fCreateImagePullSecretAttachment\x12<.agynio.api.agents.v1.CreateImagePullSecretAttachmentRequest\x1a=.agynio.api.agents.v1.CreateImagePullSecretAttachmentResponse\x12\x95\x01\n" +
-	"\x1cGetImagePullSecretAttachment\x129.agynio.api.agents.v1.GetImagePullSecretAttachmentRequest\x1a:.agynio.api.agents.v1.GetImagePullSecretAttachmentResponse\x12\x9e\x01\n" +
-	"\x1fDeleteImagePullSecretAttachment\x12<.agynio.api.agents.v1.DeleteImagePullSecretAttachmentRequest\x1a=.agynio.api.agents.v1.DeleteImagePullSecretAttachmentResponse\x12\x9b\x01\n" +
-	"\x1eListImagePullSecretAttachments\x12;.agynio.api.agents.v1.ListImagePullSecretAttachmentsRequest\x1a<.agynio.api.agents.v1.ListImagePullSecretAttachmentsResponseB9Z7github.com/agynio/api/gen/agynio/api/agents/v1;agentsv1b\x06proto3"
+	"\x0fListInitScripts\x12,.agynio.api.agents.v1.ListInitScriptsRequest\x1a-.agynio.api.agents.v1.ListInitScriptsResponse\x12\xa3\x01\n" +
+	"\x1fCreateImagePullSecretAttachment\x12<.agynio.api.agents.v1.CreateImagePullSecretAttachmentRequest\x1a=.agynio.api.agents.v1.CreateImagePullSecretAttachmentResponse\"\x03\x88\x02\x01\x12\x9a\x01\n" +
+	"\x1cGetImagePullSecretAttachment\x129.agynio.api.agents.v1.GetImagePullSecretAttachmentRequest\x1a:.agynio.api.agents.v1.GetImagePullSecretAttachmentResponse\"\x03\x88\x02\x01\x12\xa3\x01\n" +
+	"\x1fDeleteImagePullSecretAttachment\x12<.agynio.api.agents.v1.DeleteImagePullSecretAttachmentRequest\x1a=.agynio.api.agents.v1.DeleteImagePullSecretAttachmentResponse\"\x03\x88\x02\x01\x12\xa0\x01\n" +
+	"\x1eListImagePullSecretAttachments\x12;.agynio.api.agents.v1.ListImagePullSecretAttachmentsRequest\x1a<.agynio.api.agents.v1.ListImagePullSecretAttachmentsResponse\"\x03\x88\x02\x01B9Z7github.com/agynio/api/gen/agynio/api/agents/v1;agentsv1b\x06proto3"
 
 var (
 	file_agynio_api_agents_v1_agents_proto_rawDescOnce sync.Once
@@ -7193,285 +12315,461 @@ func file_agynio_api_agents_v1_agents_proto_rawDescGZIP() []byte {
 	return file_agynio_api_agents_v1_agents_proto_rawDescData
 }
 
-var file_agynio_api_agents_v1_agents_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_agynio_api_agents_v1_agents_proto_msgTypes = make([]protoimpl.MessageInfo, 108)
+var file_agynio_api_agents_v1_agents_proto_enumTypes = make([]protoimpl.EnumInfo, 9)
+var file_agynio_api_agents_v1_agents_proto_msgTypes = make([]protoimpl.MessageInfo, 171)
 var file_agynio_api_agents_v1_agents_proto_goTypes = []any{
 	(AgentAvailability)(0),                          // 0: agynio.api.agents.v1.AgentAvailability
-	(AgentRole)(0),                                  // 1: agynio.api.agents.v1.AgentRole
-	(*EntityMeta)(nil),                              // 2: agynio.api.agents.v1.EntityMeta
-	(*ComputeResources)(nil),                        // 3: agynio.api.agents.v1.ComputeResources
-	(*Agent)(nil),                                   // 4: agynio.api.agents.v1.Agent
-	(*CreateAgentRequest)(nil),                      // 5: agynio.api.agents.v1.CreateAgentRequest
-	(*CreateAgentResponse)(nil),                     // 6: agynio.api.agents.v1.CreateAgentResponse
-	(*GetAgentRequest)(nil),                         // 7: agynio.api.agents.v1.GetAgentRequest
-	(*GetAgentResponse)(nil),                        // 8: agynio.api.agents.v1.GetAgentResponse
-	(*ResolveAgentIdentityRequest)(nil),             // 9: agynio.api.agents.v1.ResolveAgentIdentityRequest
-	(*ResolveAgentIdentityResponse)(nil),            // 10: agynio.api.agents.v1.ResolveAgentIdentityResponse
-	(*UpdateAgentRequest)(nil),                      // 11: agynio.api.agents.v1.UpdateAgentRequest
-	(*UpdateAgentResponse)(nil),                     // 12: agynio.api.agents.v1.UpdateAgentResponse
-	(*DeleteAgentRequest)(nil),                      // 13: agynio.api.agents.v1.DeleteAgentRequest
-	(*DeleteAgentResponse)(nil),                     // 14: agynio.api.agents.v1.DeleteAgentResponse
-	(*ListAgentsRequest)(nil),                       // 15: agynio.api.agents.v1.ListAgentsRequest
-	(*ListAgentsResponse)(nil),                      // 16: agynio.api.agents.v1.ListAgentsResponse
-	(*AgentRoleAssignment)(nil),                     // 17: agynio.api.agents.v1.AgentRoleAssignment
-	(*SetAgentRoleRequest)(nil),                     // 18: agynio.api.agents.v1.SetAgentRoleRequest
-	(*SetAgentRoleResponse)(nil),                    // 19: agynio.api.agents.v1.SetAgentRoleResponse
-	(*RemoveAgentRoleRequest)(nil),                  // 20: agynio.api.agents.v1.RemoveAgentRoleRequest
-	(*RemoveAgentRoleResponse)(nil),                 // 21: agynio.api.agents.v1.RemoveAgentRoleResponse
-	(*ListAgentRolesRequest)(nil),                   // 22: agynio.api.agents.v1.ListAgentRolesRequest
-	(*ListAgentRolesResponse)(nil),                  // 23: agynio.api.agents.v1.ListAgentRolesResponse
-	(*ListMyAgentRolesRequest)(nil),                 // 24: agynio.api.agents.v1.ListMyAgentRolesRequest
-	(*ListMyAgentRolesResponse)(nil),                // 25: agynio.api.agents.v1.ListMyAgentRolesResponse
-	(*Volume)(nil),                                  // 26: agynio.api.agents.v1.Volume
-	(*CreateVolumeRequest)(nil),                     // 27: agynio.api.agents.v1.CreateVolumeRequest
-	(*CreateVolumeResponse)(nil),                    // 28: agynio.api.agents.v1.CreateVolumeResponse
-	(*GetVolumeRequest)(nil),                        // 29: agynio.api.agents.v1.GetVolumeRequest
-	(*GetVolumeResponse)(nil),                       // 30: agynio.api.agents.v1.GetVolumeResponse
-	(*UpdateVolumeRequest)(nil),                     // 31: agynio.api.agents.v1.UpdateVolumeRequest
-	(*UpdateVolumeResponse)(nil),                    // 32: agynio.api.agents.v1.UpdateVolumeResponse
-	(*DeleteVolumeRequest)(nil),                     // 33: agynio.api.agents.v1.DeleteVolumeRequest
-	(*DeleteVolumeResponse)(nil),                    // 34: agynio.api.agents.v1.DeleteVolumeResponse
-	(*ListVolumesRequest)(nil),                      // 35: agynio.api.agents.v1.ListVolumesRequest
-	(*ListVolumesResponse)(nil),                     // 36: agynio.api.agents.v1.ListVolumesResponse
-	(*VolumeAttachment)(nil),                        // 37: agynio.api.agents.v1.VolumeAttachment
-	(*CreateVolumeAttachmentRequest)(nil),           // 38: agynio.api.agents.v1.CreateVolumeAttachmentRequest
-	(*CreateVolumeAttachmentResponse)(nil),          // 39: agynio.api.agents.v1.CreateVolumeAttachmentResponse
-	(*GetVolumeAttachmentRequest)(nil),              // 40: agynio.api.agents.v1.GetVolumeAttachmentRequest
-	(*GetVolumeAttachmentResponse)(nil),             // 41: agynio.api.agents.v1.GetVolumeAttachmentResponse
-	(*DeleteVolumeAttachmentRequest)(nil),           // 42: agynio.api.agents.v1.DeleteVolumeAttachmentRequest
-	(*DeleteVolumeAttachmentResponse)(nil),          // 43: agynio.api.agents.v1.DeleteVolumeAttachmentResponse
-	(*ListVolumeAttachmentsRequest)(nil),            // 44: agynio.api.agents.v1.ListVolumeAttachmentsRequest
-	(*ListVolumeAttachmentsResponse)(nil),           // 45: agynio.api.agents.v1.ListVolumeAttachmentsResponse
-	(*ImagePullSecretAttachment)(nil),               // 46: agynio.api.agents.v1.ImagePullSecretAttachment
-	(*CreateImagePullSecretAttachmentRequest)(nil),  // 47: agynio.api.agents.v1.CreateImagePullSecretAttachmentRequest
-	(*CreateImagePullSecretAttachmentResponse)(nil), // 48: agynio.api.agents.v1.CreateImagePullSecretAttachmentResponse
-	(*GetImagePullSecretAttachmentRequest)(nil),     // 49: agynio.api.agents.v1.GetImagePullSecretAttachmentRequest
-	(*GetImagePullSecretAttachmentResponse)(nil),    // 50: agynio.api.agents.v1.GetImagePullSecretAttachmentResponse
-	(*DeleteImagePullSecretAttachmentRequest)(nil),  // 51: agynio.api.agents.v1.DeleteImagePullSecretAttachmentRequest
-	(*DeleteImagePullSecretAttachmentResponse)(nil), // 52: agynio.api.agents.v1.DeleteImagePullSecretAttachmentResponse
-	(*ListImagePullSecretAttachmentsRequest)(nil),   // 53: agynio.api.agents.v1.ListImagePullSecretAttachmentsRequest
-	(*ListImagePullSecretAttachmentsResponse)(nil),  // 54: agynio.api.agents.v1.ListImagePullSecretAttachmentsResponse
-	(*Mcp)(nil),                      // 55: agynio.api.agents.v1.Mcp
-	(*CreateMcpRequest)(nil),         // 56: agynio.api.agents.v1.CreateMcpRequest
-	(*CreateMcpResponse)(nil),        // 57: agynio.api.agents.v1.CreateMcpResponse
-	(*GetMcpRequest)(nil),            // 58: agynio.api.agents.v1.GetMcpRequest
-	(*GetMcpResponse)(nil),           // 59: agynio.api.agents.v1.GetMcpResponse
-	(*UpdateMcpRequest)(nil),         // 60: agynio.api.agents.v1.UpdateMcpRequest
-	(*UpdateMcpResponse)(nil),        // 61: agynio.api.agents.v1.UpdateMcpResponse
-	(*DeleteMcpRequest)(nil),         // 62: agynio.api.agents.v1.DeleteMcpRequest
-	(*DeleteMcpResponse)(nil),        // 63: agynio.api.agents.v1.DeleteMcpResponse
-	(*ListMcpsRequest)(nil),          // 64: agynio.api.agents.v1.ListMcpsRequest
-	(*ListMcpsResponse)(nil),         // 65: agynio.api.agents.v1.ListMcpsResponse
-	(*Skill)(nil),                    // 66: agynio.api.agents.v1.Skill
-	(*CreateSkillRequest)(nil),       // 67: agynio.api.agents.v1.CreateSkillRequest
-	(*CreateSkillResponse)(nil),      // 68: agynio.api.agents.v1.CreateSkillResponse
-	(*GetSkillRequest)(nil),          // 69: agynio.api.agents.v1.GetSkillRequest
-	(*GetSkillResponse)(nil),         // 70: agynio.api.agents.v1.GetSkillResponse
-	(*UpdateSkillRequest)(nil),       // 71: agynio.api.agents.v1.UpdateSkillRequest
-	(*UpdateSkillResponse)(nil),      // 72: agynio.api.agents.v1.UpdateSkillResponse
-	(*DeleteSkillRequest)(nil),       // 73: agynio.api.agents.v1.DeleteSkillRequest
-	(*DeleteSkillResponse)(nil),      // 74: agynio.api.agents.v1.DeleteSkillResponse
-	(*ListSkillsRequest)(nil),        // 75: agynio.api.agents.v1.ListSkillsRequest
-	(*ListSkillsResponse)(nil),       // 76: agynio.api.agents.v1.ListSkillsResponse
-	(*Hook)(nil),                     // 77: agynio.api.agents.v1.Hook
-	(*CreateHookRequest)(nil),        // 78: agynio.api.agents.v1.CreateHookRequest
-	(*CreateHookResponse)(nil),       // 79: agynio.api.agents.v1.CreateHookResponse
-	(*GetHookRequest)(nil),           // 80: agynio.api.agents.v1.GetHookRequest
-	(*GetHookResponse)(nil),          // 81: agynio.api.agents.v1.GetHookResponse
-	(*UpdateHookRequest)(nil),        // 82: agynio.api.agents.v1.UpdateHookRequest
-	(*UpdateHookResponse)(nil),       // 83: agynio.api.agents.v1.UpdateHookResponse
-	(*DeleteHookRequest)(nil),        // 84: agynio.api.agents.v1.DeleteHookRequest
-	(*DeleteHookResponse)(nil),       // 85: agynio.api.agents.v1.DeleteHookResponse
-	(*ListHooksRequest)(nil),         // 86: agynio.api.agents.v1.ListHooksRequest
-	(*ListHooksResponse)(nil),        // 87: agynio.api.agents.v1.ListHooksResponse
-	(*Env)(nil),                      // 88: agynio.api.agents.v1.Env
-	(*CreateEnvRequest)(nil),         // 89: agynio.api.agents.v1.CreateEnvRequest
-	(*CreateEnvResponse)(nil),        // 90: agynio.api.agents.v1.CreateEnvResponse
-	(*GetEnvRequest)(nil),            // 91: agynio.api.agents.v1.GetEnvRequest
-	(*GetEnvResponse)(nil),           // 92: agynio.api.agents.v1.GetEnvResponse
-	(*UpdateEnvRequest)(nil),         // 93: agynio.api.agents.v1.UpdateEnvRequest
-	(*UpdateEnvResponse)(nil),        // 94: agynio.api.agents.v1.UpdateEnvResponse
-	(*DeleteEnvRequest)(nil),         // 95: agynio.api.agents.v1.DeleteEnvRequest
-	(*DeleteEnvResponse)(nil),        // 96: agynio.api.agents.v1.DeleteEnvResponse
-	(*ListEnvsRequest)(nil),          // 97: agynio.api.agents.v1.ListEnvsRequest
-	(*ListEnvsResponse)(nil),         // 98: agynio.api.agents.v1.ListEnvsResponse
-	(*InitScript)(nil),               // 99: agynio.api.agents.v1.InitScript
-	(*CreateInitScriptRequest)(nil),  // 100: agynio.api.agents.v1.CreateInitScriptRequest
-	(*CreateInitScriptResponse)(nil), // 101: agynio.api.agents.v1.CreateInitScriptResponse
-	(*GetInitScriptRequest)(nil),     // 102: agynio.api.agents.v1.GetInitScriptRequest
-	(*GetInitScriptResponse)(nil),    // 103: agynio.api.agents.v1.GetInitScriptResponse
-	(*UpdateInitScriptRequest)(nil),  // 104: agynio.api.agents.v1.UpdateInitScriptRequest
-	(*UpdateInitScriptResponse)(nil), // 105: agynio.api.agents.v1.UpdateInitScriptResponse
-	(*DeleteInitScriptRequest)(nil),  // 106: agynio.api.agents.v1.DeleteInitScriptRequest
-	(*DeleteInitScriptResponse)(nil), // 107: agynio.api.agents.v1.DeleteInitScriptResponse
-	(*ListInitScriptsRequest)(nil),   // 108: agynio.api.agents.v1.ListInitScriptsRequest
-	(*ListInitScriptsResponse)(nil),  // 109: agynio.api.agents.v1.ListInitScriptsResponse
-	(*timestamppb.Timestamp)(nil),    // 110: google.protobuf.Timestamp
+	(AgentDefaultThread)(0),                         // 1: agynio.api.agents.v1.AgentDefaultThread
+	(AgentFinalMessage)(0),                          // 2: agynio.api.agents.v1.AgentFinalMessage
+	(AgentRole)(0),                                  // 3: agynio.api.agents.v1.AgentRole
+	(EnvironmentAvailability)(0),                    // 4: agynio.api.agents.v1.EnvironmentAvailability
+	(EnvironmentRole)(0),                            // 5: agynio.api.agents.v1.EnvironmentRole
+	(AgentInstanceState)(0),                         // 6: agynio.api.agents.v1.AgentInstanceState
+	(InboxItemSourceKind)(0),                        // 7: agynio.api.agents.v1.InboxItemSourceKind
+	(SandboxStatus)(0),                              // 8: agynio.api.agents.v1.SandboxStatus
+	(*EntityMeta)(nil),                              // 9: agynio.api.agents.v1.EntityMeta
+	(*ComputeResources)(nil),                        // 10: agynio.api.agents.v1.ComputeResources
+	(*Agent)(nil),                                   // 11: agynio.api.agents.v1.Agent
+	(*CreateAgentRequest)(nil),                      // 12: agynio.api.agents.v1.CreateAgentRequest
+	(*CreateAgentResponse)(nil),                     // 13: agynio.api.agents.v1.CreateAgentResponse
+	(*GetAgentRequest)(nil),                         // 14: agynio.api.agents.v1.GetAgentRequest
+	(*GetAgentResponse)(nil),                        // 15: agynio.api.agents.v1.GetAgentResponse
+	(*ResolveAgentIdentityRequest)(nil),             // 16: agynio.api.agents.v1.ResolveAgentIdentityRequest
+	(*ResolveAgentIdentityResponse)(nil),            // 17: agynio.api.agents.v1.ResolveAgentIdentityResponse
+	(*UpdateAgentRequest)(nil),                      // 18: agynio.api.agents.v1.UpdateAgentRequest
+	(*UpdateAgentResponse)(nil),                     // 19: agynio.api.agents.v1.UpdateAgentResponse
+	(*DeleteAgentRequest)(nil),                      // 20: agynio.api.agents.v1.DeleteAgentRequest
+	(*DeleteAgentResponse)(nil),                     // 21: agynio.api.agents.v1.DeleteAgentResponse
+	(*ListAgentsRequest)(nil),                       // 22: agynio.api.agents.v1.ListAgentsRequest
+	(*ListAgentsResponse)(nil),                      // 23: agynio.api.agents.v1.ListAgentsResponse
+	(*AgentRoleAssignment)(nil),                     // 24: agynio.api.agents.v1.AgentRoleAssignment
+	(*SetAgentRoleRequest)(nil),                     // 25: agynio.api.agents.v1.SetAgentRoleRequest
+	(*SetAgentRoleResponse)(nil),                    // 26: agynio.api.agents.v1.SetAgentRoleResponse
+	(*RemoveAgentRoleRequest)(nil),                  // 27: agynio.api.agents.v1.RemoveAgentRoleRequest
+	(*RemoveAgentRoleResponse)(nil),                 // 28: agynio.api.agents.v1.RemoveAgentRoleResponse
+	(*ListAgentRolesRequest)(nil),                   // 29: agynio.api.agents.v1.ListAgentRolesRequest
+	(*ListAgentRolesResponse)(nil),                  // 30: agynio.api.agents.v1.ListAgentRolesResponse
+	(*ListMyAgentRolesRequest)(nil),                 // 31: agynio.api.agents.v1.ListMyAgentRolesRequest
+	(*ListMyAgentRolesResponse)(nil),                // 32: agynio.api.agents.v1.ListMyAgentRolesResponse
+	(*AgentInstance)(nil),                           // 33: agynio.api.agents.v1.AgentInstance
+	(*CreateInstanceContext)(nil),                   // 34: agynio.api.agents.v1.CreateInstanceContext
+	(*CreateInstanceRequest)(nil),                   // 35: agynio.api.agents.v1.CreateInstanceRequest
+	(*CreateInstanceResponse)(nil),                  // 36: agynio.api.agents.v1.CreateInstanceResponse
+	(*GetInstanceRequest)(nil),                      // 37: agynio.api.agents.v1.GetInstanceRequest
+	(*GetInstanceResponse)(nil),                     // 38: agynio.api.agents.v1.GetInstanceResponse
+	(*SetInstanceDefaultThreadRequest)(nil),         // 39: agynio.api.agents.v1.SetInstanceDefaultThreadRequest
+	(*SetInstanceDefaultThreadResponse)(nil),        // 40: agynio.api.agents.v1.SetInstanceDefaultThreadResponse
+	(*ListInstancesRequest)(nil),                    // 41: agynio.api.agents.v1.ListInstancesRequest
+	(*ListInstancesResponse)(nil),                   // 42: agynio.api.agents.v1.ListInstancesResponse
+	(*PauseInstanceRequest)(nil),                    // 43: agynio.api.agents.v1.PauseInstanceRequest
+	(*PauseInstanceResponse)(nil),                   // 44: agynio.api.agents.v1.PauseInstanceResponse
+	(*ResumeInstanceRequest)(nil),                   // 45: agynio.api.agents.v1.ResumeInstanceRequest
+	(*ResumeInstanceResponse)(nil),                  // 46: agynio.api.agents.v1.ResumeInstanceResponse
+	(*DeleteInstanceRequest)(nil),                   // 47: agynio.api.agents.v1.DeleteInstanceRequest
+	(*DeleteInstanceResponse)(nil),                  // 48: agynio.api.agents.v1.DeleteInstanceResponse
+	(*InboxItem)(nil),                               // 49: agynio.api.agents.v1.InboxItem
+	(*WriteInboxItemRequest)(nil),                   // 50: agynio.api.agents.v1.WriteInboxItemRequest
+	(*WriteInboxItemResponse)(nil),                  // 51: agynio.api.agents.v1.WriteInboxItemResponse
+	(*FanoutInboxItemRequest)(nil),                  // 52: agynio.api.agents.v1.FanoutInboxItemRequest
+	(*FanoutInboxItemResponse)(nil),                 // 53: agynio.api.agents.v1.FanoutInboxItemResponse
+	(*GetUnackedInboxItemsRequest)(nil),             // 54: agynio.api.agents.v1.GetUnackedInboxItemsRequest
+	(*GetUnackedInboxItemsResponse)(nil),            // 55: agynio.api.agents.v1.GetUnackedInboxItemsResponse
+	(*AckInboxItemsRequest)(nil),                    // 56: agynio.api.agents.v1.AckInboxItemsRequest
+	(*AckInboxItemsResponse)(nil),                   // 57: agynio.api.agents.v1.AckInboxItemsResponse
+	(*GetUnackedInboxCountRequest)(nil),             // 58: agynio.api.agents.v1.GetUnackedInboxCountRequest
+	(*GetUnackedInboxCountResponse)(nil),            // 59: agynio.api.agents.v1.GetUnackedInboxCountResponse
+	(*Environment)(nil),                             // 60: agynio.api.agents.v1.Environment
+	(*CreateEnvironmentRequest)(nil),                // 61: agynio.api.agents.v1.CreateEnvironmentRequest
+	(*CreateEnvironmentResponse)(nil),               // 62: agynio.api.agents.v1.CreateEnvironmentResponse
+	(*GetEnvironmentRequest)(nil),                   // 63: agynio.api.agents.v1.GetEnvironmentRequest
+	(*GetEnvironmentResponse)(nil),                  // 64: agynio.api.agents.v1.GetEnvironmentResponse
+	(*UpdateEnvironmentRequest)(nil),                // 65: agynio.api.agents.v1.UpdateEnvironmentRequest
+	(*UpdateEnvironmentResponse)(nil),               // 66: agynio.api.agents.v1.UpdateEnvironmentResponse
+	(*DeleteEnvironmentRequest)(nil),                // 67: agynio.api.agents.v1.DeleteEnvironmentRequest
+	(*DeleteEnvironmentResponse)(nil),               // 68: agynio.api.agents.v1.DeleteEnvironmentResponse
+	(*ListEnvironmentsRequest)(nil),                 // 69: agynio.api.agents.v1.ListEnvironmentsRequest
+	(*ListEnvironmentsResponse)(nil),                // 70: agynio.api.agents.v1.ListEnvironmentsResponse
+	(*EnvironmentRoleAssignment)(nil),               // 71: agynio.api.agents.v1.EnvironmentRoleAssignment
+	(*SetEnvironmentRoleRequest)(nil),               // 72: agynio.api.agents.v1.SetEnvironmentRoleRequest
+	(*SetEnvironmentRoleResponse)(nil),              // 73: agynio.api.agents.v1.SetEnvironmentRoleResponse
+	(*RemoveEnvironmentRoleRequest)(nil),            // 74: agynio.api.agents.v1.RemoveEnvironmentRoleRequest
+	(*RemoveEnvironmentRoleResponse)(nil),           // 75: agynio.api.agents.v1.RemoveEnvironmentRoleResponse
+	(*ListEnvironmentRolesRequest)(nil),             // 76: agynio.api.agents.v1.ListEnvironmentRolesRequest
+	(*ListEnvironmentRolesResponse)(nil),            // 77: agynio.api.agents.v1.ListEnvironmentRolesResponse
+	(*Sandbox)(nil),                                 // 78: agynio.api.agents.v1.Sandbox
+	(*CreateSandboxRequest)(nil),                    // 79: agynio.api.agents.v1.CreateSandboxRequest
+	(*CreateSandboxResponse)(nil),                   // 80: agynio.api.agents.v1.CreateSandboxResponse
+	(*GetSandboxRequest)(nil),                       // 81: agynio.api.agents.v1.GetSandboxRequest
+	(*SandboxNameRef)(nil),                          // 82: agynio.api.agents.v1.SandboxNameRef
+	(*GetSandboxResponse)(nil),                      // 83: agynio.api.agents.v1.GetSandboxResponse
+	(*ListSandboxesRequest)(nil),                    // 84: agynio.api.agents.v1.ListSandboxesRequest
+	(*ListSandboxesResponse)(nil),                   // 85: agynio.api.agents.v1.ListSandboxesResponse
+	(*StopSandboxRequest)(nil),                      // 86: agynio.api.agents.v1.StopSandboxRequest
+	(*StopSandboxResponse)(nil),                     // 87: agynio.api.agents.v1.StopSandboxResponse
+	(*DeleteSandboxRequest)(nil),                    // 88: agynio.api.agents.v1.DeleteSandboxRequest
+	(*DeleteSandboxResponse)(nil),                   // 89: agynio.api.agents.v1.DeleteSandboxResponse
+	(*EnsureSandboxRunningRequest)(nil),             // 90: agynio.api.agents.v1.EnsureSandboxRunningRequest
+	(*EnsureSandboxRunningResponse)(nil),            // 91: agynio.api.agents.v1.EnsureSandboxRunningResponse
+	(*UpdateSandboxRuntimeStateRequest)(nil),        // 92: agynio.api.agents.v1.UpdateSandboxRuntimeStateRequest
+	(*UpdateSandboxRuntimeStateResponse)(nil),       // 93: agynio.api.agents.v1.UpdateSandboxRuntimeStateResponse
+	(*UpdateSandboxLastSessionRequest)(nil),         // 94: agynio.api.agents.v1.UpdateSandboxLastSessionRequest
+	(*UpdateSandboxLastSessionResponse)(nil),        // 95: agynio.api.agents.v1.UpdateSandboxLastSessionResponse
+	(*Volume)(nil),                                  // 96: agynio.api.agents.v1.Volume
+	(*CreateVolumeRequest)(nil),                     // 97: agynio.api.agents.v1.CreateVolumeRequest
+	(*CreateVolumeResponse)(nil),                    // 98: agynio.api.agents.v1.CreateVolumeResponse
+	(*GetVolumeRequest)(nil),                        // 99: agynio.api.agents.v1.GetVolumeRequest
+	(*GetVolumeResponse)(nil),                       // 100: agynio.api.agents.v1.GetVolumeResponse
+	(*UpdateVolumeRequest)(nil),                     // 101: agynio.api.agents.v1.UpdateVolumeRequest
+	(*UpdateVolumeResponse)(nil),                    // 102: agynio.api.agents.v1.UpdateVolumeResponse
+	(*DeleteVolumeRequest)(nil),                     // 103: agynio.api.agents.v1.DeleteVolumeRequest
+	(*DeleteVolumeResponse)(nil),                    // 104: agynio.api.agents.v1.DeleteVolumeResponse
+	(*ListVolumesRequest)(nil),                      // 105: agynio.api.agents.v1.ListVolumesRequest
+	(*ListVolumesResponse)(nil),                     // 106: agynio.api.agents.v1.ListVolumesResponse
+	(*VolumeAttachment)(nil),                        // 107: agynio.api.agents.v1.VolumeAttachment
+	(*CreateVolumeAttachmentRequest)(nil),           // 108: agynio.api.agents.v1.CreateVolumeAttachmentRequest
+	(*CreateVolumeAttachmentResponse)(nil),          // 109: agynio.api.agents.v1.CreateVolumeAttachmentResponse
+	(*GetVolumeAttachmentRequest)(nil),              // 110: agynio.api.agents.v1.GetVolumeAttachmentRequest
+	(*GetVolumeAttachmentResponse)(nil),             // 111: agynio.api.agents.v1.GetVolumeAttachmentResponse
+	(*DeleteVolumeAttachmentRequest)(nil),           // 112: agynio.api.agents.v1.DeleteVolumeAttachmentRequest
+	(*DeleteVolumeAttachmentResponse)(nil),          // 113: agynio.api.agents.v1.DeleteVolumeAttachmentResponse
+	(*ListVolumeAttachmentsRequest)(nil),            // 114: agynio.api.agents.v1.ListVolumeAttachmentsRequest
+	(*ListVolumeAttachmentsResponse)(nil),           // 115: agynio.api.agents.v1.ListVolumeAttachmentsResponse
+	(*ImagePullSecretAttachment)(nil),               // 116: agynio.api.agents.v1.ImagePullSecretAttachment
+	(*CreateImagePullSecretAttachmentRequest)(nil),  // 117: agynio.api.agents.v1.CreateImagePullSecretAttachmentRequest
+	(*CreateImagePullSecretAttachmentResponse)(nil), // 118: agynio.api.agents.v1.CreateImagePullSecretAttachmentResponse
+	(*GetImagePullSecretAttachmentRequest)(nil),     // 119: agynio.api.agents.v1.GetImagePullSecretAttachmentRequest
+	(*GetImagePullSecretAttachmentResponse)(nil),    // 120: agynio.api.agents.v1.GetImagePullSecretAttachmentResponse
+	(*DeleteImagePullSecretAttachmentRequest)(nil),  // 121: agynio.api.agents.v1.DeleteImagePullSecretAttachmentRequest
+	(*DeleteImagePullSecretAttachmentResponse)(nil), // 122: agynio.api.agents.v1.DeleteImagePullSecretAttachmentResponse
+	(*ListImagePullSecretAttachmentsRequest)(nil),   // 123: agynio.api.agents.v1.ListImagePullSecretAttachmentsRequest
+	(*ListImagePullSecretAttachmentsResponse)(nil),  // 124: agynio.api.agents.v1.ListImagePullSecretAttachmentsResponse
+	(*Mcp)(nil),                      // 125: agynio.api.agents.v1.Mcp
+	(*CreateMcpRequest)(nil),         // 126: agynio.api.agents.v1.CreateMcpRequest
+	(*CreateMcpResponse)(nil),        // 127: agynio.api.agents.v1.CreateMcpResponse
+	(*GetMcpRequest)(nil),            // 128: agynio.api.agents.v1.GetMcpRequest
+	(*GetMcpResponse)(nil),           // 129: agynio.api.agents.v1.GetMcpResponse
+	(*UpdateMcpRequest)(nil),         // 130: agynio.api.agents.v1.UpdateMcpRequest
+	(*UpdateMcpResponse)(nil),        // 131: agynio.api.agents.v1.UpdateMcpResponse
+	(*DeleteMcpRequest)(nil),         // 132: agynio.api.agents.v1.DeleteMcpRequest
+	(*DeleteMcpResponse)(nil),        // 133: agynio.api.agents.v1.DeleteMcpResponse
+	(*ListMcpsRequest)(nil),          // 134: agynio.api.agents.v1.ListMcpsRequest
+	(*ListMcpsResponse)(nil),         // 135: agynio.api.agents.v1.ListMcpsResponse
+	(*Skill)(nil),                    // 136: agynio.api.agents.v1.Skill
+	(*CreateSkillRequest)(nil),       // 137: agynio.api.agents.v1.CreateSkillRequest
+	(*CreateSkillResponse)(nil),      // 138: agynio.api.agents.v1.CreateSkillResponse
+	(*GetSkillRequest)(nil),          // 139: agynio.api.agents.v1.GetSkillRequest
+	(*GetSkillResponse)(nil),         // 140: agynio.api.agents.v1.GetSkillResponse
+	(*UpdateSkillRequest)(nil),       // 141: agynio.api.agents.v1.UpdateSkillRequest
+	(*UpdateSkillResponse)(nil),      // 142: agynio.api.agents.v1.UpdateSkillResponse
+	(*DeleteSkillRequest)(nil),       // 143: agynio.api.agents.v1.DeleteSkillRequest
+	(*DeleteSkillResponse)(nil),      // 144: agynio.api.agents.v1.DeleteSkillResponse
+	(*ListSkillsRequest)(nil),        // 145: agynio.api.agents.v1.ListSkillsRequest
+	(*ListSkillsResponse)(nil),       // 146: agynio.api.agents.v1.ListSkillsResponse
+	(*Hook)(nil),                     // 147: agynio.api.agents.v1.Hook
+	(*CreateHookRequest)(nil),        // 148: agynio.api.agents.v1.CreateHookRequest
+	(*CreateHookResponse)(nil),       // 149: agynio.api.agents.v1.CreateHookResponse
+	(*GetHookRequest)(nil),           // 150: agynio.api.agents.v1.GetHookRequest
+	(*GetHookResponse)(nil),          // 151: agynio.api.agents.v1.GetHookResponse
+	(*UpdateHookRequest)(nil),        // 152: agynio.api.agents.v1.UpdateHookRequest
+	(*UpdateHookResponse)(nil),       // 153: agynio.api.agents.v1.UpdateHookResponse
+	(*DeleteHookRequest)(nil),        // 154: agynio.api.agents.v1.DeleteHookRequest
+	(*DeleteHookResponse)(nil),       // 155: agynio.api.agents.v1.DeleteHookResponse
+	(*ListHooksRequest)(nil),         // 156: agynio.api.agents.v1.ListHooksRequest
+	(*ListHooksResponse)(nil),        // 157: agynio.api.agents.v1.ListHooksResponse
+	(*Env)(nil),                      // 158: agynio.api.agents.v1.Env
+	(*CreateEnvRequest)(nil),         // 159: agynio.api.agents.v1.CreateEnvRequest
+	(*CreateEnvResponse)(nil),        // 160: agynio.api.agents.v1.CreateEnvResponse
+	(*GetEnvRequest)(nil),            // 161: agynio.api.agents.v1.GetEnvRequest
+	(*GetEnvResponse)(nil),           // 162: agynio.api.agents.v1.GetEnvResponse
+	(*UpdateEnvRequest)(nil),         // 163: agynio.api.agents.v1.UpdateEnvRequest
+	(*UpdateEnvResponse)(nil),        // 164: agynio.api.agents.v1.UpdateEnvResponse
+	(*DeleteEnvRequest)(nil),         // 165: agynio.api.agents.v1.DeleteEnvRequest
+	(*DeleteEnvResponse)(nil),        // 166: agynio.api.agents.v1.DeleteEnvResponse
+	(*ListEnvsRequest)(nil),          // 167: agynio.api.agents.v1.ListEnvsRequest
+	(*ListEnvsResponse)(nil),         // 168: agynio.api.agents.v1.ListEnvsResponse
+	(*InitScript)(nil),               // 169: agynio.api.agents.v1.InitScript
+	(*CreateInitScriptRequest)(nil),  // 170: agynio.api.agents.v1.CreateInitScriptRequest
+	(*CreateInitScriptResponse)(nil), // 171: agynio.api.agents.v1.CreateInitScriptResponse
+	(*GetInitScriptRequest)(nil),     // 172: agynio.api.agents.v1.GetInitScriptRequest
+	(*GetInitScriptResponse)(nil),    // 173: agynio.api.agents.v1.GetInitScriptResponse
+	(*UpdateInitScriptRequest)(nil),  // 174: agynio.api.agents.v1.UpdateInitScriptRequest
+	(*UpdateInitScriptResponse)(nil), // 175: agynio.api.agents.v1.UpdateInitScriptResponse
+	(*DeleteInitScriptRequest)(nil),  // 176: agynio.api.agents.v1.DeleteInitScriptRequest
+	(*DeleteInitScriptResponse)(nil), // 177: agynio.api.agents.v1.DeleteInitScriptResponse
+	(*ListInitScriptsRequest)(nil),   // 178: agynio.api.agents.v1.ListInitScriptsRequest
+	(*ListInitScriptsResponse)(nil),  // 179: agynio.api.agents.v1.ListInitScriptsResponse
+	(*timestamppb.Timestamp)(nil),    // 180: google.protobuf.Timestamp
 }
 var file_agynio_api_agents_v1_agents_proto_depIdxs = []int32{
-	110, // 0: agynio.api.agents.v1.EntityMeta.created_at:type_name -> google.protobuf.Timestamp
-	110, // 1: agynio.api.agents.v1.EntityMeta.updated_at:type_name -> google.protobuf.Timestamp
-	2,   // 2: agynio.api.agents.v1.Agent.meta:type_name -> agynio.api.agents.v1.EntityMeta
-	3,   // 3: agynio.api.agents.v1.Agent.resources:type_name -> agynio.api.agents.v1.ComputeResources
+	180, // 0: agynio.api.agents.v1.EntityMeta.created_at:type_name -> google.protobuf.Timestamp
+	180, // 1: agynio.api.agents.v1.EntityMeta.updated_at:type_name -> google.protobuf.Timestamp
+	9,   // 2: agynio.api.agents.v1.Agent.meta:type_name -> agynio.api.agents.v1.EntityMeta
+	10,  // 3: agynio.api.agents.v1.Agent.resources:type_name -> agynio.api.agents.v1.ComputeResources
 	0,   // 4: agynio.api.agents.v1.Agent.availability:type_name -> agynio.api.agents.v1.AgentAvailability
-	3,   // 5: agynio.api.agents.v1.CreateAgentRequest.resources:type_name -> agynio.api.agents.v1.ComputeResources
-	0,   // 6: agynio.api.agents.v1.CreateAgentRequest.availability:type_name -> agynio.api.agents.v1.AgentAvailability
-	4,   // 7: agynio.api.agents.v1.CreateAgentResponse.agent:type_name -> agynio.api.agents.v1.Agent
-	4,   // 8: agynio.api.agents.v1.GetAgentResponse.agent:type_name -> agynio.api.agents.v1.Agent
-	3,   // 9: agynio.api.agents.v1.UpdateAgentRequest.resources:type_name -> agynio.api.agents.v1.ComputeResources
-	0,   // 10: agynio.api.agents.v1.UpdateAgentRequest.availability:type_name -> agynio.api.agents.v1.AgentAvailability
-	4,   // 11: agynio.api.agents.v1.UpdateAgentResponse.agent:type_name -> agynio.api.agents.v1.Agent
-	4,   // 12: agynio.api.agents.v1.ListAgentsResponse.agents:type_name -> agynio.api.agents.v1.Agent
-	1,   // 13: agynio.api.agents.v1.AgentRoleAssignment.role:type_name -> agynio.api.agents.v1.AgentRole
-	1,   // 14: agynio.api.agents.v1.SetAgentRoleRequest.role:type_name -> agynio.api.agents.v1.AgentRole
-	17,  // 15: agynio.api.agents.v1.SetAgentRoleResponse.assignment:type_name -> agynio.api.agents.v1.AgentRoleAssignment
-	17,  // 16: agynio.api.agents.v1.ListAgentRolesResponse.assignments:type_name -> agynio.api.agents.v1.AgentRoleAssignment
-	17,  // 17: agynio.api.agents.v1.ListMyAgentRolesResponse.assignments:type_name -> agynio.api.agents.v1.AgentRoleAssignment
-	2,   // 18: agynio.api.agents.v1.Volume.meta:type_name -> agynio.api.agents.v1.EntityMeta
-	26,  // 19: agynio.api.agents.v1.CreateVolumeResponse.volume:type_name -> agynio.api.agents.v1.Volume
-	26,  // 20: agynio.api.agents.v1.GetVolumeResponse.volume:type_name -> agynio.api.agents.v1.Volume
-	26,  // 21: agynio.api.agents.v1.UpdateVolumeResponse.volume:type_name -> agynio.api.agents.v1.Volume
-	26,  // 22: agynio.api.agents.v1.ListVolumesResponse.volumes:type_name -> agynio.api.agents.v1.Volume
-	2,   // 23: agynio.api.agents.v1.VolumeAttachment.meta:type_name -> agynio.api.agents.v1.EntityMeta
-	37,  // 24: agynio.api.agents.v1.CreateVolumeAttachmentResponse.volume_attachment:type_name -> agynio.api.agents.v1.VolumeAttachment
-	37,  // 25: agynio.api.agents.v1.GetVolumeAttachmentResponse.volume_attachment:type_name -> agynio.api.agents.v1.VolumeAttachment
-	37,  // 26: agynio.api.agents.v1.ListVolumeAttachmentsResponse.volume_attachments:type_name -> agynio.api.agents.v1.VolumeAttachment
-	2,   // 27: agynio.api.agents.v1.ImagePullSecretAttachment.meta:type_name -> agynio.api.agents.v1.EntityMeta
-	46,  // 28: agynio.api.agents.v1.CreateImagePullSecretAttachmentResponse.image_pull_secret_attachment:type_name -> agynio.api.agents.v1.ImagePullSecretAttachment
-	46,  // 29: agynio.api.agents.v1.GetImagePullSecretAttachmentResponse.image_pull_secret_attachment:type_name -> agynio.api.agents.v1.ImagePullSecretAttachment
-	46,  // 30: agynio.api.agents.v1.ListImagePullSecretAttachmentsResponse.image_pull_secret_attachments:type_name -> agynio.api.agents.v1.ImagePullSecretAttachment
-	2,   // 31: agynio.api.agents.v1.Mcp.meta:type_name -> agynio.api.agents.v1.EntityMeta
-	3,   // 32: agynio.api.agents.v1.Mcp.resources:type_name -> agynio.api.agents.v1.ComputeResources
-	3,   // 33: agynio.api.agents.v1.CreateMcpRequest.resources:type_name -> agynio.api.agents.v1.ComputeResources
-	55,  // 34: agynio.api.agents.v1.CreateMcpResponse.mcp:type_name -> agynio.api.agents.v1.Mcp
-	55,  // 35: agynio.api.agents.v1.GetMcpResponse.mcp:type_name -> agynio.api.agents.v1.Mcp
-	3,   // 36: agynio.api.agents.v1.UpdateMcpRequest.resources:type_name -> agynio.api.agents.v1.ComputeResources
-	55,  // 37: agynio.api.agents.v1.UpdateMcpResponse.mcp:type_name -> agynio.api.agents.v1.Mcp
-	55,  // 38: agynio.api.agents.v1.ListMcpsResponse.mcps:type_name -> agynio.api.agents.v1.Mcp
-	2,   // 39: agynio.api.agents.v1.Skill.meta:type_name -> agynio.api.agents.v1.EntityMeta
-	66,  // 40: agynio.api.agents.v1.CreateSkillResponse.skill:type_name -> agynio.api.agents.v1.Skill
-	66,  // 41: agynio.api.agents.v1.GetSkillResponse.skill:type_name -> agynio.api.agents.v1.Skill
-	66,  // 42: agynio.api.agents.v1.UpdateSkillResponse.skill:type_name -> agynio.api.agents.v1.Skill
-	66,  // 43: agynio.api.agents.v1.ListSkillsResponse.skills:type_name -> agynio.api.agents.v1.Skill
-	2,   // 44: agynio.api.agents.v1.Hook.meta:type_name -> agynio.api.agents.v1.EntityMeta
-	3,   // 45: agynio.api.agents.v1.Hook.resources:type_name -> agynio.api.agents.v1.ComputeResources
-	3,   // 46: agynio.api.agents.v1.CreateHookRequest.resources:type_name -> agynio.api.agents.v1.ComputeResources
-	77,  // 47: agynio.api.agents.v1.CreateHookResponse.hook:type_name -> agynio.api.agents.v1.Hook
-	77,  // 48: agynio.api.agents.v1.GetHookResponse.hook:type_name -> agynio.api.agents.v1.Hook
-	3,   // 49: agynio.api.agents.v1.UpdateHookRequest.resources:type_name -> agynio.api.agents.v1.ComputeResources
-	77,  // 50: agynio.api.agents.v1.UpdateHookResponse.hook:type_name -> agynio.api.agents.v1.Hook
-	77,  // 51: agynio.api.agents.v1.ListHooksResponse.hooks:type_name -> agynio.api.agents.v1.Hook
-	2,   // 52: agynio.api.agents.v1.Env.meta:type_name -> agynio.api.agents.v1.EntityMeta
-	88,  // 53: agynio.api.agents.v1.CreateEnvResponse.env:type_name -> agynio.api.agents.v1.Env
-	88,  // 54: agynio.api.agents.v1.GetEnvResponse.env:type_name -> agynio.api.agents.v1.Env
-	88,  // 55: agynio.api.agents.v1.UpdateEnvResponse.env:type_name -> agynio.api.agents.v1.Env
-	88,  // 56: agynio.api.agents.v1.ListEnvsResponse.envs:type_name -> agynio.api.agents.v1.Env
-	2,   // 57: agynio.api.agents.v1.InitScript.meta:type_name -> agynio.api.agents.v1.EntityMeta
-	99,  // 58: agynio.api.agents.v1.CreateInitScriptResponse.init_script:type_name -> agynio.api.agents.v1.InitScript
-	99,  // 59: agynio.api.agents.v1.GetInitScriptResponse.init_script:type_name -> agynio.api.agents.v1.InitScript
-	99,  // 60: agynio.api.agents.v1.UpdateInitScriptResponse.init_script:type_name -> agynio.api.agents.v1.InitScript
-	99,  // 61: agynio.api.agents.v1.ListInitScriptsResponse.init_scripts:type_name -> agynio.api.agents.v1.InitScript
-	5,   // 62: agynio.api.agents.v1.AgentsService.CreateAgent:input_type -> agynio.api.agents.v1.CreateAgentRequest
-	7,   // 63: agynio.api.agents.v1.AgentsService.GetAgent:input_type -> agynio.api.agents.v1.GetAgentRequest
-	9,   // 64: agynio.api.agents.v1.AgentsService.ResolveAgentIdentity:input_type -> agynio.api.agents.v1.ResolveAgentIdentityRequest
-	11,  // 65: agynio.api.agents.v1.AgentsService.UpdateAgent:input_type -> agynio.api.agents.v1.UpdateAgentRequest
-	13,  // 66: agynio.api.agents.v1.AgentsService.DeleteAgent:input_type -> agynio.api.agents.v1.DeleteAgentRequest
-	15,  // 67: agynio.api.agents.v1.AgentsService.ListAgents:input_type -> agynio.api.agents.v1.ListAgentsRequest
-	18,  // 68: agynio.api.agents.v1.AgentsService.SetAgentRole:input_type -> agynio.api.agents.v1.SetAgentRoleRequest
-	20,  // 69: agynio.api.agents.v1.AgentsService.RemoveAgentRole:input_type -> agynio.api.agents.v1.RemoveAgentRoleRequest
-	22,  // 70: agynio.api.agents.v1.AgentsService.ListAgentRoles:input_type -> agynio.api.agents.v1.ListAgentRolesRequest
-	24,  // 71: agynio.api.agents.v1.AgentsService.ListMyAgentRoles:input_type -> agynio.api.agents.v1.ListMyAgentRolesRequest
-	27,  // 72: agynio.api.agents.v1.AgentsService.CreateVolume:input_type -> agynio.api.agents.v1.CreateVolumeRequest
-	29,  // 73: agynio.api.agents.v1.AgentsService.GetVolume:input_type -> agynio.api.agents.v1.GetVolumeRequest
-	31,  // 74: agynio.api.agents.v1.AgentsService.UpdateVolume:input_type -> agynio.api.agents.v1.UpdateVolumeRequest
-	33,  // 75: agynio.api.agents.v1.AgentsService.DeleteVolume:input_type -> agynio.api.agents.v1.DeleteVolumeRequest
-	35,  // 76: agynio.api.agents.v1.AgentsService.ListVolumes:input_type -> agynio.api.agents.v1.ListVolumesRequest
-	38,  // 77: agynio.api.agents.v1.AgentsService.CreateVolumeAttachment:input_type -> agynio.api.agents.v1.CreateVolumeAttachmentRequest
-	40,  // 78: agynio.api.agents.v1.AgentsService.GetVolumeAttachment:input_type -> agynio.api.agents.v1.GetVolumeAttachmentRequest
-	42,  // 79: agynio.api.agents.v1.AgentsService.DeleteVolumeAttachment:input_type -> agynio.api.agents.v1.DeleteVolumeAttachmentRequest
-	44,  // 80: agynio.api.agents.v1.AgentsService.ListVolumeAttachments:input_type -> agynio.api.agents.v1.ListVolumeAttachmentsRequest
-	56,  // 81: agynio.api.agents.v1.AgentsService.CreateMcp:input_type -> agynio.api.agents.v1.CreateMcpRequest
-	58,  // 82: agynio.api.agents.v1.AgentsService.GetMcp:input_type -> agynio.api.agents.v1.GetMcpRequest
-	60,  // 83: agynio.api.agents.v1.AgentsService.UpdateMcp:input_type -> agynio.api.agents.v1.UpdateMcpRequest
-	62,  // 84: agynio.api.agents.v1.AgentsService.DeleteMcp:input_type -> agynio.api.agents.v1.DeleteMcpRequest
-	64,  // 85: agynio.api.agents.v1.AgentsService.ListMcps:input_type -> agynio.api.agents.v1.ListMcpsRequest
-	67,  // 86: agynio.api.agents.v1.AgentsService.CreateSkill:input_type -> agynio.api.agents.v1.CreateSkillRequest
-	69,  // 87: agynio.api.agents.v1.AgentsService.GetSkill:input_type -> agynio.api.agents.v1.GetSkillRequest
-	71,  // 88: agynio.api.agents.v1.AgentsService.UpdateSkill:input_type -> agynio.api.agents.v1.UpdateSkillRequest
-	73,  // 89: agynio.api.agents.v1.AgentsService.DeleteSkill:input_type -> agynio.api.agents.v1.DeleteSkillRequest
-	75,  // 90: agynio.api.agents.v1.AgentsService.ListSkills:input_type -> agynio.api.agents.v1.ListSkillsRequest
-	78,  // 91: agynio.api.agents.v1.AgentsService.CreateHook:input_type -> agynio.api.agents.v1.CreateHookRequest
-	80,  // 92: agynio.api.agents.v1.AgentsService.GetHook:input_type -> agynio.api.agents.v1.GetHookRequest
-	82,  // 93: agynio.api.agents.v1.AgentsService.UpdateHook:input_type -> agynio.api.agents.v1.UpdateHookRequest
-	84,  // 94: agynio.api.agents.v1.AgentsService.DeleteHook:input_type -> agynio.api.agents.v1.DeleteHookRequest
-	86,  // 95: agynio.api.agents.v1.AgentsService.ListHooks:input_type -> agynio.api.agents.v1.ListHooksRequest
-	89,  // 96: agynio.api.agents.v1.AgentsService.CreateEnv:input_type -> agynio.api.agents.v1.CreateEnvRequest
-	91,  // 97: agynio.api.agents.v1.AgentsService.GetEnv:input_type -> agynio.api.agents.v1.GetEnvRequest
-	93,  // 98: agynio.api.agents.v1.AgentsService.UpdateEnv:input_type -> agynio.api.agents.v1.UpdateEnvRequest
-	95,  // 99: agynio.api.agents.v1.AgentsService.DeleteEnv:input_type -> agynio.api.agents.v1.DeleteEnvRequest
-	97,  // 100: agynio.api.agents.v1.AgentsService.ListEnvs:input_type -> agynio.api.agents.v1.ListEnvsRequest
-	100, // 101: agynio.api.agents.v1.AgentsService.CreateInitScript:input_type -> agynio.api.agents.v1.CreateInitScriptRequest
-	102, // 102: agynio.api.agents.v1.AgentsService.GetInitScript:input_type -> agynio.api.agents.v1.GetInitScriptRequest
-	104, // 103: agynio.api.agents.v1.AgentsService.UpdateInitScript:input_type -> agynio.api.agents.v1.UpdateInitScriptRequest
-	106, // 104: agynio.api.agents.v1.AgentsService.DeleteInitScript:input_type -> agynio.api.agents.v1.DeleteInitScriptRequest
-	108, // 105: agynio.api.agents.v1.AgentsService.ListInitScripts:input_type -> agynio.api.agents.v1.ListInitScriptsRequest
-	47,  // 106: agynio.api.agents.v1.AgentsService.CreateImagePullSecretAttachment:input_type -> agynio.api.agents.v1.CreateImagePullSecretAttachmentRequest
-	49,  // 107: agynio.api.agents.v1.AgentsService.GetImagePullSecretAttachment:input_type -> agynio.api.agents.v1.GetImagePullSecretAttachmentRequest
-	51,  // 108: agynio.api.agents.v1.AgentsService.DeleteImagePullSecretAttachment:input_type -> agynio.api.agents.v1.DeleteImagePullSecretAttachmentRequest
-	53,  // 109: agynio.api.agents.v1.AgentsService.ListImagePullSecretAttachments:input_type -> agynio.api.agents.v1.ListImagePullSecretAttachmentsRequest
-	6,   // 110: agynio.api.agents.v1.AgentsService.CreateAgent:output_type -> agynio.api.agents.v1.CreateAgentResponse
-	8,   // 111: agynio.api.agents.v1.AgentsService.GetAgent:output_type -> agynio.api.agents.v1.GetAgentResponse
-	10,  // 112: agynio.api.agents.v1.AgentsService.ResolveAgentIdentity:output_type -> agynio.api.agents.v1.ResolveAgentIdentityResponse
-	12,  // 113: agynio.api.agents.v1.AgentsService.UpdateAgent:output_type -> agynio.api.agents.v1.UpdateAgentResponse
-	14,  // 114: agynio.api.agents.v1.AgentsService.DeleteAgent:output_type -> agynio.api.agents.v1.DeleteAgentResponse
-	16,  // 115: agynio.api.agents.v1.AgentsService.ListAgents:output_type -> agynio.api.agents.v1.ListAgentsResponse
-	19,  // 116: agynio.api.agents.v1.AgentsService.SetAgentRole:output_type -> agynio.api.agents.v1.SetAgentRoleResponse
-	21,  // 117: agynio.api.agents.v1.AgentsService.RemoveAgentRole:output_type -> agynio.api.agents.v1.RemoveAgentRoleResponse
-	23,  // 118: agynio.api.agents.v1.AgentsService.ListAgentRoles:output_type -> agynio.api.agents.v1.ListAgentRolesResponse
-	25,  // 119: agynio.api.agents.v1.AgentsService.ListMyAgentRoles:output_type -> agynio.api.agents.v1.ListMyAgentRolesResponse
-	28,  // 120: agynio.api.agents.v1.AgentsService.CreateVolume:output_type -> agynio.api.agents.v1.CreateVolumeResponse
-	30,  // 121: agynio.api.agents.v1.AgentsService.GetVolume:output_type -> agynio.api.agents.v1.GetVolumeResponse
-	32,  // 122: agynio.api.agents.v1.AgentsService.UpdateVolume:output_type -> agynio.api.agents.v1.UpdateVolumeResponse
-	34,  // 123: agynio.api.agents.v1.AgentsService.DeleteVolume:output_type -> agynio.api.agents.v1.DeleteVolumeResponse
-	36,  // 124: agynio.api.agents.v1.AgentsService.ListVolumes:output_type -> agynio.api.agents.v1.ListVolumesResponse
-	39,  // 125: agynio.api.agents.v1.AgentsService.CreateVolumeAttachment:output_type -> agynio.api.agents.v1.CreateVolumeAttachmentResponse
-	41,  // 126: agynio.api.agents.v1.AgentsService.GetVolumeAttachment:output_type -> agynio.api.agents.v1.GetVolumeAttachmentResponse
-	43,  // 127: agynio.api.agents.v1.AgentsService.DeleteVolumeAttachment:output_type -> agynio.api.agents.v1.DeleteVolumeAttachmentResponse
-	45,  // 128: agynio.api.agents.v1.AgentsService.ListVolumeAttachments:output_type -> agynio.api.agents.v1.ListVolumeAttachmentsResponse
-	57,  // 129: agynio.api.agents.v1.AgentsService.CreateMcp:output_type -> agynio.api.agents.v1.CreateMcpResponse
-	59,  // 130: agynio.api.agents.v1.AgentsService.GetMcp:output_type -> agynio.api.agents.v1.GetMcpResponse
-	61,  // 131: agynio.api.agents.v1.AgentsService.UpdateMcp:output_type -> agynio.api.agents.v1.UpdateMcpResponse
-	63,  // 132: agynio.api.agents.v1.AgentsService.DeleteMcp:output_type -> agynio.api.agents.v1.DeleteMcpResponse
-	65,  // 133: agynio.api.agents.v1.AgentsService.ListMcps:output_type -> agynio.api.agents.v1.ListMcpsResponse
-	68,  // 134: agynio.api.agents.v1.AgentsService.CreateSkill:output_type -> agynio.api.agents.v1.CreateSkillResponse
-	70,  // 135: agynio.api.agents.v1.AgentsService.GetSkill:output_type -> agynio.api.agents.v1.GetSkillResponse
-	72,  // 136: agynio.api.agents.v1.AgentsService.UpdateSkill:output_type -> agynio.api.agents.v1.UpdateSkillResponse
-	74,  // 137: agynio.api.agents.v1.AgentsService.DeleteSkill:output_type -> agynio.api.agents.v1.DeleteSkillResponse
-	76,  // 138: agynio.api.agents.v1.AgentsService.ListSkills:output_type -> agynio.api.agents.v1.ListSkillsResponse
-	79,  // 139: agynio.api.agents.v1.AgentsService.CreateHook:output_type -> agynio.api.agents.v1.CreateHookResponse
-	81,  // 140: agynio.api.agents.v1.AgentsService.GetHook:output_type -> agynio.api.agents.v1.GetHookResponse
-	83,  // 141: agynio.api.agents.v1.AgentsService.UpdateHook:output_type -> agynio.api.agents.v1.UpdateHookResponse
-	85,  // 142: agynio.api.agents.v1.AgentsService.DeleteHook:output_type -> agynio.api.agents.v1.DeleteHookResponse
-	87,  // 143: agynio.api.agents.v1.AgentsService.ListHooks:output_type -> agynio.api.agents.v1.ListHooksResponse
-	90,  // 144: agynio.api.agents.v1.AgentsService.CreateEnv:output_type -> agynio.api.agents.v1.CreateEnvResponse
-	92,  // 145: agynio.api.agents.v1.AgentsService.GetEnv:output_type -> agynio.api.agents.v1.GetEnvResponse
-	94,  // 146: agynio.api.agents.v1.AgentsService.UpdateEnv:output_type -> agynio.api.agents.v1.UpdateEnvResponse
-	96,  // 147: agynio.api.agents.v1.AgentsService.DeleteEnv:output_type -> agynio.api.agents.v1.DeleteEnvResponse
-	98,  // 148: agynio.api.agents.v1.AgentsService.ListEnvs:output_type -> agynio.api.agents.v1.ListEnvsResponse
-	101, // 149: agynio.api.agents.v1.AgentsService.CreateInitScript:output_type -> agynio.api.agents.v1.CreateInitScriptResponse
-	103, // 150: agynio.api.agents.v1.AgentsService.GetInitScript:output_type -> agynio.api.agents.v1.GetInitScriptResponse
-	105, // 151: agynio.api.agents.v1.AgentsService.UpdateInitScript:output_type -> agynio.api.agents.v1.UpdateInitScriptResponse
-	107, // 152: agynio.api.agents.v1.AgentsService.DeleteInitScript:output_type -> agynio.api.agents.v1.DeleteInitScriptResponse
-	109, // 153: agynio.api.agents.v1.AgentsService.ListInitScripts:output_type -> agynio.api.agents.v1.ListInitScriptsResponse
-	48,  // 154: agynio.api.agents.v1.AgentsService.CreateImagePullSecretAttachment:output_type -> agynio.api.agents.v1.CreateImagePullSecretAttachmentResponse
-	50,  // 155: agynio.api.agents.v1.AgentsService.GetImagePullSecretAttachment:output_type -> agynio.api.agents.v1.GetImagePullSecretAttachmentResponse
-	52,  // 156: agynio.api.agents.v1.AgentsService.DeleteImagePullSecretAttachment:output_type -> agynio.api.agents.v1.DeleteImagePullSecretAttachmentResponse
-	54,  // 157: agynio.api.agents.v1.AgentsService.ListImagePullSecretAttachments:output_type -> agynio.api.agents.v1.ListImagePullSecretAttachmentsResponse
-	110, // [110:158] is the sub-list for method output_type
-	62,  // [62:110] is the sub-list for method input_type
-	62,  // [62:62] is the sub-list for extension type_name
-	62,  // [62:62] is the sub-list for extension extendee
-	0,   // [0:62] is the sub-list for field type_name
+	1,   // 5: agynio.api.agents.v1.Agent.default_thread:type_name -> agynio.api.agents.v1.AgentDefaultThread
+	2,   // 6: agynio.api.agents.v1.Agent.final_message:type_name -> agynio.api.agents.v1.AgentFinalMessage
+	10,  // 7: agynio.api.agents.v1.CreateAgentRequest.resources:type_name -> agynio.api.agents.v1.ComputeResources
+	0,   // 8: agynio.api.agents.v1.CreateAgentRequest.availability:type_name -> agynio.api.agents.v1.AgentAvailability
+	1,   // 9: agynio.api.agents.v1.CreateAgentRequest.default_thread:type_name -> agynio.api.agents.v1.AgentDefaultThread
+	2,   // 10: agynio.api.agents.v1.CreateAgentRequest.final_message:type_name -> agynio.api.agents.v1.AgentFinalMessage
+	11,  // 11: agynio.api.agents.v1.CreateAgentResponse.agent:type_name -> agynio.api.agents.v1.Agent
+	11,  // 12: agynio.api.agents.v1.GetAgentResponse.agent:type_name -> agynio.api.agents.v1.Agent
+	10,  // 13: agynio.api.agents.v1.UpdateAgentRequest.resources:type_name -> agynio.api.agents.v1.ComputeResources
+	0,   // 14: agynio.api.agents.v1.UpdateAgentRequest.availability:type_name -> agynio.api.agents.v1.AgentAvailability
+	1,   // 15: agynio.api.agents.v1.UpdateAgentRequest.default_thread:type_name -> agynio.api.agents.v1.AgentDefaultThread
+	2,   // 16: agynio.api.agents.v1.UpdateAgentRequest.final_message:type_name -> agynio.api.agents.v1.AgentFinalMessage
+	11,  // 17: agynio.api.agents.v1.UpdateAgentResponse.agent:type_name -> agynio.api.agents.v1.Agent
+	11,  // 18: agynio.api.agents.v1.ListAgentsResponse.agents:type_name -> agynio.api.agents.v1.Agent
+	3,   // 19: agynio.api.agents.v1.AgentRoleAssignment.role:type_name -> agynio.api.agents.v1.AgentRole
+	3,   // 20: agynio.api.agents.v1.SetAgentRoleRequest.role:type_name -> agynio.api.agents.v1.AgentRole
+	24,  // 21: agynio.api.agents.v1.SetAgentRoleResponse.assignment:type_name -> agynio.api.agents.v1.AgentRoleAssignment
+	24,  // 22: agynio.api.agents.v1.ListAgentRolesResponse.assignments:type_name -> agynio.api.agents.v1.AgentRoleAssignment
+	24,  // 23: agynio.api.agents.v1.ListMyAgentRolesResponse.assignments:type_name -> agynio.api.agents.v1.AgentRoleAssignment
+	9,   // 24: agynio.api.agents.v1.AgentInstance.meta:type_name -> agynio.api.agents.v1.EntityMeta
+	6,   // 25: agynio.api.agents.v1.AgentInstance.state:type_name -> agynio.api.agents.v1.AgentInstanceState
+	180, // 26: agynio.api.agents.v1.AgentInstance.last_activity_at:type_name -> google.protobuf.Timestamp
+	34,  // 27: agynio.api.agents.v1.CreateInstanceRequest.context:type_name -> agynio.api.agents.v1.CreateInstanceContext
+	33,  // 28: agynio.api.agents.v1.CreateInstanceResponse.instance:type_name -> agynio.api.agents.v1.AgentInstance
+	33,  // 29: agynio.api.agents.v1.GetInstanceResponse.instance:type_name -> agynio.api.agents.v1.AgentInstance
+	33,  // 30: agynio.api.agents.v1.SetInstanceDefaultThreadResponse.instance:type_name -> agynio.api.agents.v1.AgentInstance
+	6,   // 31: agynio.api.agents.v1.ListInstancesRequest.state_in:type_name -> agynio.api.agents.v1.AgentInstanceState
+	33,  // 32: agynio.api.agents.v1.ListInstancesResponse.instances:type_name -> agynio.api.agents.v1.AgentInstance
+	33,  // 33: agynio.api.agents.v1.PauseInstanceResponse.instance:type_name -> agynio.api.agents.v1.AgentInstance
+	33,  // 34: agynio.api.agents.v1.ResumeInstanceResponse.instance:type_name -> agynio.api.agents.v1.AgentInstance
+	33,  // 35: agynio.api.agents.v1.DeleteInstanceResponse.instance:type_name -> agynio.api.agents.v1.AgentInstance
+	7,   // 36: agynio.api.agents.v1.InboxItem.source_kind:type_name -> agynio.api.agents.v1.InboxItemSourceKind
+	180, // 37: agynio.api.agents.v1.InboxItem.accepted_at:type_name -> google.protobuf.Timestamp
+	180, // 38: agynio.api.agents.v1.InboxItem.acked_at:type_name -> google.protobuf.Timestamp
+	49,  // 39: agynio.api.agents.v1.WriteInboxItemResponse.item:type_name -> agynio.api.agents.v1.InboxItem
+	49,  // 40: agynio.api.agents.v1.FanoutInboxItemResponse.item:type_name -> agynio.api.agents.v1.InboxItem
+	49,  // 41: agynio.api.agents.v1.GetUnackedInboxItemsResponse.items:type_name -> agynio.api.agents.v1.InboxItem
+	9,   // 42: agynio.api.agents.v1.Environment.meta:type_name -> agynio.api.agents.v1.EntityMeta
+	4,   // 43: agynio.api.agents.v1.Environment.availability:type_name -> agynio.api.agents.v1.EnvironmentAvailability
+	4,   // 44: agynio.api.agents.v1.CreateEnvironmentRequest.availability:type_name -> agynio.api.agents.v1.EnvironmentAvailability
+	60,  // 45: agynio.api.agents.v1.CreateEnvironmentResponse.environment:type_name -> agynio.api.agents.v1.Environment
+	60,  // 46: agynio.api.agents.v1.GetEnvironmentResponse.environment:type_name -> agynio.api.agents.v1.Environment
+	4,   // 47: agynio.api.agents.v1.UpdateEnvironmentRequest.availability:type_name -> agynio.api.agents.v1.EnvironmentAvailability
+	60,  // 48: agynio.api.agents.v1.UpdateEnvironmentResponse.environment:type_name -> agynio.api.agents.v1.Environment
+	60,  // 49: agynio.api.agents.v1.ListEnvironmentsResponse.environments:type_name -> agynio.api.agents.v1.Environment
+	5,   // 50: agynio.api.agents.v1.EnvironmentRoleAssignment.role:type_name -> agynio.api.agents.v1.EnvironmentRole
+	5,   // 51: agynio.api.agents.v1.SetEnvironmentRoleRequest.role:type_name -> agynio.api.agents.v1.EnvironmentRole
+	71,  // 52: agynio.api.agents.v1.SetEnvironmentRoleResponse.assignment:type_name -> agynio.api.agents.v1.EnvironmentRoleAssignment
+	71,  // 53: agynio.api.agents.v1.ListEnvironmentRolesResponse.assignments:type_name -> agynio.api.agents.v1.EnvironmentRoleAssignment
+	9,   // 54: agynio.api.agents.v1.Sandbox.meta:type_name -> agynio.api.agents.v1.EntityMeta
+	8,   // 55: agynio.api.agents.v1.Sandbox.status:type_name -> agynio.api.agents.v1.SandboxStatus
+	180, // 56: agynio.api.agents.v1.Sandbox.last_session_at:type_name -> google.protobuf.Timestamp
+	78,  // 57: agynio.api.agents.v1.CreateSandboxResponse.sandbox:type_name -> agynio.api.agents.v1.Sandbox
+	82,  // 58: agynio.api.agents.v1.GetSandboxRequest.name:type_name -> agynio.api.agents.v1.SandboxNameRef
+	78,  // 59: agynio.api.agents.v1.GetSandboxResponse.sandbox:type_name -> agynio.api.agents.v1.Sandbox
+	78,  // 60: agynio.api.agents.v1.ListSandboxesResponse.sandboxes:type_name -> agynio.api.agents.v1.Sandbox
+	78,  // 61: agynio.api.agents.v1.StopSandboxResponse.sandbox:type_name -> agynio.api.agents.v1.Sandbox
+	78,  // 62: agynio.api.agents.v1.DeleteSandboxResponse.sandbox:type_name -> agynio.api.agents.v1.Sandbox
+	78,  // 63: agynio.api.agents.v1.EnsureSandboxRunningResponse.sandbox:type_name -> agynio.api.agents.v1.Sandbox
+	8,   // 64: agynio.api.agents.v1.UpdateSandboxRuntimeStateRequest.status:type_name -> agynio.api.agents.v1.SandboxStatus
+	78,  // 65: agynio.api.agents.v1.UpdateSandboxRuntimeStateResponse.sandbox:type_name -> agynio.api.agents.v1.Sandbox
+	180, // 66: agynio.api.agents.v1.UpdateSandboxLastSessionRequest.last_session_at:type_name -> google.protobuf.Timestamp
+	78,  // 67: agynio.api.agents.v1.UpdateSandboxLastSessionResponse.sandbox:type_name -> agynio.api.agents.v1.Sandbox
+	9,   // 68: agynio.api.agents.v1.Volume.meta:type_name -> agynio.api.agents.v1.EntityMeta
+	96,  // 69: agynio.api.agents.v1.CreateVolumeResponse.volume:type_name -> agynio.api.agents.v1.Volume
+	96,  // 70: agynio.api.agents.v1.GetVolumeResponse.volume:type_name -> agynio.api.agents.v1.Volume
+	96,  // 71: agynio.api.agents.v1.UpdateVolumeResponse.volume:type_name -> agynio.api.agents.v1.Volume
+	96,  // 72: agynio.api.agents.v1.ListVolumesResponse.volumes:type_name -> agynio.api.agents.v1.Volume
+	9,   // 73: agynio.api.agents.v1.VolumeAttachment.meta:type_name -> agynio.api.agents.v1.EntityMeta
+	107, // 74: agynio.api.agents.v1.CreateVolumeAttachmentResponse.volume_attachment:type_name -> agynio.api.agents.v1.VolumeAttachment
+	107, // 75: agynio.api.agents.v1.GetVolumeAttachmentResponse.volume_attachment:type_name -> agynio.api.agents.v1.VolumeAttachment
+	107, // 76: agynio.api.agents.v1.ListVolumeAttachmentsResponse.volume_attachments:type_name -> agynio.api.agents.v1.VolumeAttachment
+	9,   // 77: agynio.api.agents.v1.ImagePullSecretAttachment.meta:type_name -> agynio.api.agents.v1.EntityMeta
+	116, // 78: agynio.api.agents.v1.CreateImagePullSecretAttachmentResponse.image_pull_secret_attachment:type_name -> agynio.api.agents.v1.ImagePullSecretAttachment
+	116, // 79: agynio.api.agents.v1.GetImagePullSecretAttachmentResponse.image_pull_secret_attachment:type_name -> agynio.api.agents.v1.ImagePullSecretAttachment
+	116, // 80: agynio.api.agents.v1.ListImagePullSecretAttachmentsResponse.image_pull_secret_attachments:type_name -> agynio.api.agents.v1.ImagePullSecretAttachment
+	9,   // 81: agynio.api.agents.v1.Mcp.meta:type_name -> agynio.api.agents.v1.EntityMeta
+	10,  // 82: agynio.api.agents.v1.Mcp.resources:type_name -> agynio.api.agents.v1.ComputeResources
+	10,  // 83: agynio.api.agents.v1.CreateMcpRequest.resources:type_name -> agynio.api.agents.v1.ComputeResources
+	125, // 84: agynio.api.agents.v1.CreateMcpResponse.mcp:type_name -> agynio.api.agents.v1.Mcp
+	125, // 85: agynio.api.agents.v1.GetMcpResponse.mcp:type_name -> agynio.api.agents.v1.Mcp
+	10,  // 86: agynio.api.agents.v1.UpdateMcpRequest.resources:type_name -> agynio.api.agents.v1.ComputeResources
+	125, // 87: agynio.api.agents.v1.UpdateMcpResponse.mcp:type_name -> agynio.api.agents.v1.Mcp
+	125, // 88: agynio.api.agents.v1.ListMcpsResponse.mcps:type_name -> agynio.api.agents.v1.Mcp
+	9,   // 89: agynio.api.agents.v1.Skill.meta:type_name -> agynio.api.agents.v1.EntityMeta
+	136, // 90: agynio.api.agents.v1.CreateSkillResponse.skill:type_name -> agynio.api.agents.v1.Skill
+	136, // 91: agynio.api.agents.v1.GetSkillResponse.skill:type_name -> agynio.api.agents.v1.Skill
+	136, // 92: agynio.api.agents.v1.UpdateSkillResponse.skill:type_name -> agynio.api.agents.v1.Skill
+	136, // 93: agynio.api.agents.v1.ListSkillsResponse.skills:type_name -> agynio.api.agents.v1.Skill
+	9,   // 94: agynio.api.agents.v1.Hook.meta:type_name -> agynio.api.agents.v1.EntityMeta
+	10,  // 95: agynio.api.agents.v1.Hook.resources:type_name -> agynio.api.agents.v1.ComputeResources
+	10,  // 96: agynio.api.agents.v1.CreateHookRequest.resources:type_name -> agynio.api.agents.v1.ComputeResources
+	147, // 97: agynio.api.agents.v1.CreateHookResponse.hook:type_name -> agynio.api.agents.v1.Hook
+	147, // 98: agynio.api.agents.v1.GetHookResponse.hook:type_name -> agynio.api.agents.v1.Hook
+	10,  // 99: agynio.api.agents.v1.UpdateHookRequest.resources:type_name -> agynio.api.agents.v1.ComputeResources
+	147, // 100: agynio.api.agents.v1.UpdateHookResponse.hook:type_name -> agynio.api.agents.v1.Hook
+	147, // 101: agynio.api.agents.v1.ListHooksResponse.hooks:type_name -> agynio.api.agents.v1.Hook
+	9,   // 102: agynio.api.agents.v1.Env.meta:type_name -> agynio.api.agents.v1.EntityMeta
+	158, // 103: agynio.api.agents.v1.CreateEnvResponse.env:type_name -> agynio.api.agents.v1.Env
+	158, // 104: agynio.api.agents.v1.GetEnvResponse.env:type_name -> agynio.api.agents.v1.Env
+	158, // 105: agynio.api.agents.v1.UpdateEnvResponse.env:type_name -> agynio.api.agents.v1.Env
+	158, // 106: agynio.api.agents.v1.ListEnvsResponse.envs:type_name -> agynio.api.agents.v1.Env
+	9,   // 107: agynio.api.agents.v1.InitScript.meta:type_name -> agynio.api.agents.v1.EntityMeta
+	169, // 108: agynio.api.agents.v1.CreateInitScriptResponse.init_script:type_name -> agynio.api.agents.v1.InitScript
+	169, // 109: agynio.api.agents.v1.GetInitScriptResponse.init_script:type_name -> agynio.api.agents.v1.InitScript
+	169, // 110: agynio.api.agents.v1.UpdateInitScriptResponse.init_script:type_name -> agynio.api.agents.v1.InitScript
+	169, // 111: agynio.api.agents.v1.ListInitScriptsResponse.init_scripts:type_name -> agynio.api.agents.v1.InitScript
+	12,  // 112: agynio.api.agents.v1.AgentsService.CreateAgent:input_type -> agynio.api.agents.v1.CreateAgentRequest
+	14,  // 113: agynio.api.agents.v1.AgentsService.GetAgent:input_type -> agynio.api.agents.v1.GetAgentRequest
+	16,  // 114: agynio.api.agents.v1.AgentsService.ResolveAgentIdentity:input_type -> agynio.api.agents.v1.ResolveAgentIdentityRequest
+	18,  // 115: agynio.api.agents.v1.AgentsService.UpdateAgent:input_type -> agynio.api.agents.v1.UpdateAgentRequest
+	20,  // 116: agynio.api.agents.v1.AgentsService.DeleteAgent:input_type -> agynio.api.agents.v1.DeleteAgentRequest
+	22,  // 117: agynio.api.agents.v1.AgentsService.ListAgents:input_type -> agynio.api.agents.v1.ListAgentsRequest
+	25,  // 118: agynio.api.agents.v1.AgentsService.SetAgentRole:input_type -> agynio.api.agents.v1.SetAgentRoleRequest
+	27,  // 119: agynio.api.agents.v1.AgentsService.RemoveAgentRole:input_type -> agynio.api.agents.v1.RemoveAgentRoleRequest
+	29,  // 120: agynio.api.agents.v1.AgentsService.ListAgentRoles:input_type -> agynio.api.agents.v1.ListAgentRolesRequest
+	31,  // 121: agynio.api.agents.v1.AgentsService.ListMyAgentRoles:input_type -> agynio.api.agents.v1.ListMyAgentRolesRequest
+	61,  // 122: agynio.api.agents.v1.AgentsService.CreateEnvironment:input_type -> agynio.api.agents.v1.CreateEnvironmentRequest
+	63,  // 123: agynio.api.agents.v1.AgentsService.GetEnvironment:input_type -> agynio.api.agents.v1.GetEnvironmentRequest
+	65,  // 124: agynio.api.agents.v1.AgentsService.UpdateEnvironment:input_type -> agynio.api.agents.v1.UpdateEnvironmentRequest
+	67,  // 125: agynio.api.agents.v1.AgentsService.DeleteEnvironment:input_type -> agynio.api.agents.v1.DeleteEnvironmentRequest
+	69,  // 126: agynio.api.agents.v1.AgentsService.ListEnvironments:input_type -> agynio.api.agents.v1.ListEnvironmentsRequest
+	72,  // 127: agynio.api.agents.v1.AgentsService.SetEnvironmentRole:input_type -> agynio.api.agents.v1.SetEnvironmentRoleRequest
+	74,  // 128: agynio.api.agents.v1.AgentsService.RemoveEnvironmentRole:input_type -> agynio.api.agents.v1.RemoveEnvironmentRoleRequest
+	76,  // 129: agynio.api.agents.v1.AgentsService.ListEnvironmentRoles:input_type -> agynio.api.agents.v1.ListEnvironmentRolesRequest
+	79,  // 130: agynio.api.agents.v1.AgentsService.CreateSandbox:input_type -> agynio.api.agents.v1.CreateSandboxRequest
+	81,  // 131: agynio.api.agents.v1.AgentsService.GetSandbox:input_type -> agynio.api.agents.v1.GetSandboxRequest
+	84,  // 132: agynio.api.agents.v1.AgentsService.ListSandboxes:input_type -> agynio.api.agents.v1.ListSandboxesRequest
+	86,  // 133: agynio.api.agents.v1.AgentsService.StopSandbox:input_type -> agynio.api.agents.v1.StopSandboxRequest
+	88,  // 134: agynio.api.agents.v1.AgentsService.DeleteSandbox:input_type -> agynio.api.agents.v1.DeleteSandboxRequest
+	90,  // 135: agynio.api.agents.v1.AgentsService.EnsureSandboxRunning:input_type -> agynio.api.agents.v1.EnsureSandboxRunningRequest
+	92,  // 136: agynio.api.agents.v1.AgentsService.UpdateSandboxRuntimeState:input_type -> agynio.api.agents.v1.UpdateSandboxRuntimeStateRequest
+	94,  // 137: agynio.api.agents.v1.AgentsService.UpdateSandboxLastSession:input_type -> agynio.api.agents.v1.UpdateSandboxLastSessionRequest
+	35,  // 138: agynio.api.agents.v1.AgentsService.CreateInstance:input_type -> agynio.api.agents.v1.CreateInstanceRequest
+	37,  // 139: agynio.api.agents.v1.AgentsService.GetInstance:input_type -> agynio.api.agents.v1.GetInstanceRequest
+	41,  // 140: agynio.api.agents.v1.AgentsService.ListInstances:input_type -> agynio.api.agents.v1.ListInstancesRequest
+	43,  // 141: agynio.api.agents.v1.AgentsService.PauseInstance:input_type -> agynio.api.agents.v1.PauseInstanceRequest
+	45,  // 142: agynio.api.agents.v1.AgentsService.ResumeInstance:input_type -> agynio.api.agents.v1.ResumeInstanceRequest
+	47,  // 143: agynio.api.agents.v1.AgentsService.DeleteInstance:input_type -> agynio.api.agents.v1.DeleteInstanceRequest
+	39,  // 144: agynio.api.agents.v1.AgentsService.SetInstanceDefaultThread:input_type -> agynio.api.agents.v1.SetInstanceDefaultThreadRequest
+	50,  // 145: agynio.api.agents.v1.AgentsService.WriteInboxItem:input_type -> agynio.api.agents.v1.WriteInboxItemRequest
+	52,  // 146: agynio.api.agents.v1.AgentsService.FanoutInboxItem:input_type -> agynio.api.agents.v1.FanoutInboxItemRequest
+	54,  // 147: agynio.api.agents.v1.AgentsService.GetUnackedInboxItems:input_type -> agynio.api.agents.v1.GetUnackedInboxItemsRequest
+	56,  // 148: agynio.api.agents.v1.AgentsService.AckInboxItems:input_type -> agynio.api.agents.v1.AckInboxItemsRequest
+	58,  // 149: agynio.api.agents.v1.AgentsService.GetUnackedInboxCount:input_type -> agynio.api.agents.v1.GetUnackedInboxCountRequest
+	97,  // 150: agynio.api.agents.v1.AgentsService.CreateVolume:input_type -> agynio.api.agents.v1.CreateVolumeRequest
+	99,  // 151: agynio.api.agents.v1.AgentsService.GetVolume:input_type -> agynio.api.agents.v1.GetVolumeRequest
+	101, // 152: agynio.api.agents.v1.AgentsService.UpdateVolume:input_type -> agynio.api.agents.v1.UpdateVolumeRequest
+	103, // 153: agynio.api.agents.v1.AgentsService.DeleteVolume:input_type -> agynio.api.agents.v1.DeleteVolumeRequest
+	105, // 154: agynio.api.agents.v1.AgentsService.ListVolumes:input_type -> agynio.api.agents.v1.ListVolumesRequest
+	108, // 155: agynio.api.agents.v1.AgentsService.CreateVolumeAttachment:input_type -> agynio.api.agents.v1.CreateVolumeAttachmentRequest
+	110, // 156: agynio.api.agents.v1.AgentsService.GetVolumeAttachment:input_type -> agynio.api.agents.v1.GetVolumeAttachmentRequest
+	112, // 157: agynio.api.agents.v1.AgentsService.DeleteVolumeAttachment:input_type -> agynio.api.agents.v1.DeleteVolumeAttachmentRequest
+	114, // 158: agynio.api.agents.v1.AgentsService.ListVolumeAttachments:input_type -> agynio.api.agents.v1.ListVolumeAttachmentsRequest
+	126, // 159: agynio.api.agents.v1.AgentsService.CreateMcp:input_type -> agynio.api.agents.v1.CreateMcpRequest
+	128, // 160: agynio.api.agents.v1.AgentsService.GetMcp:input_type -> agynio.api.agents.v1.GetMcpRequest
+	130, // 161: agynio.api.agents.v1.AgentsService.UpdateMcp:input_type -> agynio.api.agents.v1.UpdateMcpRequest
+	132, // 162: agynio.api.agents.v1.AgentsService.DeleteMcp:input_type -> agynio.api.agents.v1.DeleteMcpRequest
+	134, // 163: agynio.api.agents.v1.AgentsService.ListMcps:input_type -> agynio.api.agents.v1.ListMcpsRequest
+	137, // 164: agynio.api.agents.v1.AgentsService.CreateSkill:input_type -> agynio.api.agents.v1.CreateSkillRequest
+	139, // 165: agynio.api.agents.v1.AgentsService.GetSkill:input_type -> agynio.api.agents.v1.GetSkillRequest
+	141, // 166: agynio.api.agents.v1.AgentsService.UpdateSkill:input_type -> agynio.api.agents.v1.UpdateSkillRequest
+	143, // 167: agynio.api.agents.v1.AgentsService.DeleteSkill:input_type -> agynio.api.agents.v1.DeleteSkillRequest
+	145, // 168: agynio.api.agents.v1.AgentsService.ListSkills:input_type -> agynio.api.agents.v1.ListSkillsRequest
+	148, // 169: agynio.api.agents.v1.AgentsService.CreateHook:input_type -> agynio.api.agents.v1.CreateHookRequest
+	150, // 170: agynio.api.agents.v1.AgentsService.GetHook:input_type -> agynio.api.agents.v1.GetHookRequest
+	152, // 171: agynio.api.agents.v1.AgentsService.UpdateHook:input_type -> agynio.api.agents.v1.UpdateHookRequest
+	154, // 172: agynio.api.agents.v1.AgentsService.DeleteHook:input_type -> agynio.api.agents.v1.DeleteHookRequest
+	156, // 173: agynio.api.agents.v1.AgentsService.ListHooks:input_type -> agynio.api.agents.v1.ListHooksRequest
+	159, // 174: agynio.api.agents.v1.AgentsService.CreateEnv:input_type -> agynio.api.agents.v1.CreateEnvRequest
+	161, // 175: agynio.api.agents.v1.AgentsService.GetEnv:input_type -> agynio.api.agents.v1.GetEnvRequest
+	163, // 176: agynio.api.agents.v1.AgentsService.UpdateEnv:input_type -> agynio.api.agents.v1.UpdateEnvRequest
+	165, // 177: agynio.api.agents.v1.AgentsService.DeleteEnv:input_type -> agynio.api.agents.v1.DeleteEnvRequest
+	167, // 178: agynio.api.agents.v1.AgentsService.ListEnvs:input_type -> agynio.api.agents.v1.ListEnvsRequest
+	170, // 179: agynio.api.agents.v1.AgentsService.CreateInitScript:input_type -> agynio.api.agents.v1.CreateInitScriptRequest
+	172, // 180: agynio.api.agents.v1.AgentsService.GetInitScript:input_type -> agynio.api.agents.v1.GetInitScriptRequest
+	174, // 181: agynio.api.agents.v1.AgentsService.UpdateInitScript:input_type -> agynio.api.agents.v1.UpdateInitScriptRequest
+	176, // 182: agynio.api.agents.v1.AgentsService.DeleteInitScript:input_type -> agynio.api.agents.v1.DeleteInitScriptRequest
+	178, // 183: agynio.api.agents.v1.AgentsService.ListInitScripts:input_type -> agynio.api.agents.v1.ListInitScriptsRequest
+	117, // 184: agynio.api.agents.v1.AgentsService.CreateImagePullSecretAttachment:input_type -> agynio.api.agents.v1.CreateImagePullSecretAttachmentRequest
+	119, // 185: agynio.api.agents.v1.AgentsService.GetImagePullSecretAttachment:input_type -> agynio.api.agents.v1.GetImagePullSecretAttachmentRequest
+	121, // 186: agynio.api.agents.v1.AgentsService.DeleteImagePullSecretAttachment:input_type -> agynio.api.agents.v1.DeleteImagePullSecretAttachmentRequest
+	123, // 187: agynio.api.agents.v1.AgentsService.ListImagePullSecretAttachments:input_type -> agynio.api.agents.v1.ListImagePullSecretAttachmentsRequest
+	13,  // 188: agynio.api.agents.v1.AgentsService.CreateAgent:output_type -> agynio.api.agents.v1.CreateAgentResponse
+	15,  // 189: agynio.api.agents.v1.AgentsService.GetAgent:output_type -> agynio.api.agents.v1.GetAgentResponse
+	17,  // 190: agynio.api.agents.v1.AgentsService.ResolveAgentIdentity:output_type -> agynio.api.agents.v1.ResolveAgentIdentityResponse
+	19,  // 191: agynio.api.agents.v1.AgentsService.UpdateAgent:output_type -> agynio.api.agents.v1.UpdateAgentResponse
+	21,  // 192: agynio.api.agents.v1.AgentsService.DeleteAgent:output_type -> agynio.api.agents.v1.DeleteAgentResponse
+	23,  // 193: agynio.api.agents.v1.AgentsService.ListAgents:output_type -> agynio.api.agents.v1.ListAgentsResponse
+	26,  // 194: agynio.api.agents.v1.AgentsService.SetAgentRole:output_type -> agynio.api.agents.v1.SetAgentRoleResponse
+	28,  // 195: agynio.api.agents.v1.AgentsService.RemoveAgentRole:output_type -> agynio.api.agents.v1.RemoveAgentRoleResponse
+	30,  // 196: agynio.api.agents.v1.AgentsService.ListAgentRoles:output_type -> agynio.api.agents.v1.ListAgentRolesResponse
+	32,  // 197: agynio.api.agents.v1.AgentsService.ListMyAgentRoles:output_type -> agynio.api.agents.v1.ListMyAgentRolesResponse
+	62,  // 198: agynio.api.agents.v1.AgentsService.CreateEnvironment:output_type -> agynio.api.agents.v1.CreateEnvironmentResponse
+	64,  // 199: agynio.api.agents.v1.AgentsService.GetEnvironment:output_type -> agynio.api.agents.v1.GetEnvironmentResponse
+	66,  // 200: agynio.api.agents.v1.AgentsService.UpdateEnvironment:output_type -> agynio.api.agents.v1.UpdateEnvironmentResponse
+	68,  // 201: agynio.api.agents.v1.AgentsService.DeleteEnvironment:output_type -> agynio.api.agents.v1.DeleteEnvironmentResponse
+	70,  // 202: agynio.api.agents.v1.AgentsService.ListEnvironments:output_type -> agynio.api.agents.v1.ListEnvironmentsResponse
+	73,  // 203: agynio.api.agents.v1.AgentsService.SetEnvironmentRole:output_type -> agynio.api.agents.v1.SetEnvironmentRoleResponse
+	75,  // 204: agynio.api.agents.v1.AgentsService.RemoveEnvironmentRole:output_type -> agynio.api.agents.v1.RemoveEnvironmentRoleResponse
+	77,  // 205: agynio.api.agents.v1.AgentsService.ListEnvironmentRoles:output_type -> agynio.api.agents.v1.ListEnvironmentRolesResponse
+	80,  // 206: agynio.api.agents.v1.AgentsService.CreateSandbox:output_type -> agynio.api.agents.v1.CreateSandboxResponse
+	83,  // 207: agynio.api.agents.v1.AgentsService.GetSandbox:output_type -> agynio.api.agents.v1.GetSandboxResponse
+	85,  // 208: agynio.api.agents.v1.AgentsService.ListSandboxes:output_type -> agynio.api.agents.v1.ListSandboxesResponse
+	87,  // 209: agynio.api.agents.v1.AgentsService.StopSandbox:output_type -> agynio.api.agents.v1.StopSandboxResponse
+	89,  // 210: agynio.api.agents.v1.AgentsService.DeleteSandbox:output_type -> agynio.api.agents.v1.DeleteSandboxResponse
+	91,  // 211: agynio.api.agents.v1.AgentsService.EnsureSandboxRunning:output_type -> agynio.api.agents.v1.EnsureSandboxRunningResponse
+	93,  // 212: agynio.api.agents.v1.AgentsService.UpdateSandboxRuntimeState:output_type -> agynio.api.agents.v1.UpdateSandboxRuntimeStateResponse
+	95,  // 213: agynio.api.agents.v1.AgentsService.UpdateSandboxLastSession:output_type -> agynio.api.agents.v1.UpdateSandboxLastSessionResponse
+	36,  // 214: agynio.api.agents.v1.AgentsService.CreateInstance:output_type -> agynio.api.agents.v1.CreateInstanceResponse
+	38,  // 215: agynio.api.agents.v1.AgentsService.GetInstance:output_type -> agynio.api.agents.v1.GetInstanceResponse
+	42,  // 216: agynio.api.agents.v1.AgentsService.ListInstances:output_type -> agynio.api.agents.v1.ListInstancesResponse
+	44,  // 217: agynio.api.agents.v1.AgentsService.PauseInstance:output_type -> agynio.api.agents.v1.PauseInstanceResponse
+	46,  // 218: agynio.api.agents.v1.AgentsService.ResumeInstance:output_type -> agynio.api.agents.v1.ResumeInstanceResponse
+	48,  // 219: agynio.api.agents.v1.AgentsService.DeleteInstance:output_type -> agynio.api.agents.v1.DeleteInstanceResponse
+	40,  // 220: agynio.api.agents.v1.AgentsService.SetInstanceDefaultThread:output_type -> agynio.api.agents.v1.SetInstanceDefaultThreadResponse
+	51,  // 221: agynio.api.agents.v1.AgentsService.WriteInboxItem:output_type -> agynio.api.agents.v1.WriteInboxItemResponse
+	53,  // 222: agynio.api.agents.v1.AgentsService.FanoutInboxItem:output_type -> agynio.api.agents.v1.FanoutInboxItemResponse
+	55,  // 223: agynio.api.agents.v1.AgentsService.GetUnackedInboxItems:output_type -> agynio.api.agents.v1.GetUnackedInboxItemsResponse
+	57,  // 224: agynio.api.agents.v1.AgentsService.AckInboxItems:output_type -> agynio.api.agents.v1.AckInboxItemsResponse
+	59,  // 225: agynio.api.agents.v1.AgentsService.GetUnackedInboxCount:output_type -> agynio.api.agents.v1.GetUnackedInboxCountResponse
+	98,  // 226: agynio.api.agents.v1.AgentsService.CreateVolume:output_type -> agynio.api.agents.v1.CreateVolumeResponse
+	100, // 227: agynio.api.agents.v1.AgentsService.GetVolume:output_type -> agynio.api.agents.v1.GetVolumeResponse
+	102, // 228: agynio.api.agents.v1.AgentsService.UpdateVolume:output_type -> agynio.api.agents.v1.UpdateVolumeResponse
+	104, // 229: agynio.api.agents.v1.AgentsService.DeleteVolume:output_type -> agynio.api.agents.v1.DeleteVolumeResponse
+	106, // 230: agynio.api.agents.v1.AgentsService.ListVolumes:output_type -> agynio.api.agents.v1.ListVolumesResponse
+	109, // 231: agynio.api.agents.v1.AgentsService.CreateVolumeAttachment:output_type -> agynio.api.agents.v1.CreateVolumeAttachmentResponse
+	111, // 232: agynio.api.agents.v1.AgentsService.GetVolumeAttachment:output_type -> agynio.api.agents.v1.GetVolumeAttachmentResponse
+	113, // 233: agynio.api.agents.v1.AgentsService.DeleteVolumeAttachment:output_type -> agynio.api.agents.v1.DeleteVolumeAttachmentResponse
+	115, // 234: agynio.api.agents.v1.AgentsService.ListVolumeAttachments:output_type -> agynio.api.agents.v1.ListVolumeAttachmentsResponse
+	127, // 235: agynio.api.agents.v1.AgentsService.CreateMcp:output_type -> agynio.api.agents.v1.CreateMcpResponse
+	129, // 236: agynio.api.agents.v1.AgentsService.GetMcp:output_type -> agynio.api.agents.v1.GetMcpResponse
+	131, // 237: agynio.api.agents.v1.AgentsService.UpdateMcp:output_type -> agynio.api.agents.v1.UpdateMcpResponse
+	133, // 238: agynio.api.agents.v1.AgentsService.DeleteMcp:output_type -> agynio.api.agents.v1.DeleteMcpResponse
+	135, // 239: agynio.api.agents.v1.AgentsService.ListMcps:output_type -> agynio.api.agents.v1.ListMcpsResponse
+	138, // 240: agynio.api.agents.v1.AgentsService.CreateSkill:output_type -> agynio.api.agents.v1.CreateSkillResponse
+	140, // 241: agynio.api.agents.v1.AgentsService.GetSkill:output_type -> agynio.api.agents.v1.GetSkillResponse
+	142, // 242: agynio.api.agents.v1.AgentsService.UpdateSkill:output_type -> agynio.api.agents.v1.UpdateSkillResponse
+	144, // 243: agynio.api.agents.v1.AgentsService.DeleteSkill:output_type -> agynio.api.agents.v1.DeleteSkillResponse
+	146, // 244: agynio.api.agents.v1.AgentsService.ListSkills:output_type -> agynio.api.agents.v1.ListSkillsResponse
+	149, // 245: agynio.api.agents.v1.AgentsService.CreateHook:output_type -> agynio.api.agents.v1.CreateHookResponse
+	151, // 246: agynio.api.agents.v1.AgentsService.GetHook:output_type -> agynio.api.agents.v1.GetHookResponse
+	153, // 247: agynio.api.agents.v1.AgentsService.UpdateHook:output_type -> agynio.api.agents.v1.UpdateHookResponse
+	155, // 248: agynio.api.agents.v1.AgentsService.DeleteHook:output_type -> agynio.api.agents.v1.DeleteHookResponse
+	157, // 249: agynio.api.agents.v1.AgentsService.ListHooks:output_type -> agynio.api.agents.v1.ListHooksResponse
+	160, // 250: agynio.api.agents.v1.AgentsService.CreateEnv:output_type -> agynio.api.agents.v1.CreateEnvResponse
+	162, // 251: agynio.api.agents.v1.AgentsService.GetEnv:output_type -> agynio.api.agents.v1.GetEnvResponse
+	164, // 252: agynio.api.agents.v1.AgentsService.UpdateEnv:output_type -> agynio.api.agents.v1.UpdateEnvResponse
+	166, // 253: agynio.api.agents.v1.AgentsService.DeleteEnv:output_type -> agynio.api.agents.v1.DeleteEnvResponse
+	168, // 254: agynio.api.agents.v1.AgentsService.ListEnvs:output_type -> agynio.api.agents.v1.ListEnvsResponse
+	171, // 255: agynio.api.agents.v1.AgentsService.CreateInitScript:output_type -> agynio.api.agents.v1.CreateInitScriptResponse
+	173, // 256: agynio.api.agents.v1.AgentsService.GetInitScript:output_type -> agynio.api.agents.v1.GetInitScriptResponse
+	175, // 257: agynio.api.agents.v1.AgentsService.UpdateInitScript:output_type -> agynio.api.agents.v1.UpdateInitScriptResponse
+	177, // 258: agynio.api.agents.v1.AgentsService.DeleteInitScript:output_type -> agynio.api.agents.v1.DeleteInitScriptResponse
+	179, // 259: agynio.api.agents.v1.AgentsService.ListInitScripts:output_type -> agynio.api.agents.v1.ListInitScriptsResponse
+	118, // 260: agynio.api.agents.v1.AgentsService.CreateImagePullSecretAttachment:output_type -> agynio.api.agents.v1.CreateImagePullSecretAttachmentResponse
+	120, // 261: agynio.api.agents.v1.AgentsService.GetImagePullSecretAttachment:output_type -> agynio.api.agents.v1.GetImagePullSecretAttachmentResponse
+	122, // 262: agynio.api.agents.v1.AgentsService.DeleteImagePullSecretAttachment:output_type -> agynio.api.agents.v1.DeleteImagePullSecretAttachmentResponse
+	124, // 263: agynio.api.agents.v1.AgentsService.ListImagePullSecretAttachments:output_type -> agynio.api.agents.v1.ListImagePullSecretAttachmentsResponse
+	188, // [188:264] is the sub-list for method output_type
+	112, // [112:188] is the sub-list for method input_type
+	112, // [112:112] is the sub-list for extension type_name
+	112, // [112:112] is the sub-list for extension extendee
+	0,   // [0:112] is the sub-list for field type_name
 }
 
 func init() { file_agynio_api_agents_v1_agents_proto_init() }
@@ -7481,66 +12779,98 @@ func file_agynio_api_agents_v1_agents_proto_init() {
 	}
 	file_agynio_api_agents_v1_agents_proto_msgTypes[2].OneofWrappers = []any{}
 	file_agynio_api_agents_v1_agents_proto_msgTypes[3].OneofWrappers = []any{}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[8].OneofWrappers = []any{}
 	file_agynio_api_agents_v1_agents_proto_msgTypes[9].OneofWrappers = []any{}
 	file_agynio_api_agents_v1_agents_proto_msgTypes[24].OneofWrappers = []any{}
 	file_agynio_api_agents_v1_agents_proto_msgTypes[25].OneofWrappers = []any{}
-	file_agynio_api_agents_v1_agents_proto_msgTypes[29].OneofWrappers = []any{}
-	file_agynio_api_agents_v1_agents_proto_msgTypes[35].OneofWrappers = []any{
+	file_agynio_api_agents_v1_agents_proto_msgTypes[26].OneofWrappers = []any{}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[30].OneofWrappers = []any{}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[32].OneofWrappers = []any{}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[40].OneofWrappers = []any{}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[49].OneofWrappers = []any{}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[56].OneofWrappers = []any{}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[69].OneofWrappers = []any{}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[70].OneofWrappers = []any{}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[72].OneofWrappers = []any{
+		(*GetSandboxRequest_Id)(nil),
+		(*GetSandboxRequest_Name)(nil),
+	}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[75].OneofWrappers = []any{}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[83].OneofWrappers = []any{
+		(*UpdateSandboxRuntimeStateRequest_WorkloadId)(nil),
+		(*UpdateSandboxRuntimeStateRequest_ClearWorkloadId)(nil),
+	}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[87].OneofWrappers = []any{
+		(*Volume_EnvironmentId)(nil),
+		(*Volume_McpId)(nil),
+	}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[88].OneofWrappers = []any{
+		(*CreateVolumeRequest_EnvironmentId)(nil),
+		(*CreateVolumeRequest_McpId)(nil),
+	}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[92].OneofWrappers = []any{}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[98].OneofWrappers = []any{
 		(*VolumeAttachment_AgentId)(nil),
 		(*VolumeAttachment_McpId)(nil),
 		(*VolumeAttachment_HookId)(nil),
 	}
-	file_agynio_api_agents_v1_agents_proto_msgTypes[36].OneofWrappers = []any{
+	file_agynio_api_agents_v1_agents_proto_msgTypes[99].OneofWrappers = []any{
 		(*CreateVolumeAttachmentRequest_AgentId)(nil),
 		(*CreateVolumeAttachmentRequest_McpId)(nil),
 		(*CreateVolumeAttachmentRequest_HookId)(nil),
 	}
-	file_agynio_api_agents_v1_agents_proto_msgTypes[44].OneofWrappers = []any{
+	file_agynio_api_agents_v1_agents_proto_msgTypes[107].OneofWrappers = []any{
 		(*ImagePullSecretAttachment_AgentId)(nil),
 		(*ImagePullSecretAttachment_McpId)(nil),
 		(*ImagePullSecretAttachment_HookId)(nil),
+		(*ImagePullSecretAttachment_EnvironmentId)(nil),
 	}
-	file_agynio_api_agents_v1_agents_proto_msgTypes[45].OneofWrappers = []any{
+	file_agynio_api_agents_v1_agents_proto_msgTypes[108].OneofWrappers = []any{
 		(*CreateImagePullSecretAttachmentRequest_AgentId)(nil),
 		(*CreateImagePullSecretAttachmentRequest_McpId)(nil),
 		(*CreateImagePullSecretAttachmentRequest_HookId)(nil),
+		(*CreateImagePullSecretAttachmentRequest_EnvironmentId)(nil),
 	}
-	file_agynio_api_agents_v1_agents_proto_msgTypes[58].OneofWrappers = []any{}
-	file_agynio_api_agents_v1_agents_proto_msgTypes[69].OneofWrappers = []any{}
-	file_agynio_api_agents_v1_agents_proto_msgTypes[80].OneofWrappers = []any{}
-	file_agynio_api_agents_v1_agents_proto_msgTypes[86].OneofWrappers = []any{
+	file_agynio_api_agents_v1_agents_proto_msgTypes[121].OneofWrappers = []any{}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[132].OneofWrappers = []any{}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[143].OneofWrappers = []any{}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[149].OneofWrappers = []any{
 		(*Env_AgentId)(nil),
 		(*Env_McpId)(nil),
 		(*Env_HookId)(nil),
+		(*Env_EnvironmentId)(nil),
 		(*Env_Value)(nil),
 		(*Env_SecretId)(nil),
 	}
-	file_agynio_api_agents_v1_agents_proto_msgTypes[87].OneofWrappers = []any{
+	file_agynio_api_agents_v1_agents_proto_msgTypes[150].OneofWrappers = []any{
 		(*CreateEnvRequest_AgentId)(nil),
 		(*CreateEnvRequest_McpId)(nil),
 		(*CreateEnvRequest_HookId)(nil),
+		(*CreateEnvRequest_EnvironmentId)(nil),
 		(*CreateEnvRequest_Value)(nil),
 		(*CreateEnvRequest_SecretId)(nil),
 	}
-	file_agynio_api_agents_v1_agents_proto_msgTypes[91].OneofWrappers = []any{}
-	file_agynio_api_agents_v1_agents_proto_msgTypes[97].OneofWrappers = []any{
+	file_agynio_api_agents_v1_agents_proto_msgTypes[154].OneofWrappers = []any{}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[160].OneofWrappers = []any{
 		(*InitScript_AgentId)(nil),
 		(*InitScript_McpId)(nil),
 		(*InitScript_HookId)(nil),
+		(*InitScript_EnvironmentId)(nil),
 	}
-	file_agynio_api_agents_v1_agents_proto_msgTypes[98].OneofWrappers = []any{
+	file_agynio_api_agents_v1_agents_proto_msgTypes[161].OneofWrappers = []any{
 		(*CreateInitScriptRequest_AgentId)(nil),
 		(*CreateInitScriptRequest_McpId)(nil),
 		(*CreateInitScriptRequest_HookId)(nil),
+		(*CreateInitScriptRequest_EnvironmentId)(nil),
 	}
-	file_agynio_api_agents_v1_agents_proto_msgTypes[102].OneofWrappers = []any{}
+	file_agynio_api_agents_v1_agents_proto_msgTypes[165].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_agynio_api_agents_v1_agents_proto_rawDesc), len(file_agynio_api_agents_v1_agents_proto_rawDesc)),
-			NumEnums:      2,
-			NumMessages:   108,
+			NumEnums:      9,
+			NumMessages:   171,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

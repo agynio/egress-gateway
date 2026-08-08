@@ -760,6 +760,10 @@ type fakeRuleClient struct {
 	calls  int
 }
 
+func (f *fakeRuleClient) ListEgressRulesByEnvironment(context.Context, *egressv1.ListEgressRulesByEnvironmentRequest, ...grpc.CallOption) (*egressv1.ListEgressRulesByEnvironmentResponse, error) {
+	return &egressv1.ListEgressRulesByEnvironmentResponse{}, nil
+}
+
 func (f *fakeRuleClient) ListEgressRulesByAgent(context.Context, *egressv1.ListEgressRulesByAgentRequest, ...grpc.CallOption) (*egressv1.ListEgressRulesByAgentResponse, error) {
 	index := f.calls
 	f.calls++
@@ -944,6 +948,14 @@ type fakeAgentIdentityClient struct{}
 
 func (f *fakeAgentIdentityClient) ResolveAgentIdentity(context.Context, *agentsv1.ResolveAgentIdentityRequest, ...grpc.CallOption) (*agentsv1.ResolveAgentIdentityResponse, error) {
 	return &agentsv1.ResolveAgentIdentityResponse{AgentId: "agent-1", OrganizationId: "org-1"}, nil
+}
+
+func (f *fakeAgentIdentityClient) GetAgent(context.Context, *agentsv1.GetAgentRequest, ...grpc.CallOption) (*agentsv1.GetAgentResponse, error) {
+	return &agentsv1.GetAgentResponse{Agent: &agentsv1.Agent{}}, nil
+}
+
+func (f *fakeAgentIdentityClient) GetSandbox(context.Context, *agentsv1.GetSandboxRequest, ...grpc.CallOption) (*agentsv1.GetSandboxResponse, error) {
+	return &agentsv1.GetSandboxResponse{Sandbox: &agentsv1.Sandbox{EnvironmentId: "env-1", OrganizationId: "org-1"}}, nil
 }
 
 type fakeZitiContext struct {
