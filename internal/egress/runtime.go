@@ -44,6 +44,10 @@ func (r *Runtime) ServeRequest(ctx context.Context, w http.ResponseWriter, req *
 		return err
 	}
 	if evaluation.Outcome == OutcomeBypass {
+		// Otherwise indistinguishable from an upstream 404 by the caller.
+		log.Printf("egress bypass: agent=%q environment=%q rules=%d %s %s://%s:%d%s",
+			requestContext.Agent.AgentID, requestContext.Agent.EnvironmentID, len(rules),
+			requestContext.Method, requestContext.Scheme, requestContext.Host, requestContext.Port, requestContext.Path)
 		http.Error(w, "egress gateway bypassed unmatched destination", http.StatusNotFound)
 		return nil
 	}

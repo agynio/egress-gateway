@@ -90,15 +90,77 @@ func (s *DataPlaneServer) handleConn(ctx context.Context, conn DataPlaneConn) {
 		log.Printf("resolve egress destination: %v", err)
 		return
 	}
-	if destination.Scheme == "https" {
-		if err := s.serveHTTPS(ctx, conn, agent, destination); err != nil {
+	// The wire decides the scheme, not the reported port: a rule covering both
+	// 80 and 443 collapses to one tunneler listener, and every connection
+	// through it arrives claiming the lower port.
+	sniffed, isTLS, err := sniffTLSClientHello(conn)
+	if err != nil {
+		log.Printf("sniff egress connection: %v", err)
+		return
+	}
+	if isTLS {
+		destination.Scheme = "https"
+		if err := s.serveHTTPS(ctx, sniffed, agent, destination); err != nil {
 			log.Printf("serve ziti https egress: %v", err)
 		}
 		return
 	}
-	if err := s.serveHTTP(ctx, conn, agent, destination); err != nil {
+	destination.Scheme = "http"
+	if err := s.serveHTTP(ctx, sniffed, agent, destination); err != nil {
 		log.Printf("serve ziti http egress: %v", err)
 	}
+}
+
+// destinationFromRequestHost takes the upstream from the request's own Host,
+// which architecture makes authoritative alongside the SNI. The connection
+// metadata cannot serve: the workload's pod-local diverter REDIRECTs the
+// connection before the tunneler records it, so it reports the diverter's
+// own 127.0.0.1:<port> rather than what the client dialled.
+func destinationFromRequestHost(destination Destination, req *http.Request) Destination {
+	host := strings.TrimSuffix(strings.TrimSpace(req.Host), ".")
+	if host == "" {
+		return destination
+	}
+	port := 0
+	if bare, portValue, err := net.SplitHostPort(host); err == nil {
+		parsed, convErr := strconv.Atoi(portValue)
+		if convErr != nil {
+			return destination
+		}
+		host, port = bare, parsed
+	}
+	if port == 0 {
+		port = 80
+		if destination.Scheme == "https" {
+			port = 443
+		}
+	}
+	destination.Host = host
+	destination.Port = port
+	return destination
+}
+
+// peekConn replays the bytes consumed while sniffing.
+type peekConn struct {
+	net.Conn
+	reader io.Reader
+}
+
+func (c *peekConn) Read(p []byte) (int, error) { return c.reader.Read(p) }
+
+// sniffTLSClientHello reports whether the connection opens with a TLS record:
+// handshake content type followed by a 3.x major version. Everything the
+// gateway proxies is either that or a plaintext HTTP request line.
+func sniffTLSClientHello(conn net.Conn) (net.Conn, bool, error) {
+	reader := bufio.NewReader(conn)
+	prefix, err := reader.Peek(2)
+	if err != nil {
+		if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
+			return &peekConn{Conn: conn, reader: reader}, false, nil
+		}
+		return nil, false, err
+	}
+	return &peekConn{Conn: conn, reader: reader}, prefix[0] == 0x16 && prefix[1] == 0x03, nil
 }
 
 func (s *DataPlaneServer) serveHTTPS(ctx context.Context, conn net.Conn, agent AgentContext, destination Destination) error {
@@ -109,6 +171,10 @@ func (s *DataPlaneServer) serveHTTPS(ctx context.Context, conn net.Conn, agent A
 		return fmt.Errorf("tls handshake: %w", err)
 	}
 	defer tlsConn.Close()
+	if name := tlsConn.ConnectionState().ServerName; name != "" {
+		destination.Host = strings.TrimSuffix(name, ".")
+		destination.Port = 443
+	}
 	if tlsConn.ConnectionState().NegotiatedProtocol == "h2" {
 		return s.serveHTTP2(ctx, tlsConn, agent, destination)
 	}
@@ -118,6 +184,7 @@ func (s *DataPlaneServer) serveHTTPS(ctx context.Context, conn net.Conn, agent A
 func (s *DataPlaneServer) serveHTTP2(ctx context.Context, conn net.Conn, agent AgentContext, destination Destination) error {
 	server := &http2.Server{}
 	server.ServeConn(conn, &http2.ServeConnOpts{Context: ctx, Handler: http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		destination := destinationFromRequestHost(destination, req)
 		requestContext := RequestContextFromHTTP(agent, destination.Scheme, destination.Host, destination.Port, req, uuid.NewString())
 		if err := s.runtime.ServeRequest(ctx, w, req, requestContext); err != nil {
 			log.Printf("serve h2 egress request: %v", err)
@@ -137,6 +204,7 @@ func (s *DataPlaneServer) serveHTTP(ctx context.Context, conn net.Conn, agent Ag
 	}
 	req.RemoteAddr = conn.RemoteAddr().String()
 	req.RequestURI = ""
+	destination = destinationFromRequestHost(destination, req)
 	requestContext := RequestContextFromHTTP(agent, destination.Scheme, destination.Host, destination.Port, req, uuid.NewString())
 	response := newConnResponseWriter(conn)
 	runtimeErr := s.runtime.ServeRequest(ctx, response, req, requestContext)

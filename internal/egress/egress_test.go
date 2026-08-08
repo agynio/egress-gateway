@@ -712,6 +712,78 @@ func TestDataPlaneHTTPSUsesGeneratedLeafCertificate(t *testing.T) {
 	}
 }
 
+// The workload's pod-local diverter REDIRECTs before the tunneler records the
+// connection, so the reported destination is the diverter's own address. The
+// SNI and Host have to carry the upstream instead, or nothing matches a rule.
+func TestDataPlaneResolvesDestinationFromSNIWhenMetadataIsDiverterAddress(t *testing.T) {
+	var upstreamHost string
+	transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		upstreamHost = r.URL.Host
+		return &http.Response{StatusCode: http.StatusAccepted, Body: io.NopCloser(strings.NewReader("accepted"))}, nil
+	})
+	rules := NewRuleCache(&fakeRuleClient{rules: [][]*egressv1.EgressRule{{rule("rule-1", "api.example.com", allowEffect())}}}, time.Minute, &fakeClock{now: time.Now()})
+	runtime := NewRuntime(rules, NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()})), NewForwarderWithTransport(time.Second, transport), nil)
+	identity := NewIdentityResolver(&fakeZitiIdentityClient{}, &fakeAgentIdentityClient{})
+	serverConn, clientConn := net.Pipe()
+	ca := testCA(t)
+	listener := &fakeDataPlaneListener{conn: &fakeDataPlaneConn{Conn: serverConn, dialerIdentityID: "ziti-agent-1", appData: []byte(`{"dst_protocol":"tcp","dst_ip":"127.0.0.1","dst_port":"38417"}`)}}
+	server := NewDataPlaneServer(listener, runtime, identity, NewLeafCertificateCache(ca, time.Minute, 2, &fakeClock{now: time.Now()}))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() { _ = server.Serve(ctx) }()
+
+	root := x509.NewCertPool()
+	root.AddCert(ca.cert)
+	tlsClient := tls.Client(clientConn, &tls.Config{ServerName: "api.example.com", RootCAs: root})
+	if _, err := tlsClient.Write([]byte("GET /secure HTTP/1.1\r\nHost: api.example.com\r\nConnection: close\r\n\r\n")); err != nil {
+		t.Fatalf("write tls request: %v", err)
+	}
+	response, err := http.ReadResponse(bufioReader(tlsClient), nil)
+	if err != nil {
+		t.Fatalf("read tls response: %v", err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusAccepted || upstreamHost != "api.example.com:443" {
+		t.Fatalf("status=%d upstream host=%q", response.StatusCode, upstreamHost)
+	}
+}
+
+// A rule covering both 80 and 443 collapses to one tunneler listener, so every
+// connection through it reports the lower port. The wire, not the report, has
+// to decide whether the gateway terminates TLS.
+func TestDataPlaneServesTLSWhenReportedPortCollapsedTo80(t *testing.T) {
+	var upstreamHost string
+	transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		upstreamHost = r.URL.Host
+		return &http.Response{StatusCode: http.StatusAccepted, Body: io.NopCloser(strings.NewReader("accepted"))}, nil
+	})
+	rules := NewRuleCache(&fakeRuleClient{rules: [][]*egressv1.EgressRule{{rule("rule-1", "api.example.com", allowEffect())}}}, time.Minute, &fakeClock{now: time.Now()})
+	runtime := NewRuntime(rules, NewEvaluator(NewSecretCache(&fakeSecretClient{}, time.Minute, &fakeClock{now: time.Now()})), NewForwarderWithTransport(time.Second, transport), nil)
+	identity := NewIdentityResolver(&fakeZitiIdentityClient{}, &fakeAgentIdentityClient{})
+	serverConn, clientConn := net.Pipe()
+	ca := testCA(t)
+	listener := &fakeDataPlaneListener{conn: &fakeDataPlaneConn{Conn: serverConn, dialerIdentityID: "ziti-agent-1", appData: []byte(`{"dst_protocol":"tcp","dst_hostname":"api.example.com","dst_port":"80"}`)}}
+	server := NewDataPlaneServer(listener, runtime, identity, NewLeafCertificateCache(ca, time.Minute, 2, &fakeClock{now: time.Now()}))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() { _ = server.Serve(ctx) }()
+
+	root := x509.NewCertPool()
+	root.AddCert(ca.cert)
+	tlsClient := tls.Client(clientConn, &tls.Config{ServerName: "api.example.com", RootCAs: root})
+	if _, err := tlsClient.Write([]byte("GET /secure HTTP/1.1\r\nHost: api.example.com\r\nConnection: close\r\n\r\n")); err != nil {
+		t.Fatalf("write tls request: %v", err)
+	}
+	response, err := http.ReadResponse(bufioReader(tlsClient), nil)
+	if err != nil {
+		t.Fatalf("read tls response: %v", err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusAccepted || upstreamHost != "api.example.com:443" {
+		t.Fatalf("status=%d upstream host=%q", response.StatusCode, upstreamHost)
+	}
+}
+
 func TestDataPlaneHTTP2PathInjectsSecretHeader(t *testing.T) {
 	var upstreamHeader string
 	transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
