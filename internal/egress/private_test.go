@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"strconv"
 
 	"sync"
 	"testing"
@@ -95,9 +96,13 @@ func (r *recordingSpanEmitter) waitForSpan(t *testing.T) Span {
 }
 
 func privateConn(serverConn net.Conn, interceptPort string) DataPlaneConn {
+	// App data reports the diverter's local port, never the dialed one; the
+	// port comes from the bound service's interception.
+	port, _ := strconv.Atoi(interceptPort)
 	return &namedConn{
-		DataPlaneConn: &fakeDataPlaneConn{Conn: serverConn, dialerIdentityID: "ziti-agent-1", appData: []byte(`{"dst_protocol":"tcp","dst_hostname":"gitlab.corp","dst_port":"` + interceptPort + `"}`)},
-		serviceName:   "private-" + testResourceID,
+		DataPlaneConn:  &fakeDataPlaneConn{Conn: serverConn, dialerIdentityID: "ziti-agent-1", appData: []byte(`{"dst_protocol":"tcp","dst_hostname":"gitlab.corp","dst_port":"43311"}`)},
+		serviceName:    "private-" + testResourceID,
+		interceptPorts: []int{port},
 	}
 }
 
@@ -361,5 +366,26 @@ func TestPrivateResourceIDFromConn(t *testing.T) {
 	id, ok := privateResourceIDFromConn(&namedConn{DataPlaneConn: base, serviceName: "private-" + testResourceID})
 	if !ok || id != testResourceID {
 		t.Fatalf("resolved %q ok=%v", id, ok)
+	}
+}
+
+func TestResolveInterceptPort(t *testing.T) {
+	serverConn, _ := net.Pipe()
+	defer serverConn.Close()
+	conn := func(appDataPort string, ports []int) DataPlaneConn {
+		return &namedConn{
+			DataPlaneConn:  &fakeDataPlaneConn{Conn: serverConn, appData: []byte(`{"dst_protocol":"tcp","dst_hostname":"gitlab.corp","dst_port":"` + appDataPort + `"}`)},
+			serviceName:    "private-" + testResourceID,
+			interceptPorts: ports,
+		}
+	}
+	if got := resolveInterceptPort(conn("443", []int{80, 443})); got != 443 {
+		t.Fatalf("app data naming a service port must be trusted, got %d", got)
+	}
+	if got := resolveInterceptPort(conn("43311", []int{3000})); got != 3000 {
+		t.Fatalf("a single-port resource needs no signal, got %d", got)
+	}
+	if got := resolveInterceptPort(conn("43311", []int{80, 443})); got != 0 {
+		t.Fatalf("an undeterminable port must resolve to zero, got %d", got)
 	}
 }

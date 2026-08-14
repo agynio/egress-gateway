@@ -129,6 +129,35 @@ type serviceNamedConn interface {
 	ServiceName() string
 }
 
+type interceptPortedConn interface {
+	InterceptPorts() []int
+}
+
+// resolveInterceptPort decides which of the resource's intercept ports the
+// caller dialed. The dialing sidecar's app data is trusted only when it names
+// one of the service's own ports -- this deployment's diverter reports its
+// local port instead of the dialed one -- and a single-port resource needs no
+// signal at all. Zero means the port cannot be determined.
+func resolveInterceptPort(conn DataPlaneConn) int {
+	ports := []int{}
+	if ported, ok := conn.(interceptPortedConn); ok {
+		ports = ported.InterceptPorts()
+	}
+	reported := 0
+	if destination, err := DestinationFromAppData(conn.AppData()); err == nil {
+		reported = destination.Port
+	}
+	for _, port := range ports {
+		if port == reported {
+			return reported
+		}
+	}
+	if len(ports) == 1 {
+		return ports[0]
+	}
+	return 0
+}
+
 // privateResourceIDFromConn reads the mediated resource's id off the OpenZiti
 // service the connection arrived on. Nothing in the byte stream is trusted
 // for routing.
@@ -159,9 +188,11 @@ func (s *DataPlaneServer) handlePrivateConn(ctx context.Context, conn DataPlaneC
 		log.Printf("resolve private resource dialer identity: %v", err)
 		return
 	}
-	interceptPort := 0
-	if destination, err := DestinationFromAppData(conn.AppData()); err == nil {
-		interceptPort = destination.Port
+	interceptPort := resolveInterceptPort(conn)
+	if interceptPort == 0 {
+		log.Printf("refusing private resource %s connection: dialed intercept port cannot be determined", resourceID)
+		s.runtime.EmitConnOutcome(ctx, privateRequestContext(dialer.Agent, resourceID, "", "", 0), OutcomeUpstreamError)
+		return
 	}
 	// Only workloads can hold rules; every other principal type reached the
 	// resource through an access grant and is spliced untouched.
