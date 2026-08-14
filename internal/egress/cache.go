@@ -38,8 +38,15 @@ type RuleCache struct {
 	items          map[string]ruleCacheEntry
 }
 
+// RuleSet is a caller's effective rules plus the denormalized fields of every
+// private resource those rules name, keyed by private_resource_id.
+type RuleSet struct {
+	Rules            []*egressv1.EgressRule
+	PrivateResources map[string]*egressv1.PrivateResourceInfo
+}
+
 type ruleCacheEntry struct {
-	rules     []*egressv1.EgressRule
+	ruleSet   RuleSet
 	expiresAt time.Time
 }
 
@@ -67,47 +74,63 @@ func (c *RuleCache) Rules(ctx context.Context, agentID string) ([]*egressv1.Egre
 }
 
 func (c *RuleCache) RulesFor(ctx context.Context, agentID string, environmentID string) ([]*egressv1.EgressRule, error) {
+	ruleSet, err := c.RuleSetFor(ctx, agentID, environmentID)
+	if err != nil {
+		return nil, err
+	}
+	return ruleSet.Rules, nil
+}
+
+func (c *RuleCache) RuleSetFor(ctx context.Context, agentID string, environmentID string) (RuleSet, error) {
 	key := agentID + "|" + environmentID
 	now := c.clock.Now()
 	c.mu.Lock()
 	entry, ok := c.items[key]
 	if ok && now.Before(entry.expiresAt) {
-		rules := cloneRules(entry.rules)
+		ruleSet := cloneRuleSet(entry.ruleSet)
 		c.mu.Unlock()
-		return rules, nil
+		return ruleSet, nil
 	}
 	c.mu.Unlock()
 
-	rules := []*egressv1.EgressRule{}
+	ruleSet := RuleSet{Rules: []*egressv1.EgressRule{}, PrivateResources: map[string]*egressv1.PrivateResourceInfo{}}
 	if agentID != "" {
 		resp, err := c.client.ListEgressRulesByAgent(ctx, &egressv1.ListEgressRulesByAgentRequest{AgentId: agentID})
 		if err != nil {
 			return c.staleOrError(key, entry, ok, now, err)
 		}
-		rules = append(rules, resp.GetEgressRules()...)
+		ruleSet.Rules = append(ruleSet.Rules, resp.GetEgressRules()...)
+		mergeResourceInfos(ruleSet.PrivateResources, resp.GetPrivateResources())
 	}
 	if environmentID != "" {
 		resp, err := c.client.ListEgressRulesByEnvironment(ctx, &egressv1.ListEgressRulesByEnvironmentRequest{EnvironmentId: environmentID})
 		if err != nil {
 			return c.staleOrError(key, entry, ok, now, err)
 		}
-		rules = append(rules, resp.GetEgressRules()...)
+		ruleSet.Rules = append(ruleSet.Rules, resp.GetEgressRules()...)
+		mergeResourceInfos(ruleSet.PrivateResources, resp.GetPrivateResources())
 	}
-	rules = dedupeRules(rules)
+	ruleSet.Rules = dedupeRules(ruleSet.Rules)
 	c.mu.Lock()
-	c.items[key] = ruleCacheEntry{rules: cloneRules(rules), expiresAt: c.clock.Now().Add(c.ttl)}
+	c.items[key] = ruleCacheEntry{ruleSet: cloneRuleSet(ruleSet), expiresAt: c.clock.Now().Add(c.ttl)}
 	c.mu.Unlock()
-	return cloneRules(rules), nil
+	return cloneRuleSet(ruleSet), nil
 }
 
-func (c *RuleCache) staleOrError(key string, entry ruleCacheEntry, ok bool, now time.Time, err error) ([]*egressv1.EgressRule, error) {
+func mergeResourceInfos(into map[string]*egressv1.PrivateResourceInfo, from map[string]*egressv1.PrivateResourceInfo) {
+	for id, info := range from {
+		into[id] = info
+	}
+}
+
+func (c *RuleCache) staleOrError(key string, entry ruleCacheEntry, ok bool, now time.Time, err error) (RuleSet, error) {
 	if ok && !now.After(entry.expiresAt.Add(c.staleIfError)) {
 		if c.failureHandler != nil {
 			c.failureHandler(key, err)
 		}
-		return cloneRules(entry.rules), nil
+		return cloneRuleSet(entry.ruleSet), nil
 	}
-	return nil, err
+	return RuleSet{}, err
 }
 
 // A rule attached to both an agent and the environment it runs resolves once.
@@ -147,9 +170,31 @@ func (c *RuleCache) InvalidateAll() {
 	c.mu.Unlock()
 }
 
+// InvalidatePrivateResource drops every entry whose rules name the resource:
+// the entries carry the resource's intercept_host and protocol denormalized,
+// and UpdatePrivateResource changes those without touching any rule.
+func (c *RuleCache) InvalidatePrivateResource(resourceID string) {
+	if resourceID == "" {
+		return
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	for key, entry := range c.items {
+		if _, ok := entry.ruleSet.PrivateResources[resourceID]; ok {
+			delete(c.items, key)
+		}
+	}
+}
+
 func cloneRules(rules []*egressv1.EgressRule) []*egressv1.EgressRule {
 	cloned := make([]*egressv1.EgressRule, len(rules))
 	copy(cloned, rules)
+	return cloned
+}
+
+func cloneRuleSet(ruleSet RuleSet) RuleSet {
+	cloned := RuleSet{Rules: cloneRules(ruleSet.Rules), PrivateResources: map[string]*egressv1.PrivateResourceInfo{}}
+	mergeResourceInfos(cloned.PrivateResources, ruleSet.PrivateResources)
 	return cloned
 }
 

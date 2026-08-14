@@ -16,15 +16,26 @@ type AgentContext struct {
 	OrganizationID string
 }
 
+// PrivateResourceContext identifies the mediated private resource a
+// connection arrived for, resolved from the OpenZiti service name.
+type PrivateResourceContext struct {
+	ID            string
+	InterceptHost string
+	// "http" or "https" -- the resource's protocol, which decides whether the
+	// inbound connection carries TLS to terminate.
+	Scheme string
+}
+
 type RequestContext struct {
-	Agent        AgentContext
-	Method       string
-	Scheme       string
-	Host         string
-	Port         int
-	Path         string
-	RequestID    string
-	ReceivedTime time.Time
+	Agent           AgentContext
+	Method          string
+	Scheme          string
+	Host            string
+	Port            int
+	Path            string
+	RequestID       string
+	ReceivedTime    time.Time
+	PrivateResource *PrivateResourceContext
 }
 
 type Outcome string
@@ -35,6 +46,13 @@ const (
 	OutcomeBypass        Outcome = "bypass"
 	OutcomeUpstreamError Outcome = "upstream_error"
 	OutcomeTLSError      Outcome = "tls_error"
+	// A mediated connection whose caller holds no rule naming the resource:
+	// passed through byte-for-byte, nothing decrypted or parsed.
+	OutcomeSpliced Outcome = "spliced"
+	// A mediated connection refused because the caller's rule set could not
+	// be determined -- guessing splice would silently bypass a deny or drop a
+	// credential.
+	OutcomeRulesUnavailable Outcome = "rules_unavailable"
 )
 
 type AppliedRule struct {
@@ -45,6 +63,9 @@ type Evaluation struct {
 	Outcome        Outcome
 	MatchedRules   []*egressv1.EgressRule
 	InjectedHeader http.Header
+	// TLS settings for the gateway->target leg of a private https
+	// destination, from the matched rule carrying one.
+	UpstreamTLS *egressv1.EgressRuleUpstreamTls
 }
 
 type RequestMetrics struct {

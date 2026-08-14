@@ -62,14 +62,12 @@ func (o *Observability) Emit(ctx context.Context, metrics RequestMetrics) error 
 
 func spanFromMetrics(metrics RequestMetrics) Span {
 	statusCode := "OK"
-	if metrics.Outcome == OutcomeUpstreamError || metrics.Outcome == OutcomeTLSError {
+	if metrics.Outcome == OutcomeUpstreamError || metrics.Outcome == OutcomeTLSError || metrics.Outcome == OutcomeRulesUnavailable {
 		statusCode = "ERROR"
 	}
 	attributes := map[string]any{
-		"egress.method":           metrics.Context.Method,
 		"egress.host":             metrics.Context.Host,
 		"egress.port":             metrics.Context.Port,
-		"egress.path":             metrics.Context.Path,
 		"egress.outcome":          string(metrics.Outcome),
 		"egress.matched_rule_ids": strings.Join(metrics.MatchedRuleIDs, ","),
 		"egress.bytes_in":         metrics.BytesIn,
@@ -77,6 +75,14 @@ func spanFromMetrics(metrics RequestMetrics) Span {
 		"agyn.agent.id":           metrics.Context.Agent.AgentID,
 		"agyn.workload.id":        metrics.Context.Agent.WorkloadID,
 		"agyn.organization.id":    metrics.Context.Agent.OrganizationID,
+	}
+	// A spliced connection was never parsed: it has no method or path.
+	if metrics.Context.Method != "" {
+		attributes["egress.method"] = metrics.Context.Method
+		attributes["egress.path"] = metrics.Context.Path
+	}
+	if metrics.Context.PrivateResource != nil {
+		attributes["egress.private_resource_id"] = metrics.Context.PrivateResource.ID
 	}
 	if metrics.UpstreamStatus != 0 {
 		attributes["egress.upstream_status"] = metrics.UpstreamStatus

@@ -145,13 +145,21 @@ func (s *Server) buildDataPlane(ctx context.Context) (*egress.DataPlaneServer, e
 	rules := egress.NewRuleCache(ruleClient, s.cfg.RuleCacheTTL, clock)
 	secrets := egress.NewSecretCache(secretClient, s.cfg.SecretCacheTTL, clock)
 	evaluator := egress.NewEvaluator(secrets)
-	forwarder := egress.NewForwarder(s.cfg.ForwardTimeout)
+	zitiDialer := egress.NewZitiDialer(zitiCtx)
+	forwarder := egress.NewForwarder(s.cfg.ForwardTimeout).WithPrivateUpstreams(zitiDialer, secrets)
 	spans := egress.NewOTLPSpanEmitter(traceClient)
 	observed := egress.NewObservability(spans, meteringClient, clock)
 	runtime := egress.NewRuntime(rules, evaluator, forwarder, observed)
 	go func() {
 		if err := egress.NewRuleInvalidationSubscriber(notificationsClient, rules, []string{egress.EgressRulesRoom}).Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
 			log.Printf("egress rule invalidation subscriber stopped: %v", err)
+		}
+	}()
+	// A second stream: the room may not exist until the platform is upgraded,
+	// and a shared stream would take rule invalidation down with it.
+	go func() {
+		if err := egress.NewRuleInvalidationSubscriber(notificationsClient, rules, []string{egress.PrivateResourcesRoom}).Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
+			log.Printf("private resource invalidation subscriber stopped: %v", err)
 		}
 	}()
 	go func() {
@@ -161,7 +169,7 @@ func (s *Server) buildDataPlane(ctx context.Context) (*egress.DataPlaneServer, e
 	}()
 	identity := egress.NewIdentityResolver(zitiClient, agentClient)
 	certs := egress.NewLeafCertificateCache(ca, s.cfg.LeafCertTTL, s.cfg.LeafCertCacheSize, clock)
-	return egress.NewDataPlaneServer(listener, runtime, identity, certs), zitiCtx, grpcConns, nil
+	return egress.NewDataPlaneServer(listener, runtime, identity, certs).WithZitiDialer(zitiDialer), zitiCtx, grpcConns, nil
 }
 
 func (s *Server) newGRPCConns() ([]*grpc.ClientConn, error) {

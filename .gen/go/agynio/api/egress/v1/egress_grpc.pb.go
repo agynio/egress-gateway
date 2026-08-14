@@ -19,17 +19,20 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	EgressRulesService_CreateEgressRule_FullMethodName             = "/agynio.api.egress.v1.EgressRulesService/CreateEgressRule"
-	EgressRulesService_GetEgressRule_FullMethodName                = "/agynio.api.egress.v1.EgressRulesService/GetEgressRule"
-	EgressRulesService_ListEgressRules_FullMethodName              = "/agynio.api.egress.v1.EgressRulesService/ListEgressRules"
-	EgressRulesService_UpdateEgressRule_FullMethodName             = "/agynio.api.egress.v1.EgressRulesService/UpdateEgressRule"
-	EgressRulesService_DeleteEgressRule_FullMethodName             = "/agynio.api.egress.v1.EgressRulesService/DeleteEgressRule"
-	EgressRulesService_CreateEgressRuleAttachment_FullMethodName   = "/agynio.api.egress.v1.EgressRulesService/CreateEgressRuleAttachment"
-	EgressRulesService_DeleteEgressRuleAttachment_FullMethodName   = "/agynio.api.egress.v1.EgressRulesService/DeleteEgressRuleAttachment"
-	EgressRulesService_ListEgressRuleAttachments_FullMethodName    = "/agynio.api.egress.v1.EgressRulesService/ListEgressRuleAttachments"
-	EgressRulesService_ListEgressRulesByAgent_FullMethodName       = "/agynio.api.egress.v1.EgressRulesService/ListEgressRulesByAgent"
-	EgressRulesService_ListEgressRulesByEnvironment_FullMethodName = "/agynio.api.egress.v1.EgressRulesService/ListEgressRulesByEnvironment"
-	EgressRulesService_CountRulesReferencingSecret_FullMethodName  = "/agynio.api.egress.v1.EgressRulesService/CountRulesReferencingSecret"
+	EgressRulesService_CreateEgressRule_FullMethodName                     = "/agynio.api.egress.v1.EgressRulesService/CreateEgressRule"
+	EgressRulesService_GetEgressRule_FullMethodName                        = "/agynio.api.egress.v1.EgressRulesService/GetEgressRule"
+	EgressRulesService_ListEgressRules_FullMethodName                      = "/agynio.api.egress.v1.EgressRulesService/ListEgressRules"
+	EgressRulesService_UpdateEgressRule_FullMethodName                     = "/agynio.api.egress.v1.EgressRulesService/UpdateEgressRule"
+	EgressRulesService_DeleteEgressRule_FullMethodName                     = "/agynio.api.egress.v1.EgressRulesService/DeleteEgressRule"
+	EgressRulesService_CreateEgressRuleAttachment_FullMethodName           = "/agynio.api.egress.v1.EgressRulesService/CreateEgressRuleAttachment"
+	EgressRulesService_DeleteEgressRuleAttachment_FullMethodName           = "/agynio.api.egress.v1.EgressRulesService/DeleteEgressRuleAttachment"
+	EgressRulesService_ListEgressRuleAttachments_FullMethodName            = "/agynio.api.egress.v1.EgressRulesService/ListEgressRuleAttachments"
+	EgressRulesService_ListEgressRulesByAgent_FullMethodName               = "/agynio.api.egress.v1.EgressRulesService/ListEgressRulesByAgent"
+	EgressRulesService_ListEgressRulesByEnvironment_FullMethodName         = "/agynio.api.egress.v1.EgressRulesService/ListEgressRulesByEnvironment"
+	EgressRulesService_CountRulesReferencingSecret_FullMethodName          = "/agynio.api.egress.v1.EgressRulesService/CountRulesReferencingSecret"
+	EgressRulesService_CountRulesReferencingPrivateResource_FullMethodName = "/agynio.api.egress.v1.EgressRulesService/CountRulesReferencingPrivateResource"
+	EgressRulesService_ListMediatedPrivateResources_FullMethodName         = "/agynio.api.egress.v1.EgressRulesService/ListMediatedPrivateResources"
+	EgressRulesService_ListAttachedRuleDomains_FullMethodName              = "/agynio.api.egress.v1.EgressRulesService/ListAttachedRuleDomains"
 )
 
 // EgressRulesServiceClient is the client API for EgressRulesService service.
@@ -52,6 +55,9 @@ type EgressRulesServiceClient interface {
 	ListEgressRulesByAgent(ctx context.Context, in *ListEgressRulesByAgentRequest, opts ...grpc.CallOption) (*ListEgressRulesByAgentResponse, error)
 	ListEgressRulesByEnvironment(ctx context.Context, in *ListEgressRulesByEnvironmentRequest, opts ...grpc.CallOption) (*ListEgressRulesByEnvironmentResponse, error)
 	CountRulesReferencingSecret(ctx context.Context, in *CountRulesReferencingSecretRequest, opts ...grpc.CallOption) (*CountRulesReferencingSecretResponse, error)
+	CountRulesReferencingPrivateResource(ctx context.Context, in *CountRulesReferencingPrivateResourceRequest, opts ...grpc.CallOption) (*CountRulesReferencingPrivateResourceResponse, error)
+	ListMediatedPrivateResources(ctx context.Context, in *ListMediatedPrivateResourcesRequest, opts ...grpc.CallOption) (*ListMediatedPrivateResourcesResponse, error)
+	ListAttachedRuleDomains(ctx context.Context, in *ListAttachedRuleDomainsRequest, opts ...grpc.CallOption) (*ListAttachedRuleDomainsResponse, error)
 }
 
 type egressRulesServiceClient struct {
@@ -172,6 +178,36 @@ func (c *egressRulesServiceClient) CountRulesReferencingSecret(ctx context.Conte
 	return out, nil
 }
 
+func (c *egressRulesServiceClient) CountRulesReferencingPrivateResource(ctx context.Context, in *CountRulesReferencingPrivateResourceRequest, opts ...grpc.CallOption) (*CountRulesReferencingPrivateResourceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CountRulesReferencingPrivateResourceResponse)
+	err := c.cc.Invoke(ctx, EgressRulesService_CountRulesReferencingPrivateResource_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *egressRulesServiceClient) ListMediatedPrivateResources(ctx context.Context, in *ListMediatedPrivateResourcesRequest, opts ...grpc.CallOption) (*ListMediatedPrivateResourcesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListMediatedPrivateResourcesResponse)
+	err := c.cc.Invoke(ctx, EgressRulesService_ListMediatedPrivateResources_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *egressRulesServiceClient) ListAttachedRuleDomains(ctx context.Context, in *ListAttachedRuleDomainsRequest, opts ...grpc.CallOption) (*ListAttachedRuleDomainsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListAttachedRuleDomainsResponse)
+	err := c.cc.Invoke(ctx, EgressRulesService_ListAttachedRuleDomains_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EgressRulesServiceServer is the server API for EgressRulesService service.
 // All implementations should embed UnimplementedEgressRulesServiceServer
 // for forward compatibility.
@@ -192,6 +228,9 @@ type EgressRulesServiceServer interface {
 	ListEgressRulesByAgent(context.Context, *ListEgressRulesByAgentRequest) (*ListEgressRulesByAgentResponse, error)
 	ListEgressRulesByEnvironment(context.Context, *ListEgressRulesByEnvironmentRequest) (*ListEgressRulesByEnvironmentResponse, error)
 	CountRulesReferencingSecret(context.Context, *CountRulesReferencingSecretRequest) (*CountRulesReferencingSecretResponse, error)
+	CountRulesReferencingPrivateResource(context.Context, *CountRulesReferencingPrivateResourceRequest) (*CountRulesReferencingPrivateResourceResponse, error)
+	ListMediatedPrivateResources(context.Context, *ListMediatedPrivateResourcesRequest) (*ListMediatedPrivateResourcesResponse, error)
+	ListAttachedRuleDomains(context.Context, *ListAttachedRuleDomainsRequest) (*ListAttachedRuleDomainsResponse, error)
 }
 
 // UnimplementedEgressRulesServiceServer should be embedded to have
@@ -233,6 +272,15 @@ func (UnimplementedEgressRulesServiceServer) ListEgressRulesByEnvironment(contex
 }
 func (UnimplementedEgressRulesServiceServer) CountRulesReferencingSecret(context.Context, *CountRulesReferencingSecretRequest) (*CountRulesReferencingSecretResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CountRulesReferencingSecret not implemented")
+}
+func (UnimplementedEgressRulesServiceServer) CountRulesReferencingPrivateResource(context.Context, *CountRulesReferencingPrivateResourceRequest) (*CountRulesReferencingPrivateResourceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CountRulesReferencingPrivateResource not implemented")
+}
+func (UnimplementedEgressRulesServiceServer) ListMediatedPrivateResources(context.Context, *ListMediatedPrivateResourcesRequest) (*ListMediatedPrivateResourcesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListMediatedPrivateResources not implemented")
+}
+func (UnimplementedEgressRulesServiceServer) ListAttachedRuleDomains(context.Context, *ListAttachedRuleDomainsRequest) (*ListAttachedRuleDomainsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListAttachedRuleDomains not implemented")
 }
 func (UnimplementedEgressRulesServiceServer) testEmbeddedByValue() {}
 
@@ -452,6 +500,60 @@ func _EgressRulesService_CountRulesReferencingSecret_Handler(srv interface{}, ct
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EgressRulesService_CountRulesReferencingPrivateResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CountRulesReferencingPrivateResourceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EgressRulesServiceServer).CountRulesReferencingPrivateResource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: EgressRulesService_CountRulesReferencingPrivateResource_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EgressRulesServiceServer).CountRulesReferencingPrivateResource(ctx, req.(*CountRulesReferencingPrivateResourceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _EgressRulesService_ListMediatedPrivateResources_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMediatedPrivateResourcesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EgressRulesServiceServer).ListMediatedPrivateResources(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: EgressRulesService_ListMediatedPrivateResources_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EgressRulesServiceServer).ListMediatedPrivateResources(ctx, req.(*ListMediatedPrivateResourcesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _EgressRulesService_ListAttachedRuleDomains_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAttachedRuleDomainsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EgressRulesServiceServer).ListAttachedRuleDomains(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: EgressRulesService_ListAttachedRuleDomains_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EgressRulesServiceServer).ListAttachedRuleDomains(ctx, req.(*ListAttachedRuleDomainsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // EgressRulesService_ServiceDesc is the grpc.ServiceDesc for EgressRulesService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -502,6 +604,18 @@ var EgressRulesService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CountRulesReferencingSecret",
 			Handler:    _EgressRulesService_CountRulesReferencingSecret_Handler,
+		},
+		{
+			MethodName: "CountRulesReferencingPrivateResource",
+			Handler:    _EgressRulesService_CountRulesReferencingPrivateResource_Handler,
+		},
+		{
+			MethodName: "ListMediatedPrivateResources",
+			Handler:    _EgressRulesService_ListMediatedPrivateResources_Handler,
+		},
+		{
+			MethodName: "ListAttachedRuleDomains",
+			Handler:    _EgressRulesService_ListAttachedRuleDomains_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

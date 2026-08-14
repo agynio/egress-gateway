@@ -22,7 +22,30 @@ type ZitiContext interface {
 	RefreshServices() error
 	GetServices() ([]rest_model.ServiceDetail, error)
 	ListenWithOptions(serviceName string, options *ziti.ListenOptions) (edge.Listener, error)
+	Dial(serviceName string) (edge.Conn, error)
 	Close()
+}
+
+// ZitiDialer opens the upstream leg of a mediated private resource: the
+// tunnel-bound private-<id>-upstream-<port> service.
+type ZitiDialer interface {
+	DialService(serviceName string) (net.Conn, error)
+}
+
+type contextDialer struct {
+	ctx ZitiContext
+}
+
+func NewZitiDialer(ctx ZitiContext) ZitiDialer {
+	return &contextDialer{ctx: ctx}
+}
+
+func (d *contextDialer) DialService(serviceName string) (net.Conn, error) {
+	conn, err := d.ctx.Dial(serviceName)
+	if err != nil {
+		return nil, fmt.Errorf("dial ziti service %q: %w", serviceName, err)
+	}
+	return conn, nil
 }
 
 func LoadZitiContext(identityFile string) (ZitiContext, error) {
@@ -230,8 +253,32 @@ func listenForService(ctx ZitiContext, serviceName string) (DataPlaneListener, e
 	if err != nil {
 		return nil, fmt.Errorf("listen for ziti service %q: %w", serviceName, err)
 	}
-	return NewListenerAdapter(listener), nil
+	return &namingListener{inner: NewListenerAdapter(listener), serviceName: serviceName}, nil
 }
+
+// namingListener stamps the accepted service's name on every connection; a
+// connection arriving on private-<id> is routed by that name alone.
+type namingListener struct {
+	inner       DataPlaneListener
+	serviceName string
+}
+
+func (l *namingListener) Accept() (DataPlaneConn, error) {
+	conn, err := l.inner.Accept()
+	if err != nil {
+		return nil, err
+	}
+	return &namedConn{DataPlaneConn: conn, serviceName: l.serviceName}, nil
+}
+
+func (l *namingListener) Close() error { return l.inner.Close() }
+
+type namedConn struct {
+	DataPlaneConn
+	serviceName string
+}
+
+func (c *namedConn) ServiceName() string { return c.serviceName }
 
 type ListenerAdapter struct {
 	listener edge.Listener

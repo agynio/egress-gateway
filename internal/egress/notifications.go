@@ -16,10 +16,15 @@ import (
 const (
 	egressRuleUpdatedEvent           = "egress_rule.updated"
 	egressRuleAttachmentUpdatedEvent = "egress_rule_attachment.updated"
+	privateResourceUpdatedEvent      = "private_resource.updated"
 	EgressRulesRoom                  = "egress_rules"
-	identityMetadataKey              = "x-identity-id"
-	subscriberIdentityID             = "00000000-0000-0000-0000-000000000000"
-	defaultNotificationsBackoff      = time.Second
+	// Carries private_resource.updated: the rule cache holds the resource's
+	// intercept_host and protocol denormalized, and UpdatePrivateResource
+	// changes those without touching any rule.
+	PrivateResourcesRoom        = "private_resources"
+	identityMetadataKey         = "x-identity-id"
+	subscriberIdentityID        = "00000000-0000-0000-0000-000000000000"
+	defaultNotificationsBackoff = time.Second
 )
 
 type NotificationsClient interface {
@@ -91,6 +96,13 @@ func (s *RuleInvalidationSubscriber) handleEnvelope(envelope *notificationsv1.No
 		s.rules.Invalidate(agentID)
 	case egressRuleUpdatedEvent:
 		s.rules.InvalidateAll()
+	case privateResourceUpdatedEvent:
+		resourceID := stringPayloadValue(envelope, "private_resource_id")
+		if resourceID == "" {
+			s.rules.InvalidateAll()
+			return
+		}
+		s.rules.InvalidatePrivateResource(resourceID)
 	}
 }
 
