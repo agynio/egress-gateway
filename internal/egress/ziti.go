@@ -49,9 +49,17 @@ func (d *contextDialer) DialService(serviceName string) (net.Conn, error) {
 }
 
 func LoadZitiContext(identityFile string) (ZitiContext, error) {
-	ctx, err := ziti.NewContextFromFile(identityFile)
+	cfg, err := ziti.NewConfigFromFile(identityFile)
 	if err != nil {
 		return nil, fmt.Errorf("load ziti identity: %w", err)
+	}
+	// The controller returns a service's config blocks only for requested
+	// config types; the interception is where a mediated resource's port set
+	// comes from.
+	cfg.ConfigTypes = append(cfg.ConfigTypes, "intercept.v1")
+	ctx, err := ziti.NewContext(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("create ziti context: %w", err)
 	}
 	if err := ctx.Authenticate(); err != nil {
 		ctx.Close()
