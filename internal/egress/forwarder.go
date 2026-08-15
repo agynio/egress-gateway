@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"strconv"
@@ -98,6 +99,7 @@ func (f *Forwarder) ServeHTTP(w http.ResponseWriter, r *http.Request, reqCtx Req
 	upstream = upstream.WithContext(ctx)
 	transport, err := f.transportFor(ctx, reqCtx, evaluation)
 	if err != nil {
+		log.Printf("private upstream for resource %s: %v", privateResourceID(reqCtx), err)
 		metrics.Outcome = OutcomeUpstreamError
 		http.Error(w, "egress gateway could not reach the private upstream", http.StatusBadGateway)
 		metrics.UpstreamStatus = http.StatusBadGateway
@@ -127,6 +129,13 @@ func (f *Forwarder) ServeHTTP(w http.ResponseWriter, r *http.Request, reqCtx Req
 		metrics.Outcome = OutcomeUpstreamError
 	}
 	return metrics
+}
+
+func privateResourceID(reqCtx RequestContext) string {
+	if reqCtx.PrivateResource == nil {
+		return ""
+	}
+	return reqCtx.PrivateResource.ID
 }
 
 // transportFor picks the round tripper: the shared public transport, or a
