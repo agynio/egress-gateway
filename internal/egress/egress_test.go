@@ -1059,6 +1059,10 @@ func (f *fakeZitiContext) ListenWithOptions(serviceName string, _ *ziti.ListenOp
 	return listener, nil
 }
 
+func (f *fakeZitiContext) Dial(string) (edge.Conn, error) {
+	return nil, errors.New("fake ziti context does not dial")
+}
+
 func (f *fakeZitiContext) Close() {}
 
 func (f *fakeZitiContext) setServices(services []rest_model.ServiceDetail) {

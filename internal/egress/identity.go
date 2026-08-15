@@ -29,11 +29,40 @@ func NewIdentityResolver(ziti ZitiIdentityClient, agents AgentIdentityClient) *I
 	return &IdentityResolver{ziti: ziti, agents: agents}
 }
 
+// DialerContext is who dialed a mediated private resource. Only workloads
+// can hold egress rules; every other identity type -- a user's device, an
+// app -- reached the resource through an access grant and is spliced.
+type DialerContext struct {
+	Agent      AgentContext
+	IsWorkload bool
+}
+
+func (r *IdentityResolver) ResolveDialer(ctx context.Context, zitiIdentityID string) (DialerContext, error) {
+	identity, err := r.ziti.ResolveIdentity(ctx, &zitimanagementv1.ResolveIdentityRequest{ZitiIdentityId: zitiIdentityID})
+	if err != nil {
+		return DialerContext{}, fmt.Errorf("resolve ziti identity: %w", err)
+	}
+	switch identity.GetIdentityType() {
+	case identityv1.IdentityType_IDENTITY_TYPE_SANDBOX, identityv1.IdentityType_IDENTITY_TYPE_AGENT:
+		agent, err := r.resolveWorkload(ctx, identity)
+		if err != nil {
+			return DialerContext{}, err
+		}
+		return DialerContext{Agent: agent, IsWorkload: true}, nil
+	default:
+		return DialerContext{}, nil
+	}
+}
+
 func (r *IdentityResolver) ResolveAgent(ctx context.Context, zitiIdentityID string) (AgentContext, error) {
 	identity, err := r.ziti.ResolveIdentity(ctx, &zitimanagementv1.ResolveIdentityRequest{ZitiIdentityId: zitiIdentityID})
 	if err != nil {
 		return AgentContext{}, fmt.Errorf("resolve ziti identity: %w", err)
 	}
+	return r.resolveWorkload(ctx, identity)
+}
+
+func (r *IdentityResolver) resolveWorkload(ctx context.Context, identity *zitimanagementv1.ResolveIdentityResponse) (AgentContext, error) {
 	switch identity.GetIdentityType() {
 	case identityv1.IdentityType_IDENTITY_TYPE_SANDBOX:
 		// A sandbox carries no agent. Its rules come from the environment it

@@ -24,6 +24,9 @@ service EgressRulesService {
   rpc ListEgressRulesByAgent(ListEgressRulesByAgentRequest) returns (ListEgressRulesByAgentResponse);
   rpc ListEgressRulesByEnvironment(ListEgressRulesByEnvironmentRequest) returns (ListEgressRulesByEnvironmentResponse);
   rpc CountRulesReferencingSecret(CountRulesReferencingSecretRequest) returns (CountRulesReferencingSecretResponse);
+  rpc CountRulesReferencingPrivateResource(CountRulesReferencingPrivateResourceRequest) returns (CountRulesReferencingPrivateResourceResponse);
+  rpc ListMediatedPrivateResources(ListMediatedPrivateResourcesRequest) returns (ListMediatedPrivateResourcesResponse);
+  rpc ListAttachedRuleDomains(ListAttachedRuleDomainsRequest) returns (ListAttachedRuleDomainsResponse);
 }
 
 // Metadata shared by egress resources.
@@ -57,6 +60,15 @@ message EgressRuleMatcher {
   repeated string methods = 3;
   // Glob over the request path. Empty means any path.
   string path_pattern = 4;
+  string private_resource_id = 5;
+}
+
+message EgressRuleUpstreamTls {
+  string server_name = 1;
+  oneof trust {
+    string ca_bundle_secret_id = 2;
+    bool insecure_skip_verify = 3;
+  }
 }
 
 // Header credential injected by the egress gateway.
@@ -83,6 +95,7 @@ message EgressRule {
   string description = 4;
   EgressRuleMatcher matcher = 5;
   EgressRuleEffect effect = 6;
+  optional EgressRuleUpstreamTls upstream_tls = 7;
 }
 
 // Attachment binding an egress rule to an agent or environment.
@@ -102,6 +115,7 @@ message CreateEgressRuleRequest {
   string description = 3;
   EgressRuleMatcher matcher = 4;
   EgressRuleEffect effect = 5;
+  optional EgressRuleUpstreamTls upstream_tls = 6;
 }
 
 message CreateEgressRuleResponse {
@@ -116,10 +130,18 @@ message GetEgressRuleResponse {
   EgressRule egress_rule = 1;
 }
 
+enum EgressRuleTargetKind {
+  EGRESS_RULE_TARGET_KIND_UNSPECIFIED = 0;
+  EGRESS_RULE_TARGET_KIND_PUBLIC = 1;
+  EGRESS_RULE_TARGET_KIND_PRIVATE = 2;
+}
+
 message ListEgressRulesRequest {
   string organization_id = 1;
   int32 page_size = 2;
   string page_token = 3;
+  optional string private_resource_id = 4;
+  optional EgressRuleTargetKind target_kind = 5;
 }
 
 message ListEgressRulesResponse {
@@ -133,6 +155,7 @@ message UpdateEgressRuleRequest {
   optional string description = 3;
   optional EgressRuleMatcher matcher = 4;
   optional EgressRuleEffect effect = 5;
+  optional EgressRuleUpstreamTls upstream_tls = 6;
 }
 
 message UpdateEgressRuleResponse {
@@ -179,12 +202,24 @@ message ListEgressRuleAttachmentsResponse {
   string next_page_token = 2;
 }
 
+enum EgressPrivateResourceProtocol {
+  EGRESS_PRIVATE_RESOURCE_PROTOCOL_UNSPECIFIED = 0;
+  EGRESS_PRIVATE_RESOURCE_PROTOCOL_HTTP = 1;
+  EGRESS_PRIVATE_RESOURCE_PROTOCOL_HTTPS = 2;
+}
+
+message PrivateResourceInfo {
+  string intercept_host = 1;
+  EgressPrivateResourceProtocol protocol = 2;
+}
+
 message ListEgressRulesByAgentRequest {
   string agent_id = 1;
 }
 
 message ListEgressRulesByAgentResponse {
   repeated EgressRule egress_rules = 1;
+  map<string, PrivateResourceInfo> private_resources = 2;
 }
 
 message ListEgressRulesByEnvironmentRequest {
@@ -193,6 +228,7 @@ message ListEgressRulesByEnvironmentRequest {
 
 message ListEgressRulesByEnvironmentResponse {
   repeated EgressRule egress_rules = 1;
+  map<string, PrivateResourceInfo> private_resources = 2;
 }
 
 message CountRulesReferencingSecretRequest {
@@ -202,4 +238,38 @@ message CountRulesReferencingSecretRequest {
 message CountRulesReferencingSecretResponse {
   int32 count = 1;
   repeated string egress_rule_ids = 2;
+}
+
+message CountRulesReferencingPrivateResourceRequest {
+  string private_resource_id = 1;
+}
+
+message CountRulesReferencingPrivateResourceResponse {
+  int32 count = 1;
+  repeated string egress_rule_ids = 2;
+}
+
+message ListMediatedPrivateResourcesRequest {
+  string organization_id = 1;
+}
+
+message ListMediatedPrivateResourcesResponse {
+  repeated string private_resource_ids = 1;
+}
+
+message AttachedRuleDomain {
+  string egress_rule_id = 1;
+  string domain_pattern = 2;
+  repeated int32 ports = 3;
+}
+
+message ListAttachedRuleDomainsRequest {
+  oneof principal {
+    string agent_id = 1;
+    string environment_id = 2;
+  }
+}
+
+message ListAttachedRuleDomainsResponse {
+  repeated AttachedRuleDomain domains = 1;
 }

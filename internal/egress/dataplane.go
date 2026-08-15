@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	egressv1 "github.com/agynio/egress-gateway/.gen/go/agynio/api/egress/v1"
 	"github.com/google/uuid"
 )
 
@@ -35,6 +36,7 @@ type DataPlaneServer struct {
 	runtime  *Runtime
 	identity *IdentityResolver
 	certs    *LeafCertificateCache
+	dialer   ZitiDialer
 }
 
 func NewDataPlaneServer(listener DataPlaneListener, runtime *Runtime, identity *IdentityResolver, certs *LeafCertificateCache) *DataPlaneServer {
@@ -51,6 +53,13 @@ func NewDataPlaneServer(listener DataPlaneListener, runtime *Runtime, identity *
 		panic("leaf certificate cache is required")
 	}
 	return &DataPlaneServer{listener: listener, runtime: runtime, identity: identity, certs: certs}
+}
+
+// WithZitiDialer supplies the dialer for mediated private resources' upstream
+// services. Without it, connections to private-<id> services are refused.
+func (s *DataPlaneServer) WithZitiDialer(dialer ZitiDialer) *DataPlaneServer {
+	s.dialer = dialer
+	return s
 }
 
 func (s *DataPlaneServer) Serve(ctx context.Context) error {
@@ -79,6 +88,11 @@ func (s *DataPlaneServer) Close() error {
 
 func (s *DataPlaneServer) handleConn(ctx context.Context, conn DataPlaneConn) {
 	defer conn.Close()
+
+	if resourceID, ok := privateResourceIDFromConn(conn); ok {
+		s.handlePrivateConn(ctx, conn, resourceID)
+		return
+	}
 
 	agent, err := s.identity.ResolveAgent(ctx, conn.DialerIdentityID())
 	if err != nil {
@@ -109,6 +123,235 @@ func (s *DataPlaneServer) handleConn(ctx context.Context, conn DataPlaneConn) {
 	if err := s.serveHTTP(ctx, sniffed, agent, destination); err != nil {
 		log.Printf("serve ziti http egress: %v", err)
 	}
+}
+
+type serviceNamedConn interface {
+	ServiceName() string
+}
+
+type interceptPortedConn interface {
+	InterceptPorts() []int
+}
+
+// resolveInterceptPort decides which of the resource's intercept ports the
+// caller dialed. The dialing sidecar's app data is trusted only when it names
+// one of the service's own ports -- this deployment's diverter reports its
+// local port instead of the dialed one -- and a single-port resource needs no
+// signal at all. Zero means the port cannot be determined.
+func resolveInterceptPort(conn DataPlaneConn) int {
+	ports := []int{}
+	if ported, ok := conn.(interceptPortedConn); ok {
+		ports = ported.InterceptPorts()
+	}
+	reported := 0
+	if destination, err := DestinationFromAppData(conn.AppData()); err == nil {
+		reported = destination.Port
+	}
+	for _, port := range ports {
+		if port == reported {
+			return reported
+		}
+	}
+	if len(ports) == 1 {
+		return ports[0]
+	}
+	return 0
+}
+
+// privateResourceIDFromConn reads the mediated resource's id off the OpenZiti
+// service the connection arrived on. Nothing in the byte stream is trusted
+// for routing.
+func privateResourceIDFromConn(conn DataPlaneConn) (string, bool) {
+	named, ok := conn.(serviceNamedConn)
+	if !ok {
+		return "", false
+	}
+	raw, found := strings.CutPrefix(named.ServiceName(), "private-")
+	if !found {
+		return "", false
+	}
+	resourceID, err := uuid.Parse(raw)
+	if err != nil {
+		return "", false
+	}
+	return resourceID.String(), true
+}
+
+// handlePrivateConn decides what a connection to a mediated private resource
+// gets, before touching a byte of it: inspection when an attached rule names
+// the resource, a byte-for-byte splice when none does, and a refusal when the
+// rule set cannot be determined -- guessing splice would silently drop a deny
+// or a credential.
+func (s *DataPlaneServer) handlePrivateConn(ctx context.Context, conn DataPlaneConn, resourceID string) {
+	dialer, err := s.identity.ResolveDialer(ctx, conn.DialerIdentityID())
+	if err != nil {
+		log.Printf("resolve private resource dialer identity: %v", err)
+		return
+	}
+	interceptPort := resolveInterceptPort(conn)
+	if interceptPort == 0 {
+		log.Printf("refusing private resource %s connection: dialed intercept port cannot be determined", resourceID)
+		s.runtime.EmitConnOutcome(ctx, privateRequestContext(dialer.Agent, resourceID, "", "", 0), OutcomeUpstreamError)
+		return
+	}
+	// Only workloads can hold rules; every other principal type reached the
+	// resource through an access grant and is spliced untouched.
+	if !dialer.IsWorkload {
+		s.splicePrivateConn(ctx, conn, resourceID, interceptPort, dialer.Agent)
+		return
+	}
+	ruleSet, err := s.runtime.RuleSetFor(ctx, dialer.Agent)
+	if err != nil {
+		log.Printf("refusing private resource %s connection: rules unavailable: %v", resourceID, err)
+		s.runtime.EmitConnOutcome(ctx, privateRequestContext(dialer.Agent, resourceID, "", "", interceptPort), OutcomeRulesUnavailable)
+		return
+	}
+	if !ruleSetNamesResource(ruleSet, resourceID) {
+		s.splicePrivateConn(ctx, conn, resourceID, interceptPort, dialer.Agent)
+		return
+	}
+	info := ruleSet.PrivateResources[resourceID]
+	if info == nil {
+		// The rules name the resource but its denormalized fields could not
+		// be resolved; inspecting on guesses could dial the wrong scheme.
+		log.Printf("refusing private resource %s connection: resource fields unavailable", resourceID)
+		s.runtime.EmitConnOutcome(ctx, privateRequestContext(dialer.Agent, resourceID, "", "", interceptPort), OutcomeRulesUnavailable)
+		return
+	}
+	scheme := "http"
+	if info.GetProtocol() == egressv1.EgressPrivateResourceProtocol_EGRESS_PRIVATE_RESOURCE_PROTOCOL_HTTPS {
+		scheme = "https"
+	}
+	privateResource := &PrivateResourceContext{ID: resourceID, InterceptHost: info.GetInterceptHost(), Scheme: scheme}
+	destination := Destination{Scheme: scheme, Host: info.GetInterceptHost(), Port: interceptPort}
+	sniffed, isTLS, err := sniffTLSClientHello(conn)
+	if err != nil {
+		log.Printf("sniff private resource connection: %v", err)
+		return
+	}
+	if isTLS {
+		if err := s.servePrivateHTTPS(ctx, sniffed, dialer.Agent, destination, privateResource); err != nil {
+			log.Printf("serve private https egress: %v", err)
+		}
+		return
+	}
+	if err := s.servePrivateHTTP(ctx, sniffed, dialer.Agent, destination, privateResource); err != nil {
+		log.Printf("serve private http egress: %v", err)
+	}
+}
+
+func (s *DataPlaneServer) servePrivateHTTPS(ctx context.Context, conn net.Conn, agent AgentContext, destination Destination, resource *PrivateResourceContext) error {
+	tlsConn := tls.Server(conn, &tls.Config{GetCertificate: s.certificateForClientHello, NextProtos: []string{"h2", "http/1.1"}})
+	if err := tlsConn.Handshake(); err != nil {
+		s.runtime.EmitTLSFailure(ctx, privateRequestContext(agent, resource.ID, destination.Scheme, destination.Host, destination.Port))
+		return fmt.Errorf("tls handshake: %w", err)
+	}
+	defer tlsConn.Close()
+	if tlsConn.ConnectionState().NegotiatedProtocol == "h2" {
+		return s.servePrivateHTTP2(ctx, tlsConn, agent, destination, resource)
+	}
+	return s.servePrivateHTTP(ctx, tlsConn, agent, destination, resource)
+}
+
+func (s *DataPlaneServer) servePrivateHTTP2(ctx context.Context, conn net.Conn, agent AgentContext, destination Destination, resource *PrivateResourceContext) error {
+	server := &http2.Server{}
+	server.ServeConn(conn, &http2.ServeConnOpts{Context: ctx, Handler: http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		requestContext := RequestContextFromHTTP(agent, destination.Scheme, destination.Host, destination.Port, req, uuid.NewString())
+		requestContext.PrivateResource = resource
+		if err := s.runtime.ServeRequest(ctx, w, req, requestContext); err != nil {
+			log.Printf("serve private h2 egress request: %v", err)
+		}
+	})})
+	return nil
+}
+
+func (s *DataPlaneServer) servePrivateHTTP(ctx context.Context, conn net.Conn, agent AgentContext, destination Destination, resource *PrivateResourceContext) error {
+	reader := bufio.NewReader(conn)
+	req, err := ReadHTTPRequest(reader)
+	if err != nil {
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
+		return fmt.Errorf("read request: %w", err)
+	}
+	req.RemoteAddr = conn.RemoteAddr().String()
+	req.RequestURI = ""
+	requestContext := RequestContextFromHTTP(agent, destination.Scheme, destination.Host, destination.Port, req, uuid.NewString())
+	requestContext.PrivateResource = resource
+	response := newConnResponseWriter(conn)
+	runtimeErr := s.runtime.ServeRequest(ctx, response, req, requestContext)
+	if runtimeErr == nil || !response.sentHeader {
+		if err := response.finish(); err != nil {
+			return fmt.Errorf("write response: %w", err)
+		}
+	}
+	drainAfterResponse(conn, reader)
+	if runtimeErr != nil {
+		return fmt.Errorf("serve private egress request: %w", runtimeErr)
+	}
+	return nil
+}
+
+// splicePrivateConn passes a mediated connection through byte-for-byte:
+// nothing decrypted, no substituted certificate -- a caller whose access came
+// from a grant completes TLS against the target's own certificate.
+func (s *DataPlaneServer) splicePrivateConn(ctx context.Context, conn DataPlaneConn, resourceID string, interceptPort int, agent AgentContext) {
+	requestContext := privateRequestContext(agent, resourceID, "", "", interceptPort)
+	if s.dialer == nil || interceptPort == 0 {
+		log.Printf("refusing private resource %s splice: no upstream dialer or intercept port", resourceID)
+		s.runtime.EmitConnOutcome(ctx, requestContext, OutcomeUpstreamError)
+		return
+	}
+	upstream, err := s.dialer.DialService(privateUpstreamServiceName(resourceID, interceptPort))
+	if err != nil {
+		log.Printf("dial private resource %s upstream: %v", resourceID, err)
+		s.runtime.EmitConnOutcome(ctx, requestContext, OutcomeUpstreamError)
+		return
+	}
+	defer upstream.Close()
+	bytesIn, bytesOut := spliceConns(conn, upstream)
+	metrics := RequestMetrics{Context: requestContext, Outcome: OutcomeSpliced, BytesIn: bytesIn, BytesOut: bytesOut, StartedAt: requestContext.ReceivedTime, CompletedAt: time.Now()}
+	s.runtime.EmitMetrics(ctx, metrics)
+}
+
+func spliceConns(client net.Conn, upstream net.Conn) (int64, int64) {
+	done := make(chan int64, 1)
+	go func() {
+		bytesIn, _ := io.Copy(upstream, client)
+		halfClose(upstream)
+		done <- bytesIn
+	}()
+	bytesOut, _ := io.Copy(client, upstream)
+	halfClose(client)
+	bytesIn := <-done
+	return bytesIn, bytesOut
+}
+
+func halfClose(conn net.Conn) {
+	if cw, ok := conn.(interface{ CloseWrite() error }); ok {
+		_ = cw.CloseWrite()
+	}
+}
+
+func privateRequestContext(agent AgentContext, resourceID string, scheme string, host string, port int) RequestContext {
+	return RequestContext{
+		Agent:           agent,
+		Scheme:          scheme,
+		Host:            host,
+		Port:            port,
+		RequestID:       uuid.NewString(),
+		ReceivedTime:    time.Now(),
+		PrivateResource: &PrivateResourceContext{ID: resourceID, InterceptHost: host, Scheme: scheme},
+	}
+}
+
+func ruleSetNamesResource(ruleSet RuleSet, resourceID string) bool {
+	for _, rule := range ruleSet.Rules {
+		if rule.GetMatcher().GetPrivateResourceId() == resourceID {
+			return true
+		}
+	}
+	return false
 }
 
 // destinationFromRequestHost takes the upstream from the request's own Host,

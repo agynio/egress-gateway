@@ -34,7 +34,20 @@ func (e *Evaluator) Evaluate(ctx context.Context, req RequestContext, rules []*e
 	if err != nil {
 		return Evaluation{}, err
 	}
-	return Evaluation{Outcome: OutcomeAllow, MatchedRules: matched, InjectedHeader: headers}, nil
+	return Evaluation{Outcome: OutcomeAllow, MatchedRules: matched, InjectedHeader: headers, UpstreamTLS: upstreamTLSFromRules(matched)}, nil
+}
+
+// The gateway->target TLS settings come from the matched rules; when several
+// carry one, the lexicographically later rule id wins, mirroring the header
+// merge.
+func upstreamTLSFromRules(matched []*egressv1.EgressRule) *egressv1.EgressRuleUpstreamTls {
+	var selected *egressv1.EgressRuleUpstreamTls
+	for _, rule := range matched {
+		if rule.GetUpstreamTls() != nil {
+			selected = rule.GetUpstreamTls()
+		}
+	}
+	return selected
 }
 
 func matchingRules(req RequestContext, rules []*egressv1.EgressRule) ([]*egressv1.EgressRule, error) {
@@ -60,10 +73,20 @@ func ruleMatches(req RequestContext, rule *egressv1.EgressRule) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("invalid path pattern for rule %s: %w", rule.GetMeta().GetId(), err)
 	}
+	if !pathMatched || !methodMatches(req.Method, matcher.GetMethods()) {
+		return false, nil
+	}
+	// The destination test: the resource the connection arrived on for a
+	// private request, the SNI/Host and port for a public one. A private rule
+	// never matches public traffic and vice versa.
+	if req.PrivateResource != nil {
+		return matcher.GetPrivateResourceId() != "" && matcher.GetPrivateResourceId() == req.PrivateResource.ID, nil
+	}
+	if matcher.GetPrivateResourceId() != "" {
+		return false, nil
+	}
 	return domainMatches(req.Host, matcher.GetDomainPattern()) &&
-		portMatches(req.Port, matcher.GetPorts()) &&
-		methodMatches(req.Method, matcher.GetMethods()) &&
-		pathMatched, nil
+		portMatches(req.Port, matcher.GetPorts()), nil
 }
 
 func domainMatches(host string, pattern string) bool {
