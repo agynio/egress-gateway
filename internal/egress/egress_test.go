@@ -10,6 +10,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
@@ -237,6 +238,29 @@ func TestEvaluateInvalidPathPatternReturnsError(t *testing.T) {
 	})
 	if err == nil {
 		t.Fatal("expected invalid path pattern to fail")
+	}
+}
+
+func TestEvaluateBasicHeaderEncodesUsernameAndSecret(t *testing.T) {
+	clock := &fakeClock{now: time.Unix(100, 0)}
+	secrets := &fakeSecretClient{values: []string{"ghp_token"}}
+	evaluator := NewEvaluator(NewSecretCache(secrets, time.Minute, clock))
+	request := RequestContext{Method: http.MethodGet, Host: "github.com", Port: 443, Path: "/"}
+	header := headerSecret("Authorization", "secret-1", egressv1.HeaderAuthScheme_HEADER_AUTH_SCHEME_BASIC)
+	header.Username = "x-access-token"
+	evaluation, err := evaluator.Evaluate(context.Background(), request, []*egressv1.EgressRule{
+		rule("1", "github.com", injectEffect(header)),
+	})
+	if err != nil {
+		t.Fatalf("Evaluate: %v", err)
+	}
+	want := "Basic " + base64.StdEncoding.EncodeToString([]byte("x-access-token:ghp_token"))
+	if got := evaluation.InjectedHeader.Get("Authorization"); got != want {
+		t.Fatalf("authorization = %q, want %q", got, want)
+	}
+	user, password, ok := (&http.Request{Header: evaluation.InjectedHeader}).BasicAuth()
+	if !ok || user != "x-access-token" || password != "ghp_token" {
+		t.Fatalf("BasicAuth() = %q, %q, %v", user, password, ok)
 	}
 }
 

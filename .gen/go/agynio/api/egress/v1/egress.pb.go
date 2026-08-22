@@ -462,6 +462,7 @@ type EgressRuleHeader struct {
 	//	*EgressRuleHeader_Value
 	//	*EgressRuleHeader_SecretId
 	Credential    isEgressRuleHeader_Credential `protobuf_oneof:"credential"`
+	Username      string                        `protobuf:"bytes,5,opt,name=username,proto3" json:"username,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -531,6 +532,13 @@ func (x *EgressRuleHeader) GetSecretId() string {
 		if x, ok := x.Credential.(*EgressRuleHeader_SecretId); ok {
 			return x.SecretId
 		}
+	}
+	return ""
+}
+
+func (x *EgressRuleHeader) GetUsername() string {
+	if x != nil {
+		return x.Username
 	}
 	return ""
 }
@@ -2463,12 +2471,13 @@ const file_agynio_api_egress_v1_egress_proto_rawDesc = "" +
 	"serverName\x12/\n" +
 	"\x13ca_bundle_secret_id\x18\x02 \x01(\tH\x00R\x10caBundleSecretId\x122\n" +
 	"\x14insecure_skip_verify\x18\x03 \x01(\bH\x00R\x12insecureSkipVerifyB\a\n" +
-	"\x05trust\"\xab\x01\n" +
+	"\x05trust\"\xc7\x01\n" +
 	"\x10EgressRuleHeader\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12>\n" +
 	"\x06scheme\x18\x02 \x01(\x0e2&.agynio.api.egress.v1.HeaderAuthSchemeR\x06scheme\x12\x16\n" +
 	"\x05value\x18\x03 \x01(\tH\x00R\x05value\x12\x1d\n" +
-	"\tsecret_id\x18\x04 \x01(\tH\x00R\bsecretIdB\f\n" +
+	"\tsecret_id\x18\x04 \x01(\tH\x00R\bsecretId\x12\x1a\n" +
+	"\busername\x18\x05 \x01(\tR\busernameB\f\n" +
 	"\n" +
 	"credential\"\xa2\x01\n" +
 	"\x10EgressRuleEffect\x12C\n" +
