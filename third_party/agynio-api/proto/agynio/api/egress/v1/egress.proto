@@ -79,6 +79,7 @@ message EgressRuleHeader {
     string value = 3;
     string secret_id = 4;
   }
+  string username = 5;
 }
 
 // Behavior to apply to requests matching an egress rule.

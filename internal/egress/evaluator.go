@@ -2,6 +2,7 @@ package egress
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"sort"
@@ -242,7 +243,8 @@ func (e *Evaluator) headerValue(ctx context.Context, header *egressv1.EgressRule
 	case egressv1.HeaderAuthScheme_HEADER_AUTH_SCHEME_BEARER:
 		return "Bearer " + credential, nil
 	case egressv1.HeaderAuthScheme_HEADER_AUTH_SCHEME_BASIC:
-		return "Basic " + credential, nil
+		// RFC 7617: the wire value is base64 of user:password, not the password alone.
+		return "Basic " + base64.StdEncoding.EncodeToString([]byte(header.GetUsername()+":"+credential)), nil
 	default:
 		panic("validated header auth scheme is invalid")
 	}
